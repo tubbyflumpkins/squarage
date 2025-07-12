@@ -40,18 +40,6 @@ const heroImages = [
 export default function HeroSlideshow() {
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Logo positioned at top */}
-      <div className="absolute top-8 left-8 z-20">
-        <Image
-          src="/images/logo_complete_white.svg"
-          alt="Squarage Studio"
-          width={180}
-          height={42}
-          className="w-auto h-10"
-          priority
-        />
-      </div>
-
       {/* Slideshow Background */}
       <div className="absolute inset-0 z-0">
         <Swiper
