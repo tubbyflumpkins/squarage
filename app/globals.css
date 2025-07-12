@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Neue Haas Grotesk Font Family */
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayThin.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayThinItalic.ttf') format('truetype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayXThin.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayLight.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayLightItalic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayRoman.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayRomanItalic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayMediu.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayMediumItalic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayBold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayBoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayBlack.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'neue-haas-grotesk';
+  src: url('/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayBlackItalic.ttf') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 250, 244;
+  --background-end-rgb: 255, 250, 244;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  font-family: 'neue-haas-grotesk', sans-serif;
+  height: 100%;
+  margin: 0;
+}
+
+/* Custom CSS for animations and interactions */
+.word {
+  overflow: hidden;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+  transform-origin: bottom;
+}
+
+/* Remove Webflow cursor styles - no custom cursor */
