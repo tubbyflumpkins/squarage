@@ -46,9 +46,8 @@ const collections = [
 export default function CollectionsSection() {
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, text: '' })
   const [animationStarted, setAnimationStarted] = useState(false)
-  const [randomDelays] = useState(() => 
-    'Collections'.split('').map(() => Math.random() * 0.8)
-  )
+  // Fixed delays to prevent hydration mismatch
+  const randomDelays = [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15]
 
   const handleMouseMove = (e: React.MouseEvent, title: string) => {
     setTooltip({
