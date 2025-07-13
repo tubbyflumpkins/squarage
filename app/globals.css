@@ -147,4 +147,50 @@ body {
   transform-origin: bottom;
 }
 
+/* Collections letter bounce animation */
+@keyframes bounce-settle {
+  0% {
+    transform: translateY(0);
+  }
+  15% {
+    transform: translateY(-50px);
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  30% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  }
+  40% {
+    transform: translateY(-25px);
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  55% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  }
+  62% {
+    transform: translateY(-10px);
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  72% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  }
+  76% {
+    transform: translateY(-3px);
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  82% {
+    transform: translateY(0);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-bounce-settle {
+  animation: bounce-settle 2s linear forwards;
+}
+
 /* Remove Webflow cursor styles - no custom cursor */

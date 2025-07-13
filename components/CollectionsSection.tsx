@@ -71,7 +71,7 @@ export default function CollectionsSection() {
                   key={index}
                   className="w-16 h-16 md:w-20 md:h-20 bg-squarage-green flex items-center justify-center relative"
                 >
-                  <span className="text-6xl md:text-7xl font-soap text-white leading-none absolute inset-0 flex items-center justify-center" style={{transform: 'translateY(2px)'}}>
+                  <span className="text-6xl md:text-7xl font-soap text-white leading-none absolute inset-0 flex items-center justify-center text-[4.5rem] md:text-[5.5rem]" style={{transform: 'translateY(4px)'}}>
                     {letter}
                   </span>
                 </div>
