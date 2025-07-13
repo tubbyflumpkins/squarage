@@ -54,6 +54,9 @@ export default function HeroSlideshow() {
             className={`absolute inset-0 transition-opacity duration-1000 ${
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
+            style={{
+              willChange: index === currentSlide || index === (currentSlide + 1) % heroImages.length ? 'opacity' : 'auto'
+            }}
           >
             <Image
               src={image.src}
@@ -61,7 +64,9 @@ export default function HeroSlideshow() {
               fill
               className="object-cover object-center"
               priority={index === 0}
+              loading={index < 2 ? 'eager' : 'lazy'}
               sizes="100vw"
+              quality={85}
             />
           </div>
         ))}
