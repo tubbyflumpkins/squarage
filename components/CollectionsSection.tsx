@@ -136,24 +136,6 @@ export default function CollectionsSection() {
         </div>
       )}
 
-      {/* View All Collections CTA */}
-      <div className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <Link
-              href="/collections"
-              className="inline-block px-6 py-3 border border-squarage-black text-lg font-medium font-neue-haas text-squarage-black hover:bg-squarage-green hover:text-white transition-all duration-300"
-            >
-              View All Collections
-            </Link>
-          </div>
-
-          {/* Section Separator */}
-          <div className="mt-20">
-            <div className="w-full h-px bg-squarage-black"></div>
-          </div>
-        </div>
-      </div>
     </section>
   )
 }
