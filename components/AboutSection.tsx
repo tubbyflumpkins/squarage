@@ -63,22 +63,6 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* Custom Projects CTA */}
-        <div className="mt-20 pt-16 border-t border-brown-light text-center">
-          <h3 className="text-3xl md:text-4xl font-bold font-neue-haas text-squarage-black mb-6">
-            Ready for a Custom Project?
-          </h3>
-          <p className="text-lg font-medium font-neue-haas text-brown-light mb-8 max-w-2xl mx-auto">
-            We work closely with clients to bring their vision to life through 
-            custom furniture and design solutions.
-          </p>
-          <Link
-            href="/custom-projects"
-            className="inline-block px-8 py-3 border border-squarage-black text-squarage-black font-medium font-neue-haas hover:bg-squarage-green hover:text-white transition-all duration-300"
-          >
-            Start a Custom Project
-          </Link>
-        </div>
       </div>
     </section>
   )

@@ -1,6 +1,7 @@
 import HeroSlideshow from '@/components/HeroSlideshow'
 import Navigation from '@/components/Navigation'
 import CollectionsSection from '@/components/CollectionsSection'
+import CustomProjectSection from '@/components/CustomProjectSection'
 import AboutSection from '@/components/AboutSection'
 
 export default function Home() {
@@ -14,6 +15,9 @@ export default function Home() {
       
       {/* Collections Section */}
       <CollectionsSection />
+      
+      {/* Custom Project Section */}
+      <CustomProjectSection />
       
       {/* About Section */}
       <AboutSection />
