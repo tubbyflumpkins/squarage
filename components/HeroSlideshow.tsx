@@ -1,14 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, EffectFade } from 'swiper/modules'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 
-// Import Swiper styles
-import 'swiper/css'
-import 'swiper/css/effect-fade'
-import 'swiper/css/autoplay'
+// Simple slideshow without Swiper for now
+const SLIDE_INTERVAL = 4000
 
 const heroImages = [
   {
@@ -38,39 +34,38 @@ const heroImages = [
 ]
 
 export default function HeroSlideshow() {
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length)
+    }, SLIDE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <section className="relative h-screen w-full overflow-hidden">
       {/* Slideshow Background */}
       <div className="absolute inset-0 z-0">
-        <Swiper
-          modules={[Autoplay, EffectFade]}
-          effect="fade"
-          autoplay={{
-            delay: 4000,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: false,
-          }}
-          loop={true}
-          speed={1000}
-          className="w-full h-full"
-        >
-          {heroImages.map((image, index) => (
-            <SwiperSlide key={index} className="relative">
-              <div className="relative w-full h-full">
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  className="object-cover object-center"
-                  priority={index === 0}
-                  sizes="100vw"
-                />
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        {heroImages.map((image, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === currentSlide ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <Image
+              src={image.src}
+              alt={image.alt}
+              fill
+              className="object-cover object-center"
+              priority={index === 0}
+              sizes="100vw"
+            />
+          </div>
+        ))}
       </div>
-
     </section>
   )
 }

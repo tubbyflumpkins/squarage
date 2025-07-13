@@ -19,11 +19,11 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src="/images/logo_complete_white.svg"
+              src="/images/logo_main.png"
               alt="Squarage Studio"
-              width={160}
-              height={38}
-              className="w-auto h-8 md:h-10"
+              width={480}
+              height={114}
+              className="w-auto h-24 md:h-30"
               priority
             />
           </Link>
@@ -31,21 +31,21 @@ export default function Navigation() {
           {/* Menu Button */}
           <button
             onClick={toggleMenu}
-            className="flex flex-col items-center justify-center w-8 h-8 space-y-1 group"
+            className="flex flex-col items-center justify-center w-12 h-12 bg-squarage-green space-y-1 group"
             aria-label="Toggle menu"
           >
             <span 
-              className={`block h-0.5 w-6 bg-white transition-all duration-300 ${
+              className={`block h-1 w-6 bg-white transition-all duration-300 group-hover:w-7 group-hover:-translate-y-0.5 ${
                 isMenuOpen ? 'rotate-45 translate-y-1.5' : ''
               }`}
             />
             <span 
-              className={`block h-0.5 w-6 bg-white transition-all duration-300 ${
+              className={`block h-1 w-6 bg-white transition-all duration-300 group-hover:w-7 ${
                 isMenuOpen ? 'opacity-0' : ''
               }`}
             />
             <span 
-              className={`block h-0.5 w-6 bg-white transition-all duration-300 ${
+              className={`block h-1 w-6 bg-white transition-all duration-300 group-hover:w-7 group-hover:translate-y-0.5 ${
                 isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
               }`}
             />
@@ -68,7 +68,7 @@ export default function Navigation() {
                 <Link
                   href="/"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-gray-900 hover:text-orange transition-colors duration-300"
+                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-squarage-black hover:text-squarage-green transition-colors duration-300"
                 >
                   Home
                 </Link>
@@ -77,7 +77,7 @@ export default function Navigation() {
                 <Link
                   href="/products"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-gray-900 hover:text-orange transition-colors duration-300"
+                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-squarage-black hover:text-squarage-green transition-colors duration-300"
                 >
                   Products
                 </Link>
@@ -86,7 +86,7 @@ export default function Navigation() {
                 <Link
                   href="/collections"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-gray-900 hover:text-orange transition-colors duration-300"
+                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-squarage-black hover:text-squarage-green transition-colors duration-300"
                 >
                   Collections
                 </Link>
@@ -95,7 +95,7 @@ export default function Navigation() {
                 <Link
                   href="/custom-projects"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-gray-900 hover:text-orange transition-colors duration-300"
+                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-squarage-black hover:text-squarage-green transition-colors duration-300"
                 >
                   Custom Projects
                 </Link>
@@ -104,7 +104,7 @@ export default function Navigation() {
                 <Link
                   href="/about"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-gray-900 hover:text-orange transition-colors duration-300"
+                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-squarage-black hover:text-squarage-green transition-colors duration-300"
                 >
                   About
                 </Link>
@@ -113,7 +113,7 @@ export default function Navigation() {
                 <Link
                   href="/contact"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-gray-900 hover:text-orange transition-colors duration-300"
+                  className="block text-4xl md:text-6xl font-thin font-neue-haas text-squarage-black hover:text-squarage-green transition-colors duration-300"
                 >
                   Contact
                 </Link>
@@ -122,25 +122,25 @@ export default function Navigation() {
 
             {/* Contact Info */}
             <div className="mt-16 space-y-4">
-              <p className="text-lg font-neue-haas text-gray-600">
+              <p className="text-lg font-neue-haas text-brown-light">
                 <a 
                   href="mailto:squaragestudio@gmail.com"
-                  className="hover:text-orange transition-colors duration-300"
+                  className="hover:text-squarage-green transition-colors duration-300"
                 >
                   squaragestudio@gmail.com
                 </a>
               </p>
-              <p className="text-lg font-neue-haas text-gray-600">
+              <p className="text-lg font-neue-haas text-brown-light">
                 <a 
                   href="https://instagram.com/squaragestudio"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-orange transition-colors duration-300"
+                  className="hover:text-squarage-green transition-colors duration-300"
                 >
                   @squaragestudio
                 </a>
               </p>
-              <p className="text-sm font-neue-haas text-gray-500 uppercase tracking-wider">
+              <p className="text-sm font-neue-haas text-brown-light uppercase tracking-wider">
                 Los Angeles, CA
               </p>
             </div>
