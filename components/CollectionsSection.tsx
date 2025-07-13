@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -45,6 +45,10 @@ const collections = [
 
 export default function CollectionsSection() {
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, text: '' })
+  const [animationStarted, setAnimationStarted] = useState(false)
+  const [randomDelays] = useState(() => 
+    'Collections'.split('').map(() => Math.random() * 0.8)
+  )
 
   const handleMouseMove = (e: React.MouseEvent, title: string) => {
     setTooltip({
@@ -59,6 +63,14 @@ export default function CollectionsSection() {
     setTooltip({ visible: false, x: 0, y: 0, text: '' })
   }
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimationStarted(true)
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
     <section className="bg-cream">
       {/* Section Header */}
@@ -69,7 +81,12 @@ export default function CollectionsSection() {
               {'Collections'.split('').map((letter, index) => (
                 <div
                   key={index}
-                  className="w-16 h-16 md:w-20 md:h-20 bg-squarage-green flex items-center justify-center relative"
+                  className={`w-16 h-16 md:w-20 md:h-20 bg-squarage-green flex items-center justify-center relative ${
+                    animationStarted ? 'animate-bounce-settle' : ''
+                  }`}
+                  style={{
+                    animationDelay: `${randomDelays[index]}s`
+                  }}
                 >
                   <span className="text-6xl md:text-7xl font-soap text-white leading-none absolute inset-0 flex items-center justify-center text-[4.5rem] md:text-[5.5rem]" style={{transform: 'translateY(4px)'}}>
                     {letter}
