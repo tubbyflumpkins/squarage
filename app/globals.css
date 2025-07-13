@@ -138,7 +138,6 @@ body {
   font-family: 'neue-haas-grotesk', sans-serif;
   height: 100%;
   margin: 0;
-  transform: translateZ(0);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

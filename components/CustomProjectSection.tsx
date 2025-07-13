@@ -9,8 +9,8 @@ export default function CustomProjectSection() {
   const handleMouseMove = (e: React.MouseEvent) => {
     setTooltip({
       visible: true,
-      x: e.clientX + 15,
-      y: e.clientY - 10,
+      x: e.pageX + 15,
+      y: e.pageY - 10,
       text: 'Start designing'
     })
   }
@@ -42,10 +42,11 @@ export default function CustomProjectSection() {
       {/* Cursor Following Tooltip */}
       {tooltip.visible && (
         <div 
-          className="fixed z-50 px-9 py-6 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-3xl pointer-events-none"
+          className="absolute z-50 px-9 py-6 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-3xl pointer-events-none"
           style={{
             left: tooltip.x,
             top: tooltip.y,
+            transform: 'translate(-50%, -100%)'
           }}
         >
           {tooltip.text}
