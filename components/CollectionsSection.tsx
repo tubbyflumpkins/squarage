@@ -65,9 +65,18 @@ export default function CollectionsSection() {
       <div className="pt-8 pb-8 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <h2 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black">
-              Collections
-            </h2>
+            <div className="inline-flex items-center gap-2">
+              {'Collections'.split('').map((letter, index) => (
+                <div
+                  key={index}
+                  className="w-16 h-16 md:w-20 md:h-20 bg-squarage-green flex items-center justify-center relative"
+                >
+                  <span className="text-6xl md:text-7xl font-soap text-white leading-none absolute inset-0 flex items-center justify-center" style={{transform: 'translateY(2px)'}}>
+                    {letter}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         'neue-haas': ['neue-haas-grotesk', 'sans-serif'],
+        'soap': ['Soap Regular', 'serif'],
         'sans': ['neue-haas-grotesk', 'system-ui', 'sans-serif'],
       },
       colors: {

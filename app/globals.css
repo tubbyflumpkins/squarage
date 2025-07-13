@@ -107,6 +107,15 @@
   font-display: swap;
 }
 
+/* Soap Font */
+@font-face {
+  font-family: 'Soap Regular';
+  src: url('/fonts/Soap Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --foreground-rgb: 51, 51, 51;
   --background-start-rgb: 255, 250, 244;
