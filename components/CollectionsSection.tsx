@@ -166,7 +166,8 @@ export default function CollectionsSection() {
           transform: 'translate(-50%, -100%)'
         }}
       >
-        {tooltip.text}
+        <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1 top-0 left-0 w-full h-full flex items-center justify-center">{tooltip.text}</span>
+        <span className="relative z-10">{tooltip.text}</span>
       </div>
     )}
 

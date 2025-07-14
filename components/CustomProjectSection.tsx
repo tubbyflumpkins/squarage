@@ -31,8 +31,9 @@ export default function CustomProjectSection() {
         >
           <div className="p-16 transition-colors duration-500 bg-squarage-blue hover:bg-squarage-yellow">
             <div className="bg-squarage-white px-12 py-8 text-center flex items-center justify-center">
-              <h3 className="text-5xl md:text-7xl font-bold font-neue-haas text-squarage-black">
-                Ready for a Custom Project?
+              <h3 className="text-5xl md:text-7xl font-bold font-neue-haas text-squarage-black relative">
+                <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">Ready for a Custom Project?</span>
+                <span className="relative z-10">Ready for a Custom Project?</span>
               </h3>
             </div>
           </div>
@@ -42,14 +43,15 @@ export default function CustomProjectSection() {
       {/* Cursor Following Tooltip */}
       {tooltip.visible && (
         <div 
-          className="absolute z-50 px-9 py-6 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-3xl pointer-events-none"
+          className="absolute z-50 px-9 py-6 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-5xl pointer-events-none"
           style={{
             left: tooltip.x,
             top: tooltip.y,
             transform: 'translate(-50%, -100%)'
           }}
         >
-          {tooltip.text}
+          <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1 top-0 left-0 w-full h-full flex items-center justify-center">{tooltip.text}</span>
+          <span className="relative z-10">{tooltip.text}</span>
         </div>
       )}
     </section>

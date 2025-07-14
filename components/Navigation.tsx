@@ -123,16 +123,6 @@ export default function Navigation() {
               </li>
               <li>
                 <Link
-                  href="/about"
-                  onClick={() => setIsMenuOpen(false)}
-                  className={menuItemClass}
-                >
-                  <span className={shadowTextClass}>About</span>
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/contact"
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}

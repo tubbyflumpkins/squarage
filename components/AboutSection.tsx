@@ -10,8 +10,9 @@ export default function AboutSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* About Content */}
           <div>
-            <h2 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black mb-8">
-              About Us
+            <h2 className="text-5xl md:text-7xl font-bold font-neue-haas text-squarage-black mb-8 relative">
+              <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">About Us</span>
+              <span className="relative z-10">About Us</span>
             </h2>
             
             {/* About Text - Preserved from original */}
@@ -39,10 +40,15 @@ export default function AboutSection() {
             {/* Call to Action */}
             <div className="mt-8">
               <Link
-                href="/about"
-                className="inline-block px-6 py-3 border border-squarage-black text-lg font-medium font-neue-haas text-squarage-black hover:bg-squarage-green hover:text-white transition-all duration-300"
+                href="/contact"
+                className="inline-block bg-squarage-green font-bold font-neue-haas text-4xl py-4 px-8 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 relative"
               >
-                Learn More About Our Story
+                <span className="absolute inset-0 flex items-center justify-center text-squarage-yellow transform translate-x-0.5 translate-y-0.5">
+                  Contact Us
+                </span>
+                <span className="relative z-10 text-white">
+                  Contact Us
+                </span>
               </Link>
             </div>
 
