@@ -9,12 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
+    "@types/nodemailer": "^6.4.17",
     "autoprefixer": "^10.4.21",
     "next": "15.3.5",
+    "nodemailer": "^7.0.5",
     "react": "^18",
     "react-dom": "^18",
+    "react-hook-form": "^7.60.0",
     "shopify-buy": "^3.0.7",
-    "swiper": "^11.2.10"
+    "swiper": "^11.2.10",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@types/node": "^20",
