@@ -36,50 +36,76 @@ const processSteps = [
 ]
 
 export default function CustomProjectsPage() {
-  const [animationStarted, setAnimationStarted] = useState(false)
+  const [initialAnimationStarted, setInitialAnimationStarted] = useState(false)
+  const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
+  const [hoverAnimatingLetters, setHoverAnimatingLetters] = useState<Set<number>>(new Set())
+  
   // Fixed delays to prevent hydration mismatch
   const randomDelays = [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15, 0.25, 0.45, 0.65]
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setAnimationStarted(true)
+      setInitialAnimationStarted(true)
     }, 100)
 
     return () => clearTimeout(timer)
   }, [])
 
+  const handleLetterHover = (index: number) => {
+    if (!initialAnimationCompleted) return
+    
+    setHoverAnimatingLetters(prev => new Set(prev).add(index))
+  }
+
+  const handleAnimationEnd = (index: number, isInitialAnimation: boolean) => {
+    if (isInitialAnimation) {
+      // Check if this is the last letter of the initial animation
+      if (index === 'Custom Projects'.replace(' ', '').length - 1) {
+        setInitialAnimationCompleted(true)
+      }
+    } else {
+      // Remove from hover animating set
+      setHoverAnimatingLetters(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(index)
+        return newSet
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cream">
       {/* Header Section */}
-      <section className="pt-32 pb-4 px-6">
+      <section className="bg-squarage-red pt-32 pb-4 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <div className="inline-flex items-center gap-2">
               {'Custom Projects'.split('').map((letter, index) => {
                 if (letter === ' ') {
-                  return <div key={index} className="w-4"></div>
+                  return <div key={index} className="w-6"></div>
                 }
                 return (
-                  <div
+                  <span
                     key={index}
-                    className={`w-16 h-16 md:w-20 md:h-20 bg-squarage-green flex items-center justify-center relative ${
-                      animationStarted ? 'animate-bounce-settle' : ''
+                    className={`text-7xl md:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
+                      (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
                     }`}
                     style={{
-                      animationDelay: `${randomDelays[index]}s`
+                      animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
                     }}
+                    onMouseEnter={() => handleLetterHover(index)}
+                    onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
                   >
-                    <span className="text-6xl md:text-7xl font-soap text-white leading-none absolute inset-0 flex items-center justify-center text-[4.5rem] md:text-[5.5rem]" style={{transform: 'translateY(4px)'}}>
-                      {letter}
-                    </span>
-                  </div>
+                    <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">{letter}</span>
+                    <span className="relative z-10 text-white">{letter}</span>
+                  </span>
                 )
               })}
             </div>
             
-            <h2 className="text-5xl md:text-6xl font-bold font-neue-haas text-squarage-black mt-4">
-              Our Process:
-            </h2>
+            <p className="text-2xl md:text-3xl font-medium font-neue-haas text-white mt-3 max-w-6xl mx-auto whitespace-nowrap">
+              Work directly with us to create a unique piece. See more about our process below.
+            </p>
           </div>
         </div>
       </section>
