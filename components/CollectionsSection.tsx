@@ -72,26 +72,25 @@ export default function CollectionsSection() {
 
   return (
     <>
-    <section className="bg-cream">
+    <section className="bg-squarage-red">
       {/* Section Header */}
       <div className="pt-6 pb-6 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2">
+            <div className="inline-flex items-center gap-6">
               {'Collections'.split('').map((letter, index) => (
-                <div
+                <span
                   key={index}
-                  className={`w-16 h-16 md:w-20 md:h-20 bg-squarage-green flex items-center justify-center relative ${
+                  className={`text-7xl md:text-8xl font-neue-haas font-black leading-none relative ${
                     animationStarted ? 'animate-bounce-settle' : ''
                   }`}
                   style={{
                     animationDelay: `${randomDelays[index]}s`
                   }}
                 >
-                  <span className="text-6xl md:text-7xl font-soap text-white leading-none absolute inset-0 flex items-center justify-center text-[4.5rem] md:text-[5.5rem]" style={{transform: 'translateY(4px)'}}>
-                    {letter}
-                  </span>
-                </div>
+                  <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">{letter}</span>
+                  <span className="relative z-10 text-white">{letter}</span>
+                </span>
               ))}
             </div>
           </div>
