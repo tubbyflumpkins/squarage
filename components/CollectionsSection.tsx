@@ -45,7 +45,9 @@ const collections = [
 
 export default function CollectionsSection() {
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, text: '' })
-  const [animationStarted, setAnimationStarted] = useState(false)
+  const [hoverAnimatingLetters, setHoverAnimatingLetters] = useState<Set<number>>(new Set())
+  const [initialAnimationStarted, setInitialAnimationStarted] = useState(false)
+  const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
   // Fixed delays to prevent hydration mismatch
   const randomDelays = [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15]
 
@@ -62,9 +64,38 @@ export default function CollectionsSection() {
     setTooltip({ visible: false, x: 0, y: 0, text: '' })
   }
 
+  const handleLetterHover = (index: number) => {
+    // Only start animation if not already animating and initial animation is done
+    if (!hoverAnimatingLetters.has(index) && initialAnimationCompleted) {
+      setHoverAnimatingLetters(prev => new Set(prev).add(index))
+    }
+  }
+
+  const handleAnimationEnd = (index: number, isInitial: boolean = false) => {
+    if (isInitial) {
+      // Check if all initial animations are complete
+      const maxDelay = Math.max(...randomDelays)
+      setTimeout(() => {
+        setInitialAnimationCompleted(true)
+      }, maxDelay * 1000 + 1000) // Add buffer for animation duration
+    } else {
+      // Remove letter from hover animating set when hover animation completes
+      setHoverAnimatingLetters(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(index)
+        return newSet
+      })
+    }
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      setAnimationStarted(true)
+      setInitialAnimationStarted(true)
+      // Set completion after estimated time for all animations to finish
+      const maxDelay = Math.max(...randomDelays)
+      setTimeout(() => {
+        setInitialAnimationCompleted(true)
+      }, maxDelay * 1000 + 1000)
     }, 100)
 
     return () => clearTimeout(timer)
@@ -81,12 +112,14 @@ export default function CollectionsSection() {
               {'Collections'.split('').map((letter, index) => (
                 <span
                   key={index}
-                  className={`text-7xl md:text-8xl font-neue-haas font-black leading-none relative ${
-                    animationStarted ? 'animate-bounce-settle' : ''
+                  className={`text-7xl md:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
+                    (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
                   }`}
                   style={{
-                    animationDelay: `${randomDelays[index]}s`
+                    animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
                   }}
+                  onMouseEnter={() => handleLetterHover(index)}
+                  onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
                 >
                   <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">{letter}</span>
                   <span className="relative z-10 text-white">{letter}</span>
