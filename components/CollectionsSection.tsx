@@ -7,7 +7,7 @@ import Link from 'next/link'
 const collections = [
   {
     id: 'tables',
-    title: 'Carro',
+    title: 'Tiled',
     description: 'Custom dining and coffee tables crafted with precision',
     image: '/images/collection-tables.jpg',
     href: '/collections/tables',

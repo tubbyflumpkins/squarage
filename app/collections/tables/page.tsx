@@ -4,11 +4,11 @@ import CarroContentSection from '@/components/CarroContentSection'
 import CarroProductsSection from '@/components/CarroProductsSection'
 
 export const metadata: Metadata = {
-  title: 'Carro Collection - Custom Tables | Squarage Studio',
-  description: 'Explore our Carro collection of handcrafted custom dining and coffee tables. Made in Los Angeles with premium materials and traditional craftsmanship.',
-  keywords: ['custom tables', 'dining tables', 'coffee tables', 'handcrafted furniture', 'Los Angeles', 'Squarage Studio', 'Carro'],
+  title: 'Tiled Collection - Custom Tables | Squarage Studio',
+  description: 'Explore our Tiled collection of handcrafted custom dining and coffee tables. Made in Los Angeles with premium materials and traditional craftsmanship.',
+  keywords: ['custom tables', 'dining tables', 'coffee tables', 'handcrafted furniture', 'Los Angeles', 'Squarage Studio', 'Tiled'],
   openGraph: {
-    title: 'Carro Collection - Custom Tables | Squarage Studio',
+    title: 'Tiled Collection - Custom Tables | Squarage Studio',
     description: 'Handcrafted custom tables combining traditional craftsmanship with contemporary design.',
     images: ['/images/carro/header.jpg'],
     type: 'website',

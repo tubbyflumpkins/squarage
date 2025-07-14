@@ -22,10 +22,10 @@ export default function CarroProductsSection() {
         
         // Fetch products by collection handle 'tables' 
         // This will be updated once Shopify is configured with actual products
-        const carroProducts = await shopifyApi.getProductsByCollection('tables')
-        setProducts(carroProducts)
+        const tiledProducts = await shopifyApi.getProductsByCollection('tables')
+        setProducts(tiledProducts)
       } catch (error) {
-        console.error('Error fetching Carro products:', error)
+        console.error('Error fetching Tiled products:', error)
         setProducts([])
       } finally {
         setLoading(false)
@@ -48,7 +48,7 @@ export default function CarroProductsSection() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <h2 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black mb-12">
-              Our Carro Collection
+              Our Tiled Collection
             </h2>
             <p className="text-xl font-neue-haas text-brown-medium">Loading products...</p>
           </div>
@@ -64,7 +64,7 @@ export default function CarroProductsSection() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black mb-8">
-            Our Carro Collection
+            Our Tiled Collection
           </h2>
           <p className="text-xl md:text-2xl font-medium font-neue-haas text-brown-medium leading-relaxed max-w-3xl mx-auto">
             Discover our handcrafted tables, each piece designed to bring beauty and functionality to your space.

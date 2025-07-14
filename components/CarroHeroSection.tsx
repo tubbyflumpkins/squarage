@@ -38,8 +38,8 @@ export default function CarroHeroSection() {
                 fontSize: 'clamp(4rem, 8vw, 8rem)'
               }}
             >
-              <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">Carro</span>
-              <span className="relative z-10 text-white">Carro</span>
+              <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">Tiled</span>
+              <span className="relative z-10 text-white">Tiled</span>
             </h1>
           </div>
         </div>

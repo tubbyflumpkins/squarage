@@ -15,11 +15,11 @@ export default function CarroContentSection() {
             </h3>
             <div className="space-y-6 text-xl md:text-2xl font-medium font-neue-haas text-squarage-black leading-relaxed">
               <p>
-                The Carro collection embodies our commitment to creating pieces that serve as both functional furniture and artistic statements. Each table begins with carefully selected materials and evolves through a process of thoughtful design and expert craftsmanship.
+                The Tiled collection embodies our commitment to creating pieces that serve as both functional furniture and artistic statements. Each table begins with carefully selected materials and evolves through a process of thoughtful design and expert craftsmanship.
               </p>
               
               <p>
-                From intimate coffee tables to grand dining pieces, every Carro table is built to become a centerpiece in your space, facilitating connection and creating lasting memories.
+                From intimate coffee tables to grand dining pieces, every Tiled table is built to become a centerpiece in your space, facilitating connection and creating lasting memories.
               </p>
             </div>
           </div>
@@ -28,7 +28,7 @@ export default function CarroContentSection() {
           <div className="max-w-sm mx-auto border-squarage-red" style={{ borderWidth: '40px' }}>
             <Image
               src="/images/carro/yellow-table-styled.jpg"
-              alt="Carro Collection - Yellow Styled Tables"
+              alt="Tiled Collection - Yellow Styled Tables"
               width={320}
               height={427}
               className="w-full h-auto"
