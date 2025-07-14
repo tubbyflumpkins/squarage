@@ -55,24 +55,26 @@ export default function Navigation() {
         <span className="block h-1 w-6 bg-white transition-all duration-300 group-hover:w-7 group-hover:translate-y-0.5" />
       </button>
 
-      {/* Click Outside to Close Overlay - Full Screen */}
+      {/* Click Outside to Close Overlay - Remaining Space */}
       {isMenuOpen && (
         <div 
-          className="fixed inset-0 z-[9990] bg-transparent"
+          className="fixed top-0 left-0 h-full z-[9990] bg-transparent"
+          style={{ width: 'calc(100vw - 480px)' }}
           onClick={() => setIsMenuOpen(false)}
         />
       )}
 
-      {/* Right Half Menu Overlay */}
+      {/* Fixed-Width Menu Sliding In */}
       <div
-        className={`fixed top-0 right-0 h-full z-[9995] bg-squarage-green transition-all duration-500 drop-shadow-2xl ${
+        className={`fixed top-0 h-full z-[9995] bg-squarage-green transition-transform duration-300 ease-out drop-shadow-2xl w-[480px] ${
           isMenuOpen 
-            ? 'w-1/2 opacity-100 visible' 
-            : 'w-12 opacity-0 invisible'
+            ? 'translate-x-0' 
+            : 'translate-x-full'
         }`}
         style={{
-          transformOrigin: 'top right',
-          isolation: 'isolate'
+          right: 0,
+          isolation: 'isolate',
+          willChange: isMenuOpen ? 'transform' : 'auto'
         }}
         onClick={(e) => e.stopPropagation()}
       >
