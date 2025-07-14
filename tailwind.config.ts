@@ -27,6 +27,8 @@ const config: Config = {
         'squarage-red': '#F04E23',
         'squarage-yellow': '#F5B74C',
         'squarage-black': '#333333',
+        'squarage-pink': '#F2BAC9',
+        'squarage-dark-blue': '#2274A5',
       },
     },
   },

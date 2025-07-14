@@ -31,7 +31,7 @@ export default function Navigation() {
           {/* Menu Button */}
           <button
             onClick={toggleMenu}
-            className="flex flex-col items-center justify-center w-12 h-12 bg-squarage-green space-y-1 group"
+            className="flex flex-col items-center justify-center w-12 h-12 bg-squarage-green space-y-1 group relative z-50"
             aria-label="Toggle menu"
           >
             <span 
@@ -62,7 +62,7 @@ export default function Navigation() {
         }`}
       >
         <div className="flex items-center justify-center h-full">
-          <nav className="text-center">
+          <nav className="text-center relative z-60">
             <ul className="space-y-8">
               <li>
                 <Link
