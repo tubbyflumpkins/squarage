@@ -2,8 +2,8 @@ import Client, { Product, Collection, ProductVariant, Image, CheckoutLineItem } 
 
 // Shopify client configuration
 const client = Client.buildClient({
-  domain: process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || '',
-  storefrontAccessToken: process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN || '',
+  domain: process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || 'placeholder.myshopify.com',
+  storefrontAccessToken: process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN || 'placeholder-token',
   apiVersion: '2024-10',
 })
 
@@ -113,6 +113,15 @@ export const shopifyApi = {
   // Fetch collection by handle
   async getCollectionByHandle(handle: string): Promise<Collection | null> {
     try {
+      // Check if Shopify is configured
+      const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
+      const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
+      
+      if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
+        console.log('Shopify credentials not configured')
+        return null
+      }
+      
       const collections = await client.collection.fetchAllWithProducts()
       const collection = collections.find((c: any) => c.handle === handle)
       return collection || null
@@ -136,6 +145,15 @@ export const shopifyApi = {
   // Filter products by collection
   async getProductsByCollection(collectionHandle: string): Promise<Product[]> {
     try {
+      // Check if Shopify is configured
+      const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
+      const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
+      
+      if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
+        console.log('Shopify credentials not configured')
+        return []
+      }
+      
       const collection = await this.getCollectionByHandle(collectionHandle)
       return collection?.products || []
     } catch (error) {

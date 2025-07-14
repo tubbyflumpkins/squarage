@@ -7,7 +7,7 @@ import Link from 'next/link'
 const collections = [
   {
     id: 'tables',
-    title: 'Tables',
+    title: 'Carro',
     description: 'Custom dining and coffee tables crafted with precision',
     image: '/images/collection-tables.jpg',
     href: '/collections/tables',
@@ -72,9 +72,9 @@ export default function CollectionsSection() {
 
   return (
     <>
-    <section className="bg-cream border-t-4 border-b-4 border-squarage-black">
+    <section className="bg-cream">
       {/* Section Header */}
-      <div className="pt-8 pb-8 px-6">
+      <div className="pt-6 pb-6 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <div className="inline-flex items-center gap-2">
@@ -115,7 +115,7 @@ export default function CollectionsSection() {
                   src={collection.image}
                   alt={collection.title}
                   fill
-                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                  className="object-cover object-center"
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
@@ -127,7 +127,7 @@ export default function CollectionsSection() {
     {/* Cursor Following Tooltip */}
     {tooltip.visible && (
       <div 
-        className="absolute z-50 px-9 py-6 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-3xl pointer-events-none"
+        className="absolute z-50 px-9 py-6 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-5xl pointer-events-none"
         style={{
           left: tooltip.x,
           top: tooltip.y,
