@@ -1,4 +1,4 @@
-import HeroSlideshow from '@/components/HeroSlideshow'
+import HeroStatic from '@/components/HeroStatic'
 import CollectionsSection from '@/components/CollectionsSection'
 import CustomProjectSection from '@/components/CustomProjectSection'
 import AboutSection from '@/components/AboutSection'
@@ -6,8 +6,8 @@ import AboutSection from '@/components/AboutSection'
 export default function Home() {
   return (
     <main className="min-h-screen bg-cream">
-      {/* Hero Slideshow Section */}
-      <HeroSlideshow />
+      {/* Hero Static Section */}
+      <HeroStatic />
       
       {/* Collections Section */}
       <CollectionsSection />
