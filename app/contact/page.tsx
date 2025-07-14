@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -14,6 +14,81 @@ const contactSchema = z.object({
 })
 
 type ContactFormData = z.infer<typeof contactSchema>
+
+// Reusable components for consistent styling
+const ShadowLabel = ({ htmlFor, children }: { htmlFor: string; children: string }) => (
+  <label htmlFor={htmlFor} className="block text-2xl font-bold font-neue-haas text-white mb-2 relative">
+    <span className="absolute text-squarage-yellow transform translate-x-0.5 translate-y-0.5">{children}</span>
+    <span className="relative z-10">{children}</span>
+  </label>
+)
+
+// Shared input styles for better performance
+const inputBaseClasses = "w-full px-4 py-3 bg-cream font-neue-haas font-medium text-xl focus:outline-none relative z-10 border-0"
+const textareaClasses = `${inputBaseClasses} resize-none`
+
+const ShadowInput = ({ register, name, type = "text", placeholder, rows }: {
+  register: any
+  name: string
+  type?: string
+  placeholder: string
+  rows?: number
+}) => (
+  <div className="relative">
+    {rows ? (
+      <textarea
+        {...register(name)}
+        id={name}
+        rows={rows}
+        className={textareaClasses}
+        placeholder={placeholder}
+      />
+    ) : (
+      <input
+        {...register(name)}
+        type={type}
+        id={name}
+        className={inputBaseClasses}
+        placeholder={placeholder}
+      />
+    )}
+    <div className="absolute top-0 left-0 w-full h-full bg-squarage-yellow transform translate-x-2 translate-y-2"></div>
+  </div>
+)
+
+const ErrorMessage = ({ error }: { error?: { message?: string } }) => 
+  error ? <p className="mt-1 text-white font-neue-haas">{error.message}</p> : null
+
+// Reusable form field component
+const FormField = ({ 
+  name, 
+  label, 
+  register, 
+  error, 
+  type = "text", 
+  placeholder, 
+  rows 
+}: {
+  name: string
+  label: string
+  register: any
+  error?: { message?: string }
+  type?: string
+  placeholder: string
+  rows?: number
+}) => (
+  <div>
+    <ShadowLabel htmlFor={name}>{label}</ShadowLabel>
+    <ShadowInput 
+      register={register} 
+      name={name} 
+      type={type}
+      placeholder={placeholder} 
+      rows={rows}
+    />
+    <ErrorMessage error={error} />
+  </div>
+)
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -29,7 +104,29 @@ export default function ContactPage() {
     mode: 'onBlur',
   })
 
-  const onSubmit = async (data: ContactFormData) => {
+  // Memoize button text to avoid re-renders
+  const buttonText = useMemo(() => isSubmitting ? 'Sending...' : 'Send Message', [isSubmitting])
+  
+  // Memoize status messages
+  const statusMessage = useMemo(() => {
+    if (submitStatus === 'success') {
+      return (
+        <div className="mt-6 p-4 bg-squarage-green text-white font-neue-haas text-center">
+          Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
+        </div>
+      )
+    }
+    if (submitStatus === 'error') {
+      return (
+        <div className="mt-6 p-4 bg-squarage-red text-white font-neue-haas text-center">
+          Sorry, there was an error sending your message. Please try again.
+        </div>
+      )
+    }
+    return null
+  }, [submitStatus])
+
+  const onSubmit = useCallback(async (data: ContactFormData) => {
     setIsSubmitting(true)
     setSubmitStatus('idle')
 
@@ -53,146 +150,75 @@ export default function ContactPage() {
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [reset])
 
   return (
-    <main className="min-h-screen bg-cream pt-24 px-6">
+    <main className="min-h-screen bg-squarage-red pt-24 px-6 pb-16">
       <div className="max-w-4xl mx-auto">
         {/* Page Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-7xl font-bold font-neue-haas text-squarage-black mb-4">
-            Contact Us
+        <div className="text-center mb-6">
+          <h1 className="text-6xl md:text-8xl font-bold font-neue-haas text-white tracking-widest relative">
+            <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">Contact Us</span>
+            <span className="relative z-10">Contact Us</span>
           </h1>
-          <p className="text-xl md:text-2xl font-neue-haas text-brown-medium max-w-2xl mx-auto">
-            Ready to discuss your custom furniture project? We&apos;d love to hear from you.
-          </p>
         </div>
 
         {/* Contact Form */}
         <div className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Name Field */}
-            <div>
-              <label htmlFor="name" className="block text-lg font-medium font-neue-haas text-squarage-black mb-2">
-                Name *
-              </label>
-              <input
-                {...register('name')}
-                type="text"
-                id="name"
-                className="w-full px-4 py-3 border-2 border-squarage-black bg-cream font-neue-haas text-lg focus:outline-none focus:border-squarage-green transition-colors duration-300"
-                placeholder="Your full name"
-              />
-              {errors.name && (
-                <p className="mt-1 text-squarage-red font-neue-haas">{errors.name.message}</p>
-              )}
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-lg font-medium font-neue-haas text-squarage-black mb-2">
-                Email *
-              </label>
-              <input
-                {...register('email')}
-                type="email"
-                id="email"
-                className="w-full px-4 py-3 border-2 border-squarage-black bg-cream font-neue-haas text-lg focus:outline-none focus:border-squarage-green transition-colors duration-300"
-                placeholder="your@email.com"
-              />
-              {errors.email && (
-                <p className="mt-1 text-squarage-red font-neue-haas">{errors.email.message}</p>
-              )}
-            </div>
-
-            {/* Subject Field */}
-            <div>
-              <label htmlFor="subject" className="block text-lg font-medium font-neue-haas text-squarage-black mb-2">
-                Subject *
-              </label>
-              <input
-                {...register('subject')}
-                type="text"
-                id="subject"
-                className="w-full px-4 py-3 border-2 border-squarage-black bg-cream font-neue-haas text-lg focus:outline-none focus:border-squarage-green transition-colors duration-300"
-                placeholder="What can we help you with?"
-              />
-              {errors.subject && (
-                <p className="mt-1 text-squarage-red font-neue-haas">{errors.subject.message}</p>
-              )}
-            </div>
-
-            {/* Message Field */}
-            <div>
-              <label htmlFor="message" className="block text-lg font-medium font-neue-haas text-squarage-black mb-2">
-                Message *
-              </label>
-              <textarea
-                {...register('message')}
-                id="message"
-                rows={6}
-                className="w-full px-4 py-3 border-2 border-squarage-black bg-cream font-neue-haas text-lg resize-none focus:outline-none focus:border-squarage-green transition-colors duration-300"
-                placeholder="Tell us about your project, timeline, and any specific requirements..."
-              />
-              {errors.message && (
-                <p className="mt-1 text-squarage-red font-neue-haas">{errors.message.message}</p>
-              )}
-            </div>
+            <FormField
+              name="name"
+              label="Name"
+              register={register}
+              error={errors.name}
+              placeholder="Your name"
+            />
+            
+            <FormField
+              name="email"
+              label="Email"
+              register={register}
+              error={errors.email}
+              type="email"
+              placeholder="you@email.com"
+            />
+            
+            <FormField
+              name="subject"
+              label="Subject"
+              register={register}
+              error={errors.subject}
+              placeholder="What can we help you with?"
+            />
+            
+            <FormField
+              name="message"
+              label="Message"
+              register={register}
+              error={errors.message}
+              placeholder="Tell us about your project, timeline, and any specific requirements..."
+              rows={6}
+            />
 
             {/* Submit Button */}
             <div className="pt-4">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-squarage-green text-white font-bold font-neue-haas text-xl py-4 px-8 border-2 border-squarage-green hover:bg-cream hover:text-squarage-green transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-squarage-green font-bold font-neue-haas text-4xl py-4 px-8 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative"
               >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                <span className="absolute inset-0 flex items-center justify-center text-squarage-yellow transform translate-x-0.5 translate-y-0.5">
+                  {buttonText}
+                </span>
+                <span className="relative z-10 text-white">
+                  {buttonText}
+                </span>
               </button>
             </div>
           </form>
 
           {/* Status Messages */}
-          {submitStatus === 'success' && (
-            <div className="mt-6 p-4 bg-squarage-green text-white font-neue-haas text-center">
-              Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
-            </div>
-          )}
-
-          {submitStatus === 'error' && (
-            <div className="mt-6 p-4 bg-squarage-red text-white font-neue-haas text-center">
-              Sorry, there was an error sending your message. Please try again.
-            </div>
-          )}
-        </div>
-
-        {/* Contact Information */}
-        <div className="mt-16 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold font-neue-haas text-squarage-black mb-6">
-            Other Ways to Reach Us
-          </h2>
-          <div className="space-y-4 font-neue-haas text-brown-medium">
-            <p className="text-lg">
-              <a 
-                href="mailto:info@squarage.com"
-                className="hover:text-squarage-green transition-colors duration-300"
-              >
-                info@squarage.com
-              </a>
-            </p>
-            <p className="text-lg">
-              <a 
-                href="https://instagram.com/squaragestudio"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-squarage-green transition-colors duration-300"
-              >
-                @squaragestudio
-              </a>
-            </p>
-            <p className="text-sm uppercase tracking-wider">
-              Los Angeles, CA
-            </p>
-          </div>
+          {statusMessage}
         </div>
       </div>
     </main>
