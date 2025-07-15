@@ -11,6 +11,12 @@ export default function CarroProductsSection() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        // Debug environment variables
+        console.log('Environment check:', {
+          domain: process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN ? 'SET' : 'MISSING',
+          token: process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN ? 'SET' : 'MISSING'
+        })
+        
         // Check if Shopify is configured
         if (!process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || !process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
           console.log('Shopify not configured yet - showing placeholder state')
@@ -19,8 +25,10 @@ export default function CarroProductsSection() {
           return
         }
         
+        console.log('Fetching products from Shopify...')
         // Fetch products by collection handle 'tiled' 
         const tiledProducts = await shopifyApi.getProductsByCollection('tiled')
+        console.log('Products fetched:', tiledProducts.length, 'products')
         setProducts(tiledProducts)
       } catch (error) {
         console.error('Error fetching Tiled products:', error)
