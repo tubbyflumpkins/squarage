@@ -116,15 +116,6 @@ export default function ProductGrid({
 
   return (
     <div className={`w-full ${className}`}>
-      {/* Preloading indicator */}
-      {gridImagesLoaded && !variantImagesPreloaded && (
-        <div className="mb-4 text-center">
-          <p className="text-sm font-neue-haas text-gray-500">
-            Loading color variations in background...
-          </p>
-        </div>
-      )}
-      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-20 gap-y-20">
         {products.map((product) => (
           <ProductCard 
