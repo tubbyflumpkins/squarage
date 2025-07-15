@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Product } from 'shopify-buy'
 import ProductCard from '@/components/ui/ProductCard'
+import { useImageCache } from '@/context/ImageCacheContext'
 
 interface ProductGridProps {
   products: Product[]
@@ -17,71 +18,53 @@ export default function ProductGrid({
   emptyMessage = "No products found.",
   className = ""
 }: ProductGridProps) {
-  const [gridImagesLoaded, setGridImagesLoaded] = useState(false)
-  const [variantImagesPreloaded, setVariantImagesPreloaded] = useState(false)
+  const { preloadProductImages, isProductPreloaded, getCacheStats } = useImageCache()
 
-  // Preload all variant images after grid images are loaded
+  // Enhanced preloading: Start immediately when products are available
   useEffect(() => {
-    if (!products.length || gridImagesLoaded || variantImagesPreloaded) return
+    if (!products.length) return
 
-    const preloadAllVariantImages = async () => {
-      console.log('Starting background preload of variant images...')
+    const preloadAllProducts = async () => {
+      console.log('Starting enhanced image preloading for', products.length, 'products')
       
-      // Collect all variant images from all products
-      const allVariantImages: string[] = []
+      // Priority 1: Preload images for products currently visible (first few)
+      const visibleProducts = products.slice(0, 6) // Assume 6 products visible initially
+      const backgroundProducts = products.slice(6)
+
+      console.log('Preloading visible products first:', visibleProducts.length)
       
-      products.forEach((product) => {
-        if (product.variants && product.images) {
-          product.variants.forEach((variant: any) => {
-            // Get variant-specific images
-            if (variant.image?.src) {
-              allVariantImages.push(variant.image.src)
-            }
-            
-            // Also get all product images for each variant
-            product.images.forEach((image: any) => {
-              if (image.src && !allVariantImages.includes(image.src)) {
-                allVariantImages.push(image.src)
-              }
-            })
-          })
+      // Preload visible products immediately (no delay)
+      const visiblePreloadPromises = visibleProducts.map(async (product) => {
+        if (!isProductPreloaded(product.id.toString())) {
+          return preloadProductImages(product)
         }
       })
 
-      // Remove duplicates and start preloading
-      const uniqueImages = [...new Set(allVariantImages)]
-      console.log(`Preloading ${uniqueImages.length} variant images...`)
+      // Start visible products preloading
+      await Promise.allSettled(visiblePreloadPromises)
+      console.log('Visible products preloaded')
 
-      const imagePromises = uniqueImages.map((imageSrc, index) => {
-        return new Promise((resolve) => {
-          // Add small delay between requests to avoid overwhelming the server
-          setTimeout(() => {
-            const htmlImg = new window.Image()
-            htmlImg.onload = resolve
-            htmlImg.onerror = resolve // Don't let failed images block the process
-            htmlImg.src = imageSrc
-          }, index * 50) // 50ms delay between each image
-        })
-      })
+      // Priority 2: Preload remaining products in background
+      if (backgroundProducts.length > 0) {
+        console.log('Preloading background products:', backgroundProducts.length)
+        
+        // Small delay before background preloading to ensure visible images are prioritized
+        setTimeout(async () => {
+          const backgroundPreloadPromises = backgroundProducts.map(async (product) => {
+            if (!isProductPreloaded(product.id.toString())) {
+              return preloadProductImages(product)
+            }
+          })
 
-      try {
-        await Promise.all(imagePromises)
-        setVariantImagesPreloaded(true)
-        console.log('All variant images preloaded successfully!')
-      } catch (error) {
-        console.error('Some variant images failed to preload:', error)
-        setVariantImagesPreloaded(true) // Mark as complete anyway
+          await Promise.allSettled(backgroundPreloadPromises)
+          console.log('All products preloaded. Cache stats:', getCacheStats())
+        }, 500) // 500ms delay for background products
       }
     }
 
-    // Start preloading after a short delay to let grid images load first
-    const timer = setTimeout(() => {
-      setGridImagesLoaded(true)
-      preloadAllVariantImages()
-    }, 2000) // 2 second delay
-
-    return () => clearTimeout(timer)
-  }, [products, gridImagesLoaded, variantImagesPreloaded])
+    // Start preloading immediately when products are available
+    preloadAllProducts()
+  }, [products, preloadProductImages, isProductPreloaded, getCacheStats])
   
   if (loading) {
     return (

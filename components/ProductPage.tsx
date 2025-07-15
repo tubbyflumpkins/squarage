@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useImageCache } from '@/context/ImageCacheContext'
 interface SerializedProduct {
   id: string
   title: string
@@ -66,6 +67,9 @@ export default function ProductPage({ product }: ProductPageProps) {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [imagesPreloaded, setImagesPreloaded] = useState(false)
+  
+  // Use global image cache
+  const { preloadProductImages, isProductPreloaded, isImageCached } = useImageCache()
 
   // Get the selected variant
   const selectedVariant = product.variants?.[selectedVariantIndex]
@@ -105,8 +109,9 @@ export default function ProductPage({ product }: ProductPageProps) {
     }
   }) || []
 
-  // Handle color selection
+  // Handle color selection with cache-aware switching and performance tracking
   const handleColorSelect = (variantIndex: number) => {
+    const startTime = Date.now()
     setSelectedVariantIndex(variantIndex)
     
     // Find image for this color variant and update main image
@@ -115,6 +120,31 @@ export default function ProductPage({ product }: ProductPageProps) {
     if (variantImage) {
       const imageIndex = product.images?.findIndex((img: any) => img.id === variantImage.id)
       if (imageIndex !== -1) {
+        const targetImageSrc = product.images[imageIndex]?.src
+        
+        // Performance tracking and user feedback
+        if (targetImageSrc && isImageCached(targetImageSrc)) {
+          const switchTime = Date.now() - startTime
+          console.log(`⚡ Instant color switch in ${switchTime}ms (cached)`)
+          
+          // Optional: Show success indicator in development
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🎯 Cache hit for ${colorOptions[variantIndex]?.name} variant`)
+          }
+        } else {
+          console.log(`⏳ Loading ${colorOptions[variantIndex]?.name} variant (not cached)`)
+          
+          // Track how long it takes to load from network
+          if (targetImageSrc) {
+            const img = new window.Image()
+            img.onload = () => {
+              const loadTime = Date.now() - startTime
+              console.log(`📡 Network load completed in ${loadTime}ms for ${colorOptions[variantIndex]?.name}`)
+            }
+            img.src = targetImageSrc
+          }
+        }
+        
         setSelectedImageIndex(imageIndex)
       }
     } else {
@@ -175,53 +205,31 @@ export default function ProductPage({ product }: ProductPageProps) {
     return { color: colorMapping[colorName] || '#F5B74C' }
   }
 
-  // Check if images are already preloaded (from grid preloading)
+  // Use the global image cache for better performance
   useEffect(() => {
     if (!product.images || product.images.length === 0) return
 
-    // Quick check if images are already cached by trying to create Image objects
-    const checkPreloadedImages = () => {
-      let allLoaded = true
-      product.images.forEach((image: any) => {
-        const htmlImg = new window.Image()
-        htmlImg.src = image.src
-        if (!htmlImg.complete) {
-          allLoaded = false
-        }
-      })
-      
-      if (allLoaded) {
-        setImagesPreloaded(true)
-        return
-      }
-
-      // If not preloaded, preload them now (fallback)
-      const preloadImages = async () => {
-        const imagePromises = product.images.map((image: any) => {
-          return new Promise((resolve) => {
-            const htmlImg = new window.Image()
-            htmlImg.onload = resolve
-            htmlImg.onerror = resolve // Don't block on errors
-            htmlImg.src = image.src
-          })
-        })
-
-        try {
-          await Promise.all(imagePromises)
-          setImagesPreloaded(true)
-        } catch (error) {
-          console.error('Error preloading images:', error)
-          setImagesPreloaded(true)
-        }
-      }
-
-      preloadImages()
+    // Check if product is already preloaded by the global cache
+    const productId = product.id.toString()
+    
+    if (isProductPreloaded(productId)) {
+      console.log('Product images already cached, ready for instant switching')
+      setImagesPreloaded(true)
+      return
     }
 
-    // Small delay to allow background preloading to work
-    const timer = setTimeout(checkPreloadedImages, 100)
-    return () => clearTimeout(timer)
-  }, [product.images])
+    // If not cached, preload now as fallback
+    console.log('Product not in cache, preloading now...')
+    preloadProductImages(product)
+      .then(() => {
+        setImagesPreloaded(true)
+        console.log('Product images preloaded successfully')
+      })
+      .catch((error) => {
+        console.error('Error preloading product images:', error)
+        setImagesPreloaded(true) // Don't block UI
+      })
+  }, [product, preloadProductImages, isProductPreloaded])
 
   return (
     <main className="min-h-screen bg-cream">
@@ -250,10 +258,17 @@ export default function ProductPage({ product }: ProductPageProps) {
                   </div>
                 )}
                 
-                {/* Preloading indicator (optional) */}
+                {/* Cache status indicator (development only) */}
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                    {isProductPreloaded(product.id.toString()) ? '⚡ Cached' : '⏳ Loading...'}
+                  </div>
+                )}
+                
+                {/* Preloading indicator for fallback loading */}
                 {!imagesPreloaded && (
-                  <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
-                    Loading...
+                  <div className="absolute top-2 left-2 bg-orange-500 bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+                    Optimizing...
                   </div>
                 )}
               </div>
