@@ -73,10 +73,10 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
 
       {/* Product Info - Name and Price aligned with image edges */}
       <div className="flex justify-between items-start">
-        <h3 className="font-neue-haas font-medium text-lg text-gray-900">
+        <h3 className="font-neue-haas font-medium text-sm md:text-lg text-gray-900">
           {product.title}
         </h3>
-        <span className="font-neue-haas font-medium text-lg text-gray-900 ml-4">
+        <span className="font-neue-haas font-medium text-sm md:text-lg text-gray-900 ml-4">
           {currentPrice}
         </span>
       </div>

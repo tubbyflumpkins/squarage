@@ -48,6 +48,15 @@ export default function CollectionsSection() {
   const [hoverAnimatingLetters, setHoverAnimatingLetters] = useState<Set<number>>(new Set())
   const [initialAnimationStarted, setInitialAnimationStarted] = useState(false)
   const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
+  
+  // Create mobile-specific order (swap chairs and objects for mobile only)
+  const mobileCollections = [...collections]
+  const chairsIndex = mobileCollections.findIndex(c => c.id === 'chairs')
+  const objectsIndex = mobileCollections.findIndex(c => c.id === 'objects')
+  if (chairsIndex !== -1 && objectsIndex !== -1) {
+    [mobileCollections[chairsIndex], mobileCollections[objectsIndex]] = [mobileCollections[objectsIndex], mobileCollections[chairsIndex]]
+  }
   
   // Fixed delays to prevent hydration mismatch - memoized to prevent re-renders
   const randomDelays = useMemo(() => [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15], [])
@@ -90,6 +99,13 @@ export default function CollectionsSection() {
   }
 
   useEffect(() => {
+    // Detect touch device
+    const checkTouchDevice = () => {
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
+    }
+    
+    checkTouchDevice()
+    
     const timer = setTimeout(() => {
       setInitialAnimationStarted(true)
       // Set completion after estimated time for all animations to finish
@@ -106,14 +122,14 @@ export default function CollectionsSection() {
     <>
     <section className="bg-squarage-red">
       {/* Section Header */}
-      <div className="pt-6 pb-6 px-6">
+      <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="inline-flex items-center gap-6">
+            <div className="inline-flex items-center gap-2 sm:gap-4 md:gap-6">
               {'Collections'.split('').map((letter, index) => (
                 <span
                   key={index}
-                  className={`text-7xl md:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
+                  className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
                     (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
                   }`}
                   style={{
@@ -133,32 +149,68 @@ export default function CollectionsSection() {
     </section>
 
     {/* Collections Grid - Full Width */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+    {/* Desktop Grid */}
+    <div className="hidden md:grid grid-cols-2 gap-0">
         {collections.map((collection) => (
-          <Link
-            key={collection.id}
-            href={collection.href}
-            className="group cursor-pointer"
-            onMouseMove={(e) => handleMouseMove(e, collection.title)}
-            onMouseLeave={handleMouseLeave}
-          >
-            <div className={`p-16 transition-colors duration-500 ${collection.bgColor} ${collection.hoverColor}`}>
-              <div className="relative overflow-hidden bg-gray-100 aspect-square">
-                <Image
-                  src={collection.image}
-                  alt={collection.title}
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
+          <div key={collection.id} className="relative">
+            <Link
+              href={collection.href}
+              className="group cursor-pointer block"
+              onMouseMove={!isTouchDevice ? (e) => handleMouseMove(e, collection.title) : undefined}
+              onMouseLeave={!isTouchDevice ? handleMouseLeave : undefined}
+            >
+              <div className={`p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 ${collection.bgColor} ${collection.hoverColor}`}>
+                <div className="relative overflow-hidden bg-gray-100 aspect-square">
+                  <Image
+                    src={collection.image}
+                    alt={collection.title}
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
+        ))}
+    </div>
+    
+    {/* Mobile Grid */}
+    <div className="grid md:hidden grid-cols-1 gap-0">
+        {mobileCollections.map((collection) => (
+          <div key={collection.id} className="relative">
+            <Link
+              href={collection.href}
+              className="group cursor-pointer block"
+              onMouseMove={!isTouchDevice ? (e) => handleMouseMove(e, collection.title) : undefined}
+              onMouseLeave={!isTouchDevice ? handleMouseLeave : undefined}
+            >
+              <div className={`p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 ${collection.bgColor} ${collection.hoverColor}`}>
+                <div className="relative overflow-hidden bg-gray-100 aspect-square border-4 md:border-0 border-squarage-black">
+                  <Image
+                    src={collection.image}
+                    alt={collection.title}
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  
+                  {/* Mobile Button - Inside image, bottom center */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 md:hidden">
+                    <div className="px-4 py-2 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-lg hover:bg-squarage-yellow transition-colors duration-300 pointer-events-none">
+                      {collection.title}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            
+          </div>
         ))}
     </div>
 
-    {/* Cursor Following Tooltip */}
-    {tooltip.visible && (
+    {/* Cursor Following Tooltip - Only shown on non-touch devices */}
+    {tooltip.visible && !isTouchDevice && (
       <div 
         className="absolute z-50 px-9 py-6 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-5xl pointer-events-none"
         style={{
@@ -167,8 +219,7 @@ export default function CollectionsSection() {
           transform: 'translate(-50%, -100%)'
         }}
       >
-        <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1 top-0 left-0 w-full h-full flex items-center justify-center">{tooltip.text}</span>
-        <span className="relative z-10">{tooltip.text}</span>
+        {tooltip.text}
       </div>
     )}
 

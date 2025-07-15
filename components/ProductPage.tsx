@@ -300,6 +300,8 @@ export default function ProductPage({ product }: ProductPageProps) {
                   onChange={(e) => handleColorSelect(parseInt(e.target.value))}
                   className="text-xl md:text-2xl lg:text-4xl font-neue-haas bg-transparent border-none outline-none cursor-pointer font-medium"
                   style={getColorStyle(colorOptions[selectedVariantIndex]?.name || '')}
+                  autoComplete="off"
+                  data-form-type="other"
                 >
                   {colorOptions.map((option, index) => (
                     <option 
