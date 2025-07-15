@@ -69,13 +69,13 @@ export default function CartItem({ item }: CartItemProps) {
       
       <div className="flex gap-4">
         {/* Product Image */}
-        <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+        <div className="w-24 h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0">
           {item.variant?.image || item.variant?.product?.images?.[0] ? (
             <Image
               src={item.variant?.image?.src || item.variant?.product?.images?.[0]?.src}
               alt={item.variant?.image?.altText || item.variant?.product?.title || 'Product'}
-              width={80}
-              height={80}
+              width={96}
+              height={96}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -96,39 +96,39 @@ export default function CartItem({ item }: CartItemProps) {
               <p className="text-base font-bold text-squarage-black mt-1">{item.variant.title}</p>
             )}
             
-            {/* Quantity Controls */}
-            <div className="flex items-center gap-4 mt-1">
-              <span className="text-base font-neue-haas font-bold text-squarage-black">Quantity:</span>
-              <div className="flex items-center border-2 border-squarage-orange rounded-full overflow-hidden">
-                <button
-                  onClick={() => handleQuantityChange(item.quantity - 1)}
-                  disabled={isUpdating || item.quantity <= 1}
-                  className="w-8 h-8 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
-                  aria-label="Decrease quantity"
-                >
-                  -
-                </button>
-                
-                <span className="px-3 font-neue-haas font-bold text-squarage-black">{item.quantity || 0}</span>
-                
-                <button
-                  onClick={() => handleQuantityChange(item.quantity + 1)}
-                  disabled={isUpdating}
-                  className="w-8 h-8 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
-                  aria-label="Increase quantity"
-                >
-                  +
-                </button>
+            {/* Quantity Controls & Price */}
+            <div className="flex items-center justify-between mt-1">
+              <div className="flex items-center gap-4">
+                <span className="text-base font-neue-haas font-bold text-squarage-black">Quantity:</span>
+                <div className="flex items-center border-2 border-squarage-orange rounded-full overflow-hidden">
+                  <button
+                    onClick={() => handleQuantityChange(item.quantity - 1)}
+                    disabled={isUpdating || item.quantity <= 1}
+                    className="w-8 h-8 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
+                    aria-label="Decrease quantity"
+                  >
+                    -
+                  </button>
+                  
+                  <span className="px-3 font-neue-haas font-bold text-squarage-black">{item.quantity || 0}</span>
+                  
+                  <button
+                    onClick={() => handleQuantityChange(item.quantity + 1)}
+                    disabled={isUpdating}
+                    className="w-8 h-8 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          {/* Bottom Section: Price */}
-          <div className="flex justify-end">
-            <div className="text-right">
-              <p className="font-neue-haas font-bold text-lg text-squarage-black">
-                {formatPrice(item.variant?.price)}
-              </p>
+              
+              {/* Price */}
+              <div className="text-right">
+                <p className="font-neue-haas font-bold text-lg text-squarage-black">
+                  {formatPrice(item.variant?.price)}
+                </p>
+              </div>
             </div>
           </div>
         </div>
