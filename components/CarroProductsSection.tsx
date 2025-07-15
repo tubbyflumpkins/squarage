@@ -34,11 +34,11 @@ export default function CarroProductsSection() {
   }, [])
 
   return (
-    <section className="pt-8 pb-20 px-6 bg-cream">
+    <section className="pt-4 pb-20 px-6 bg-cream">
       <div>
         
         {/* Section Header */}
-        <div className="flex items-center mb-16" style={{ minHeight: '120px' }}>
+        <div className="flex items-center mb-8" style={{ minHeight: '80px' }}>
           <h2 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black">
             Our Tiled Collection
           </h2>
