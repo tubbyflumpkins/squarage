@@ -31,9 +31,8 @@ export default function CustomProjectSection() {
         >
           <div className="p-16 transition-colors duration-500 bg-squarage-blue hover:bg-squarage-yellow">
             <div className="bg-squarage-white px-12 py-8 text-center flex items-center justify-center">
-              <h3 className="text-5xl md:text-7xl font-bold font-neue-haas text-squarage-black relative">
-                <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">Ready for a Custom Project?</span>
-                <span className="relative z-10">Ready for a Custom Project?</span>
+              <h3 className="text-5xl md:text-7xl font-bold font-neue-haas text-squarage-black">
+                Ready for a Custom Project?
               </h3>
             </div>
           </div>
