@@ -22,7 +22,23 @@ const InstagramIcon = ({ className }: { className: string }) => (
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { toggleCart } = useCart()
+  const { toggleCart, closeCart, state } = useCart()
+  
+  // Handle cart toggle - close menu if open
+  const handleCartToggle = () => {
+    if (isMenuOpen) {
+      setIsMenuOpen(false)
+    }
+    toggleCart()
+  }
+  
+  // Handle menu toggle - close cart if open
+  const handleMenuToggle = () => {
+    if (state.isOpen) {
+      closeCart()
+    }
+    setIsMenuOpen(!isMenuOpen)
+  }
 
   // Menu item shared classes
   const menuItemClass = "block text-4xl md:text-5xl font-bold font-neue-haas text-white hover:text-squarage-red hover:scale-105 transition-all duration-300 relative group"
@@ -47,11 +63,11 @@ export default function Navigation() {
       </Link>
 
       {/* Cart Icon */}
-      <CartIcon onClick={toggleCart} />
+      <CartIcon onClick={handleCartToggle} />
 
       {/* Floating Menu Button - Independent Element */}
       <button
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        onClick={handleMenuToggle}
         className="fixed top-6 right-6 flex flex-col items-center justify-center w-12 h-12 bg-squarage-green space-y-1 group z-[9999] hover:scale-110 transition-all duration-300 drop-shadow-lg"
         aria-label="Toggle menu"
         style={{ isolation: 'isolate' }}
