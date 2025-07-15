@@ -258,19 +258,6 @@ export default function ProductPage({ product }: ProductPageProps) {
                   </div>
                 )}
                 
-                {/* Cache status indicator (development only) */}
-                {process.env.NODE_ENV === 'development' && (
-                  <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
-                    {isProductPreloaded(product.id.toString()) ? '⚡ Cached' : '⏳ Loading...'}
-                  </div>
-                )}
-                
-                {/* Preloading indicator for fallback loading */}
-                {!imagesPreloaded && (
-                  <div className="absolute top-2 left-2 bg-orange-500 bg-opacity-75 text-white px-2 py-1 rounded text-xs">
-                    Optimizing...
-                  </div>
-                )}
               </div>
             </div>
 
