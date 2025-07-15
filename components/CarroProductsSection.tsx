@@ -34,17 +34,14 @@ export default function CarroProductsSection() {
   }, [])
 
   return (
-    <section className="py-20 px-6 bg-cream">
+    <section className="pt-8 pb-20 px-6 bg-cream">
       <div>
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black mb-8">
+        <div className="flex items-center mb-16" style={{ minHeight: '120px' }}>
+          <h2 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black">
             Our Tiled Collection
           </h2>
-          <p className="text-xl md:text-2xl font-medium font-neue-haas text-brown-medium leading-relaxed max-w-3xl mx-auto">
-            Discover our handcrafted tables, each piece designed to bring beauty and functionality to your space.
-          </p>
         </div>
 
         {/* Products Grid */}
