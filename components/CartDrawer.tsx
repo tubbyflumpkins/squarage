@@ -35,17 +35,8 @@ export default function CartDrawer() {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b-2 border-white">
+          <div className="p-6 border-b-2 border-white">
             <h2 className="text-3xl font-bold font-neue-haas text-white">Your Cart</h2>
-            <button
-              onClick={closeCart}
-              className="text-white hover:text-squarage-yellow transition-colors"
-              aria-label="Close cart"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
           
           {/* Cart Contents */}
