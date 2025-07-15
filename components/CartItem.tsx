@@ -54,7 +54,7 @@ export default function CartItem({ item }: CartItemProps) {
   }
   
   return (
-    <div className={`bg-cream p-4 rounded-lg border-2 border-squarage-red ${isUpdating ? 'opacity-50' : ''}`}>
+    <div className={`bg-cream p-4 rounded-lg border-2 border-squarage-orange ${isUpdating ? 'opacity-50' : ''}`}>
       <div className="flex gap-4">
         {/* Product Image */}
         <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0">
@@ -74,42 +74,51 @@ export default function CartItem({ item }: CartItemProps) {
         </div>
         
         {/* Product Details */}
-        <div className="flex-1">
-          <h3 className="font-neue-haas font-medium text-squarage-black">
-            {item.title || item.variant?.product?.title || 'Unknown Product'}
-          </h3>
-          {item.variant?.title && item.variant.title !== 'Default Title' && (
-            <p className="text-sm text-gray-600">{item.variant.title}</p>
-          )}
+        <div className="flex-1 flex flex-col justify-between">
+          {/* Top Section: Product Info */}
+          <div>
+            <h3 className="font-neue-haas font-bold text-lg text-squarage-black leading-tight">
+              {item.title || item.variant?.product?.title || 'Unknown Product'}
+            </h3>
+            {item.variant?.title && item.variant.title !== 'Default Title' && (
+              <p className="text-sm text-squarage-black opacity-70 mt-1">{item.variant.title}</p>
+            )}
+          </div>
           
-          <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {/* Quantity Controls */}
-              <button
-                onClick={() => handleQuantityChange(item.quantity - 1)}
-                disabled={isUpdating || item.quantity <= 1}
-                className="w-6 h-6 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                aria-label="Decrease quantity"
-              >
-                <span className="text-xl leading-none">-</span>
-              </button>
-              
-              <span className="w-8 text-center font-neue-haas">{item.quantity || 0}</span>
-              
-              <button
-                onClick={() => handleQuantityChange(item.quantity + 1)}
-                disabled={isUpdating}
-                className="w-6 h-6 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                aria-label="Increase quantity"
-              >
-                <span className="text-xl leading-none">+</span>
-              </button>
+          {/* Bottom Section: Quantity & Price */}
+          <div className="flex items-center justify-between mt-3">
+            {/* Quantity Controls */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-neue-haas text-squarage-black opacity-70">Qty:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleQuantityChange(item.quantity - 1)}
+                  disabled={isUpdating || item.quantity <= 1}
+                  className="w-7 h-7 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors rounded"
+                  aria-label="Decrease quantity"
+                >
+                  <span className="text-lg leading-none">-</span>
+                </button>
+                
+                <span className="w-8 text-center font-neue-haas font-bold text-squarage-black">{item.quantity || 0}</span>
+                
+                <button
+                  onClick={() => handleQuantityChange(item.quantity + 1)}
+                  disabled={isUpdating}
+                  className="w-7 h-7 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors rounded"
+                  aria-label="Increase quantity"
+                >
+                  <span className="text-lg leading-none">+</span>
+                </button>
+              </div>
             </div>
             
             {/* Price */}
-            <p className="font-neue-haas font-medium">
-              {formatPrice(item.variant?.price)}
-            </p>
+            <div className="text-right">
+              <p className="font-neue-haas font-bold text-lg text-squarage-black">
+                {formatPrice(item.variant?.price)}
+              </p>
+            </div>
           </div>
         </div>
         
