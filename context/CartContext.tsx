@@ -84,6 +84,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, isOpen: false }
     
     case 'SET_CHECKOUT':
+      // Debug: log the checkout payload to understand structure
+      console.log('SET_CHECKOUT payload:', action.payload)
+      console.log('Line items:', action.payload.lineItems)
       return {
         ...state,
         checkoutId: action.payload.id,

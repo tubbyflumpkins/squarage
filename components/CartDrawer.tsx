@@ -1,0 +1,83 @@
+'use client'
+
+import { useCart } from '@/context/CartContext'
+import Image from 'next/image'
+import CartItem from './CartItem'
+import CartSummary from './CartSummary'
+
+export default function CartDrawer() {
+  const { state, closeCart } = useCart()
+  
+  return (
+    <>
+      {/* Click Outside to Close Overlay */}
+      {state.isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[9990]"
+          onClick={closeCart}
+        />
+      )}
+      
+      {/* Cart Drawer */}
+      <div
+        className={`fixed top-0 h-full z-[9995] bg-squarage-green transition-transform duration-300 ease-out drop-shadow-2xl ${
+          state.isOpen 
+            ? 'translate-x-0' 
+            : 'translate-x-full'
+        }`}
+        style={{
+          right: 0,
+          width: 'min(480px, 100vw)',
+          isolation: 'isolate',
+          willChange: state.isOpen ? 'transform' : 'auto'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b-2 border-white">
+            <h2 className="text-3xl font-bold font-neue-haas text-white">Your Cart</h2>
+            <button
+              onClick={closeCart}
+              className="text-white hover:text-squarage-yellow transition-colors"
+              aria-label="Close cart"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          {/* Cart Contents */}
+          <div className="flex-1 overflow-y-auto">
+            {state.lineItems.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-6">
+                <svg className="w-24 h-24 text-white mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <p className="text-2xl font-neue-haas text-white mb-6">Your cart is empty</p>
+                <button
+                  onClick={closeCart}
+                  className="bg-white text-squarage-green font-bold font-neue-haas text-xl py-3 px-6 hover:bg-squarage-yellow hover:text-white transition-colors duration-300"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+            ) : (
+              <div className="p-6 space-y-4">
+                {state.lineItems.map((item, index) => (
+                  <CartItem key={item.id || index} item={item} />
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Cart Summary - Only show when items exist */}
+          {state.lineItems.length > 0 && (
+            <CartSummary />
+          )}
+        </div>
+      </div>
+    </>
+  )
+}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useImageCache } from '@/context/ImageCacheContext'
+import { useCart } from '@/context/CartContext'
 interface SerializedProduct {
   id: string
   title: string
@@ -67,9 +68,13 @@ export default function ProductPage({ product }: ProductPageProps) {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [imagesPreloaded, setImagesPreloaded] = useState(false)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
   
   // Use global image cache
   const { preloadProductImages, isProductPreloaded, isImageCached } = useImageCache()
+  
+  // Use cart context
+  const { addToCart } = useCart()
 
   // Get the selected variant
   const selectedVariant = product.variants?.[selectedVariantIndex]
@@ -346,23 +351,32 @@ export default function ProductPage({ product }: ProductPageProps) {
               {/* Add to Cart */}
               <div className="space-y-4">
                 <button
-                  onClick={() => {
-                    // TODO: Implement add to cart functionality
-                    console.log('Add to cart:', {
-                      productId: product.id,
-                      variantId: selectedVariant?.id,
-                      title: product.title,
-                      color: colorOptions[selectedVariantIndex]?.name
-                    })
+                  onClick={async () => {
+                    if (!selectedVariant || isAddingToCart) return
+                    
+                    setIsAddingToCart(true)
+                    try {
+                      await addToCart(selectedVariant.id)
+                      console.log('Successfully added to cart:', {
+                        productId: product.id,
+                        variantId: selectedVariant.id,
+                        title: product.title,
+                        color: colorOptions[selectedVariantIndex]?.name
+                      })
+                    } catch (error) {
+                      console.error('Error adding to cart:', error)
+                    } finally {
+                      setIsAddingToCart(false)
+                    }
                   }}
-                  disabled={!selectedVariant}
+                  disabled={!selectedVariant || isAddingToCart}
                   className="w-full inline-block bg-squarage-green font-bold font-neue-haas text-4xl py-4 px-8 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 relative disabled:bg-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <span className="absolute inset-0 flex items-center justify-center text-squarage-yellow transform translate-x-0.5 translate-y-0.5">
-                    Add to Cart
+                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                   </span>
                   <span className="relative z-10 text-white">
-                    Add to Cart
+                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                   </span>
                 </button>
                 <p className="text-base md:text-lg lg:text-2xl font-neue-haas text-squarage-black text-center opacity-70">

@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 import Navigation from '@/components/Navigation'
 import { ImageCacheProvider } from '@/context/ImageCacheContext'
+import { CartProvider } from '@/context/CartContext'
+import CartDrawer from '@/components/CartDrawer'
 
 export const metadata: Metadata = {
   title: 'Squarage Studio - Made in Los Angeles',
@@ -18,8 +20,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-cream font-neue-haas-text">
         <ImageCacheProvider>
-          <Navigation />
-          {children}
+          <CartProvider>
+            <Navigation />
+            <CartDrawer />
+            {children}
+          </CartProvider>
         </ImageCacheProvider>
       </body>
     </html>

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import CartIcon from '@/components/CartIcon'
+import { useCart } from '@/context/CartContext'
 
 // Shared icon components to reduce bundle size
 const EmailIcon = ({ className }: { className: string }) => (
@@ -20,6 +22,7 @@ const InstagramIcon = ({ className }: { className: string }) => (
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { toggleCart } = useCart()
 
   // Menu item shared classes
   const menuItemClass = "block text-4xl md:text-5xl font-bold font-neue-haas text-white hover:text-squarage-red hover:scale-105 transition-all duration-300 relative group"
@@ -42,6 +45,9 @@ export default function Navigation() {
           priority
         />
       </Link>
+
+      {/* Cart Icon */}
+      <CartIcon onClick={toggleCart} />
 
       {/* Floating Menu Button - Independent Element */}
       <button
