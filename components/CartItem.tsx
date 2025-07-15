@@ -93,34 +93,36 @@ export default function CartItem({ item }: CartItemProps) {
               {item.title || item.variant?.product?.title || 'Unknown Product'}
             </h3>
             {item.variant?.title && item.variant.title !== 'Default Title' && (
-              <p className="text-sm text-squarage-black opacity-70 mt-1">{item.variant.title}</p>
+              <p className="text-base font-bold text-squarage-black mt-1">{item.variant.title}</p>
             )}
           </div>
           
           {/* Bottom Section: Quantity & Price */}
           <div className="flex items-center justify-between mt-3">
             {/* Quantity Controls */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-neue-haas text-squarage-black opacity-70">Qty:</span>
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              <span className="text-base font-neue-haas font-bold text-squarage-black">Quantity:</span>
+              <div className="flex items-center bg-squarage-yellow border-2 border-squarage-orange rounded-lg overflow-hidden">
                 <button
                   onClick={() => handleQuantityChange(item.quantity - 1)}
                   disabled={isUpdating || item.quantity <= 1}
-                  className="w-7 h-7 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors rounded"
+                  className="w-10 h-10 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue hover:scale-105 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 relative"
                   aria-label="Decrease quantity"
                 >
-                  <span className="text-lg leading-none">-</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">-</span>
+                  <span className="relative z-10 text-white font-bold text-xl">-</span>
                 </button>
                 
-                <span className="w-8 text-center font-neue-haas font-bold text-squarage-black">{item.quantity || 0}</span>
+                <span className="w-12 h-10 bg-squarage-yellow flex items-center justify-center font-neue-haas font-bold text-xl text-squarage-black">{item.quantity || 0}</span>
                 
                 <button
                   onClick={() => handleQuantityChange(item.quantity + 1)}
                   disabled={isUpdating}
-                  className="w-7 h-7 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors rounded"
+                  className="w-10 h-10 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue hover:scale-105 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 relative"
                   aria-label="Increase quantity"
                 >
-                  <span className="text-lg leading-none">+</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">+</span>
+                  <span className="relative z-10 text-white font-bold text-xl">+</span>
                 </button>
               </div>
             </div>
