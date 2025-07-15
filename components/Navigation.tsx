@@ -57,7 +57,7 @@ export default function Navigation() {
           alt="Squarage Studio"
           width={480}
           height={114}
-          className="w-auto h-20 md:h-24 drop-shadow-lg"
+          className="w-auto h-12 sm:h-16 md:h-20 lg:h-24 drop-shadow-lg"
           priority
         />
       </Link>
