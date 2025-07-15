@@ -54,7 +54,19 @@ export default function CartItem({ item }: CartItemProps) {
   }
   
   return (
-    <div className={`bg-cream p-4 rounded-lg border-2 border-squarage-orange ${isUpdating ? 'opacity-50' : ''}`}>
+    <div className={`bg-cream p-4 rounded-lg border-2 border-squarage-orange relative ${isUpdating ? 'opacity-50' : ''}`}>
+      {/* Remove Button - Top Right */}
+      <button
+        onClick={handleRemove}
+        disabled={isUpdating}
+        className="absolute top-2 right-2 text-gray-400 hover:text-squarage-red transition-colors disabled:cursor-not-allowed"
+        aria-label="Remove item"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      
       <div className="flex gap-4">
         {/* Product Image */}
         <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0">
@@ -77,7 +89,7 @@ export default function CartItem({ item }: CartItemProps) {
         <div className="flex-1 flex flex-col justify-between">
           {/* Top Section: Product Info */}
           <div>
-            <h3 className="font-neue-haas font-bold text-lg text-squarage-black leading-tight">
+            <h3 className="font-neue-haas font-bold text-xl text-squarage-black leading-tight pr-8">
               {item.title || item.variant?.product?.title || 'Unknown Product'}
             </h3>
             {item.variant?.title && item.variant.title !== 'Default Title' && (
@@ -121,18 +133,6 @@ export default function CartItem({ item }: CartItemProps) {
             </div>
           </div>
         </div>
-        
-        {/* Remove Button */}
-        <button
-          onClick={handleRemove}
-          disabled={isUpdating}
-          className="text-gray-400 hover:text-squarage-red transition-colors disabled:cursor-not-allowed"
-          aria-label="Remove item"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
     </div>
   )
