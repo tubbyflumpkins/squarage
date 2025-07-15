@@ -55,7 +55,7 @@ export default function CartDrawer() {
                 <svg className="w-24 h-24 text-white mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
-                <p className="text-2xl font-neue-haas text-white mb-6">Weird...there's nothing here :|</p>
+                <p className="text-2xl font-neue-haas text-white mb-6">Weird... theres nothing here?</p>
                 <button
                   onClick={closeCart}
                   className="bg-squarage-orange font-bold font-neue-haas text-2xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 relative"
