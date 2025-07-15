@@ -20,9 +20,8 @@ export default function CarroProductsSection() {
           return
         }
         
-        // Fetch products by collection handle 'tables' 
-        // This will be updated once Shopify is configured with actual products
-        const tiledProducts = await shopifyApi.getProductsByCollection('tables')
+        // Fetch products by collection handle 'tiled' 
+        const tiledProducts = await shopifyApi.getProductsByCollection('tiled')
         setProducts(tiledProducts)
       } catch (error) {
         console.error('Error fetching Tiled products:', error)

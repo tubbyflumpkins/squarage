@@ -10,7 +10,7 @@ const collections = [
     title: 'Tiled',
     description: 'Custom dining and coffee tables crafted with precision',
     image: '/images/collection-tables.jpg',
-    href: '/collections/tables',
+    href: '/collections/tiled',
     bgColor: 'bg-squarage-green',
     hoverColor: 'hover:bg-squarage-yellow',
   },
