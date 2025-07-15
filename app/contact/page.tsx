@@ -56,8 +56,8 @@ const ShadowInput = ({ register, name, type = "text", placeholder, rows }: {
   </div>
 )
 
-const ErrorMessage = ({ error }: { error?: { message?: string } }) => 
-  error ? <p className="mt-1 text-white font-neue-haas">{error.message}</p> : null
+const ErrorMessage = ({ error, show }: { error?: { message?: string }, show: boolean }) => 
+  error && show ? <p className="mt-1 text-white font-neue-haas">{error.message}</p> : null
 
 // Reusable form field component
 const FormField = ({ 
@@ -67,7 +67,8 @@ const FormField = ({
   error, 
   type = "text", 
   placeholder, 
-  rows 
+  rows,
+  showErrors 
 }: {
   name: string
   label: string
@@ -76,6 +77,7 @@ const FormField = ({
   type?: string
   placeholder: string
   rows?: number
+  showErrors: boolean
 }) => (
   <div>
     <ShadowLabel htmlFor={name}>{label}</ShadowLabel>
@@ -86,13 +88,14 @@ const FormField = ({
       placeholder={placeholder} 
       rows={rows}
     />
-    <ErrorMessage error={error} />
+    <ErrorMessage error={error} show={showErrors} />
   </div>
 )
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [showValidationErrors, setShowValidationErrors] = useState(false)
 
   const {
     register,
@@ -141,23 +144,37 @@ export default function ContactPage() {
 
       if (response.ok) {
         setSubmitStatus('success')
+        setShowValidationErrors(false)
         reset()
       } else {
         setSubmitStatus('error')
+        setShowValidationErrors(true)
       }
     } catch (error) {
       setSubmitStatus('error')
+      setShowValidationErrors(true)
     } finally {
       setIsSubmitting(false)
     }
   }, [reset])
+
+  const onInvalidSubmit = useCallback(() => {
+    // Show validation errors when form has validation errors
+    setShowValidationErrors(true)
+    // Clear any stuck hover states on mobile
+    if ('ontouchstart' in window) {
+      setTimeout(() => {
+        (document.activeElement as HTMLElement)?.blur()
+      }, 150)
+    }
+  }, [])
 
   return (
     <main className="min-h-screen bg-squarage-red pt-24 px-6 pb-16">
       <div className="max-w-4xl mx-auto">
         {/* Page Header */}
         <div className="text-center mb-6">
-          <h1 className="text-6xl md:text-8xl font-bold font-neue-haas text-white tracking-widest relative">
+          <h1 className="text-5xl md:text-8xl font-bold font-neue-haas text-white tracking-widest relative">
             <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">Contact Us</span>
             <span className="relative z-10">Contact Us</span>
           </h1>
@@ -165,13 +182,14 @@ export default function ContactPage() {
 
         {/* Contact Form */}
         <div className="max-w-2xl mx-auto">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-6">
             <FormField
               name="name"
               label="Name"
               register={register}
               error={errors.name}
               placeholder="Your name"
+              showErrors={showValidationErrors}
             />
             
             <FormField
@@ -181,6 +199,7 @@ export default function ContactPage() {
               error={errors.email}
               type="email"
               placeholder="you@email.com"
+              showErrors={showValidationErrors}
             />
             
             <FormField
@@ -189,6 +208,7 @@ export default function ContactPage() {
               register={register}
               error={errors.subject}
               placeholder="What can we help you with?"
+              showErrors={showValidationErrors}
             />
             
             <FormField
@@ -198,6 +218,7 @@ export default function ContactPage() {
               error={errors.message}
               placeholder="Tell us about your project, timeline, and any specific requirements..."
               rows={6}
+              showErrors={showValidationErrors}
             />
 
             {/* Submit Button */}
@@ -206,6 +227,14 @@ export default function ContactPage() {
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full bg-squarage-green font-bold font-neue-haas text-4xl py-4 px-8 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative"
+                onTouchEnd={(e) => {
+                  // Force blur on mobile to clear any stuck hover states
+                  if ('ontouchstart' in window) {
+                    setTimeout(() => {
+                      (e.target as HTMLElement)?.blur()
+                    }, 150) // Small delay to allow animation to play
+                  }
+                }}
               >
                 <span className="absolute inset-0 flex items-center justify-center text-squarage-yellow transform translate-x-0.5 translate-y-0.5">
                   {buttonText}

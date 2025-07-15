@@ -45,7 +45,7 @@ export default function HeroSlideshow() {
   }, [])
 
   return (
-    <section className="relative h-[85vh] w-full overflow-hidden">
+    <section className="relative h-[300px] sm:h-[350px] md:h-[85vh] w-full overflow-hidden">
       {/* Slideshow Background */}
       <div className="absolute inset-0 z-0">
         {heroImages.map((image, index) => (

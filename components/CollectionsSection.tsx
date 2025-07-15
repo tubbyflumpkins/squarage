@@ -50,6 +50,14 @@ export default function CollectionsSection() {
   const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
   
+  // Create mobile-specific order (swap chairs and objects for mobile only)
+  const mobileCollections = [...collections]
+  const chairsIndex = mobileCollections.findIndex(c => c.id === 'chairs')
+  const objectsIndex = mobileCollections.findIndex(c => c.id === 'objects')
+  if (chairsIndex !== -1 && objectsIndex !== -1) {
+    [mobileCollections[chairsIndex], mobileCollections[objectsIndex]] = [mobileCollections[objectsIndex], mobileCollections[chairsIndex]]
+  }
+  
   // Fixed delays to prevent hydration mismatch - memoized to prevent re-renders
   const randomDelays = useMemo(() => [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15], [])
 
@@ -141,7 +149,8 @@ export default function CollectionsSection() {
     </section>
 
     {/* Collections Grid - Full Width */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+    {/* Desktop Grid */}
+    <div className="hidden md:grid grid-cols-2 gap-0">
         {collections.map((collection) => (
           <div key={collection.id} className="relative">
             <Link
@@ -162,17 +171,40 @@ export default function CollectionsSection() {
                 </div>
               </div>
             </Link>
+          </div>
+        ))}
+    </div>
+    
+    {/* Mobile Grid */}
+    <div className="grid md:hidden grid-cols-1 gap-0">
+        {mobileCollections.map((collection) => (
+          <div key={collection.id} className="relative">
+            <Link
+              href={collection.href}
+              className="group cursor-pointer block"
+              onMouseMove={!isTouchDevice ? (e) => handleMouseMove(e, collection.title) : undefined}
+              onMouseLeave={!isTouchDevice ? handleMouseLeave : undefined}
+            >
+              <div className={`p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 ${collection.bgColor} ${collection.hoverColor}`}>
+                <div className="relative overflow-hidden bg-gray-100 aspect-square border-4 md:border-0 border-squarage-black">
+                  <Image
+                    src={collection.image}
+                    alt={collection.title}
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  
+                  {/* Mobile Button - Inside image, bottom center */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 md:hidden">
+                    <div className="px-4 py-2 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-lg hover:bg-squarage-yellow transition-colors duration-300 pointer-events-none">
+                      {collection.title}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
             
-            {/* Mobile Button - Only shown on touch devices */}
-            <div className="block md:hidden p-4">
-              <Link
-                href={collection.href}
-                className="inline-block px-6 py-3 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-2xl hover:bg-squarage-yellow transition-colors duration-300 relative"
-              >
-                <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1 top-0 left-0 w-full h-full flex items-center justify-center">{collection.title}</span>
-                <span className="relative z-10">{collection.title}</span>
-              </Link>
-            </div>
           </div>
         ))}
     </div>
@@ -187,8 +219,7 @@ export default function CollectionsSection() {
           transform: 'translate(-50%, -100%)'
         }}
       >
-        <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1 top-0 left-0 w-full h-full flex items-center justify-center">{tooltip.text}</span>
-        <span className="relative z-10">{tooltip.text}</span>
+        {tooltip.text}
       </div>
     )}
 

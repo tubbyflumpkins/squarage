@@ -4,12 +4,12 @@ import Image from 'next/image'
 
 export default function CarroContentSection() {
   return (
-    <section className="py-20 px-6 bg-squarage-yellow">
+    <section className="pt-20 pb-10 lg:pt-20 lg:pb-20 px-6 bg-squarage-yellow">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           
-          {/* Content */}
-          <div>
+          {/* Content - First on mobile, second on desktop */}
+          <div className="lg:order-2">
             <h3 className="text-3xl md:text-4xl font-bold font-neue-haas text-squarage-black mb-6">
               Design Philosophy
             </h3>
@@ -24,8 +24,8 @@ export default function CarroContentSection() {
             </div>
           </div>
 
-          {/* Featured Image */}
-          <div className="max-w-sm mx-auto border-squarage-red" style={{ borderWidth: '40px' }}>
+          {/* Featured Image - Second on mobile, first on desktop */}
+          <div className="max-w-sm mx-auto border-squarage-red lg:order-1" style={{ borderWidth: '40px' }}>
             <Image
               src="/images/carro/yellow-table-styled.jpg"
               alt="Tiled Collection - Yellow Styled Tables"

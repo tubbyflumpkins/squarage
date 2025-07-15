@@ -69,7 +69,7 @@ export default function ProductGrid({
   if (loading) {
     return (
       <div className={`w-full ${className}`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-20 gap-y-20">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6 md:gap-x-20 md:gap-y-20">
           {[...Array(6)].map((_, index) => (
             <div key={index} className="animate-pulse">
               <div className="w-full h-64 bg-gray-200 mb-4"></div>
@@ -99,7 +99,7 @@ export default function ProductGrid({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-20 gap-y-20">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6 md:gap-x-20 md:gap-y-20">
         {products.map((product) => (
           <ProductCard 
             key={product.id} 

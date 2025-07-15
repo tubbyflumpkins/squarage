@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import CartIcon from '@/components/CartIcon'
@@ -24,12 +24,43 @@ export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { toggleCart, closeCart, state } = useCart()
   
-  // Handle cart toggle - close menu if open
+  // Handle back button/swipe to close menus
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (isMenuOpen || state.isOpen) {
+        if (isMenuOpen) {
+          setIsMenuOpen(false)
+        }
+        if (state.isOpen) {
+          closeCart()
+        }
+        
+        // Prevent navigation
+        window.history.pushState(null, '', window.location.href)
+      }
+    }
+    
+    window.addEventListener('popstate', handlePopState)
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [isMenuOpen, state.isOpen, closeCart])
+  
+  // Handle cart toggle - close menu if open  
   const handleCartToggle = () => {
     if (isMenuOpen) {
       setIsMenuOpen(false)
     }
+    const wasOpen = state.isOpen
     toggleCart()
+    
+    // Add history state when opening cart
+    if (!wasOpen) {
+      setTimeout(() => {
+        window.history.pushState(null, '', window.location.href)
+      }, 0)
+    }
   }
   
   // Handle menu toggle - close cart if open
@@ -37,7 +68,13 @@ export default function Navigation() {
     if (state.isOpen) {
       closeCart()
     }
-    setIsMenuOpen(!isMenuOpen)
+    const newMenuState = !isMenuOpen
+    setIsMenuOpen(newMenuState)
+    
+    // Add history state when opening menu
+    if (newMenuState) {
+      window.history.pushState(null, '', window.location.href)
+    }
   }
 
   // Menu item shared classes
@@ -51,6 +88,19 @@ export default function Navigation() {
         href="/" 
         className="fixed top-6 left-6 z-[9999] hover:scale-105 transition-transform duration-300"
         style={{ isolation: 'isolate' }}
+        onClick={(e) => {
+          // If any menu is open, close it and prevent navigation
+          if (isMenuOpen || state.isOpen) {
+            e.preventDefault()
+            if (isMenuOpen) {
+              setIsMenuOpen(false)
+            }
+            if (state.isOpen) {
+              closeCart()
+            }
+          }
+          // If no menus are open, allow normal navigation to home
+        }}
       >
         <Image
           src="/images/logo_main.png"
@@ -68,13 +118,13 @@ export default function Navigation() {
       {/* Floating Menu Button - Independent Element */}
       <button
         onClick={handleMenuToggle}
-        className="fixed top-6 right-6 flex flex-col items-center justify-center w-12 h-12 bg-squarage-green space-y-1 group z-[9999] hover:scale-110 transition-all duration-300 drop-shadow-lg"
+        className="fixed top-6 right-6 md:right-12 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-squarage-green space-y-1 group z-[9999] md:hover:scale-110 transition-all duration-300 drop-shadow-lg"
         aria-label="Toggle menu"
         style={{ isolation: 'isolate' }}
       >
-        <span className="block h-1 w-6 bg-white transition-all duration-300 group-hover:w-7 group-hover:-translate-y-0.5" />
-        <span className="block h-1 w-6 bg-white transition-all duration-300 group-hover:w-7" />
-        <span className="block h-1 w-6 bg-white transition-all duration-300 group-hover:w-7 group-hover:translate-y-0.5" />
+        <span className="block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 bg-white transition-all duration-300 md:group-hover:w-7 md:group-hover:-translate-y-0.5" />
+        <span className="block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 bg-white transition-all duration-300 md:group-hover:w-7" />
+        <span className="block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 bg-white transition-all duration-300 md:group-hover:w-7 md:group-hover:translate-y-0.5" />
       </button>
 
       {/* Click Outside to Close Overlay - Remaining Space */}
