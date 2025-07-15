@@ -26,7 +26,7 @@ export default function CartIcon({ onClick }: CartIconProps) {
       
       {/* Cart count badge */}
       {state.totalQuantity > 0 && (
-        <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-squarage-orange text-white text-xs font-bold rounded-full">
+        <span className="absolute -top-2 -left-2 flex items-center justify-center w-5 h-5 bg-squarage-orange text-white text-xs font-bold rounded-full">
           {state.totalQuantity > 9 ? '9+' : state.totalQuantity}
         </span>
       )}
