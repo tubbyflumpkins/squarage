@@ -100,22 +100,22 @@ export default function CartItem({ item }: CartItemProps) {
             <div className="flex items-center justify-between mt-1">
               <div className="flex items-center gap-4">
                 <span className="text-base font-neue-haas font-bold text-squarage-black">Quantity:</span>
-                <div className="flex items-center border-2 border-squarage-orange rounded-full overflow-hidden">
+                <div className="flex items-center border border-squarage-black rounded-full overflow-hidden">
                   <button
                     onClick={() => handleQuantityChange(item.quantity - 1)}
                     disabled={isUpdating || item.quantity <= 1}
-                    className="w-8 h-8 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
+                    className="w-6 h-6 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
                     aria-label="Decrease quantity"
                   >
                     -
                   </button>
                   
-                  <span className="px-3 font-neue-haas font-bold text-squarage-black">{item.quantity || 0}</span>
+                  <span className="px-2 font-neue-haas font-bold text-squarage-black">{item.quantity || 0}</span>
                   
                   <button
                     onClick={() => handleQuantityChange(item.quantity + 1)}
                     disabled={isUpdating}
-                    className="w-8 h-8 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
+                    className="w-6 h-6 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
                     aria-label="Increase quantity"
                   >
                     +
