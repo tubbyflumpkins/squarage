@@ -89,7 +89,7 @@ export default function CartItem({ item }: CartItemProps) {
         <div className="flex-1 flex flex-col justify-between">
           {/* Top Section: Product Info */}
           <div>
-            <h3 className="font-neue-haas font-bold text-xl text-squarage-black leading-tight pr-8">
+            <h3 className="font-neue-haas font-bold text-2xl text-squarage-black leading-tight pr-8">
               {item.title || item.variant?.product?.title || 'Unknown Product'}
             </h3>
             {item.variant?.title && item.variant.title !== 'Default Title' && (
