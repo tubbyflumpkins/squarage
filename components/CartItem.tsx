@@ -54,7 +54,7 @@ export default function CartItem({ item }: CartItemProps) {
   }
   
   return (
-    <div className={`bg-squarage-yellow p-4 rounded-lg border-2 border-squarage-red ${isUpdating ? 'opacity-50' : ''}`}>
+    <div className={`bg-cream p-4 rounded-lg border-2 border-squarage-red ${isUpdating ? 'opacity-50' : ''}`}>
       <div className="flex gap-4">
         {/* Product Image */}
         <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0">
