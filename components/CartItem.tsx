@@ -102,27 +102,25 @@ export default function CartItem({ item }: CartItemProps) {
             {/* Quantity Controls */}
             <div className="flex items-center gap-4">
               <span className="text-base font-neue-haas font-bold text-squarage-black">Quantity:</span>
-              <div className="flex items-center bg-squarage-yellow border-2 border-squarage-orange rounded-lg overflow-hidden">
+              <div className="flex items-center border-2 border-squarage-orange rounded-full overflow-hidden">
                 <button
                   onClick={() => handleQuantityChange(item.quantity - 1)}
                   disabled={isUpdating || item.quantity <= 1}
-                  className="w-10 h-10 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue hover:scale-105 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 relative"
+                  className="w-8 h-8 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
                   aria-label="Decrease quantity"
                 >
-                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">-</span>
-                  <span className="relative z-10 text-white font-bold text-xl">-</span>
+                  -
                 </button>
                 
-                <span className="w-12 h-10 bg-squarage-yellow flex items-center justify-center font-neue-haas font-bold text-xl text-squarage-black">{item.quantity || 0}</span>
+                <span className="px-3 font-neue-haas font-bold text-squarage-black">{item.quantity || 0}</span>
                 
                 <button
                   onClick={() => handleQuantityChange(item.quantity + 1)}
                   disabled={isUpdating}
-                  className="w-10 h-10 flex items-center justify-center bg-squarage-green text-white hover:bg-squarage-blue hover:scale-105 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 relative"
+                  className="w-8 h-8 flex items-center justify-center text-squarage-black disabled:text-gray-400 disabled:cursor-not-allowed"
                   aria-label="Increase quantity"
                 >
-                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">+</span>
-                  <span className="relative z-10 text-white font-bold text-xl">+</span>
+                  +
                 </button>
               </div>
             </div>
