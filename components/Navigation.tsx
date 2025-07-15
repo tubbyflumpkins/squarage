@@ -59,20 +59,21 @@ export default function Navigation() {
       {isMenuOpen && (
         <div 
           className="fixed top-0 left-0 h-full z-[9990] bg-transparent"
-          style={{ width: 'calc(100vw - 480px)' }}
+          style={{ width: 'calc(100% - min(480px, 100vw))' }}
           onClick={() => setIsMenuOpen(false)}
         />
       )}
 
       {/* Fixed-Width Menu Sliding In */}
       <div
-        className={`fixed top-0 h-full z-[9995] bg-squarage-green transition-transform duration-300 ease-out drop-shadow-2xl w-[480px] ${
+        className={`fixed top-0 h-full z-[9995] bg-squarage-green transition-transform duration-300 ease-out drop-shadow-2xl ${
           isMenuOpen 
             ? 'translate-x-0' 
             : 'translate-x-full'
         }`}
         style={{
           right: 0,
+          width: 'min(480px, 100vw)',
           isolation: 'isolate',
           willChange: isMenuOpen ? 'transform' : 'auto'
         }}

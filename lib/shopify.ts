@@ -22,6 +22,7 @@ export interface ShopifyProduct {
   updatedAt: string
   availableForSale: boolean
   options: ShopifyProductOption[]
+  metafields?: ShopifyMetafield[]
   priceRange: {
     minVariantPrice: {
       amount: string
@@ -32,6 +33,14 @@ export interface ShopifyProduct {
       currencyCode: string
     }
   }
+}
+
+export interface ShopifyMetafield {
+  id: string
+  namespace: string
+  key: string
+  value: string
+  type: string
 }
 
 export interface ShopifyImage {
@@ -53,7 +62,8 @@ export interface ShopifyVariant {
     amount: string
     currencyCode: string
   }
-  availableForSale: boolean
+  available: boolean // Shopify Buy SDK uses 'available' not 'availableForSale'
+  availableForSale?: boolean // Keep for compatibility, but Buy SDK uses 'available'
   quantityAvailable?: number
   selectedOptions: ShopifySelectedOption[]
   image?: ShopifyImage
@@ -107,7 +117,7 @@ export const shopifyApi = {
     }
   },
 
-  // Fetch product by handle
+  // Fetch product by handle with metafields
   async getProductByHandle(handle: string): Promise<Product | null> {
     try {
       // Check if Shopify is configured
@@ -119,9 +129,131 @@ export const shopifyApi = {
         return null
       }
       
-      const products = await client.product.fetchAll()
-      const product = products.find((p: any) => p.handle === handle)
-      return product || null
+      // Try GraphQL first for metafields, fall back to SDK if it fails
+      try {
+        // Custom GraphQL query to fetch product with metafields
+        const query = `
+          query getProductByHandle($handle: String!) {
+            productByHandle(handle: $handle) {
+              id
+              title
+              handle
+              description
+              descriptionHtml
+              availableForSale
+              createdAt
+              updatedAt
+              productType
+              vendor
+              tags
+              metafields(identifiers: [
+                { namespace: "custom", key: "size" }
+              ]) {
+                id
+                namespace
+                key
+                value
+                type
+              }
+              options {
+                id
+                name
+                values
+              }
+              variants(first: 20) {
+                edges {
+                  node {
+                    id
+                    title
+                    availableForSale
+                    price {
+                      amount
+                      currencyCode
+                    }
+                    compareAtPrice {
+                      amount
+                      currencyCode
+                    }
+                    selectedOptions {
+                      name
+                      value
+                    }
+                    image {
+                      id
+                      url
+                      altText
+                    }
+                  }
+                }
+              }
+              images(first: 20) {
+                edges {
+                  node {
+                    id
+                    url
+                    altText
+                    width
+                    height
+                  }
+                }
+              }
+            }
+          }
+        `
+        
+        const response = await fetch(`https://${domain}/api/2024-10/graphql.json`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Storefront-Access-Token': token,
+          },
+          body: JSON.stringify({ query, variables: { handle } }),
+        })
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
+        }
+
+        const responseData = await response.json()
+        const { data, errors } = responseData
+        
+        if (errors) {
+          console.error('GraphQL errors:', JSON.stringify(errors, null, 2))
+          throw new Error('GraphQL query failed')
+        }
+        
+        if (!data?.productByHandle) {
+          return null
+        }
+        
+        // Transform GraphQL response to match SDK format
+        const product = data.productByHandle
+        return {
+          ...product,
+          variants: product.variants?.edges?.map((edge: any) => edge.node) || [],
+          images: product.images?.edges?.map((edge: any) => ({
+            ...edge.node,
+            src: edge.node.url, // SDK expects 'src' not 'url'
+          })) || [],
+          metafields: product.metafields || [], // Metafields are returned directly, not in edges
+        }
+      } catch (graphqlError) {
+        console.warn('GraphQL metafields query failed, falling back to SDK:', graphqlError)
+        
+        // Fallback to SDK method without metafields
+        const products = await client.product.fetchAll()
+        const product = products.find((p: any) => p.handle === handle)
+        
+        if (product) {
+          // Add empty metafields array for compatibility
+          return {
+            ...product,
+            metafields: [],
+          }
+        }
+        
+        return null
+      }
     } catch (error) {
       console.error('Error fetching product by handle:', error)
       return null

@@ -38,7 +38,7 @@ export default function ChairsPage() {
         </div>
         
         <p className="text-2xl md:text-3xl font-medium font-neue-haas text-squarage-black mb-8 max-w-3xl mx-auto">
-          Whoa! You're a little bit early. Check back soon.
+          Whoa! You&apos;re a little bit early. Check back soon.
         </p>
         
         <div className="flex items-center justify-center gap-3">
