@@ -87,7 +87,7 @@ export default function CartItem({ item }: CartItemProps) {
         
         {/* Product Details */}
         <div className="flex-1 flex flex-col justify-between">
-          {/* Top Section: Product Info */}
+          {/* Product Info & Quantity */}
           <div>
             <h3 className="font-neue-haas font-bold text-2xl text-squarage-black leading-tight pr-8">
               {item.title || item.variant?.product?.title || 'Unknown Product'}
@@ -95,12 +95,9 @@ export default function CartItem({ item }: CartItemProps) {
             {item.variant?.title && item.variant.title !== 'Default Title' && (
               <p className="text-base font-bold text-squarage-black mt-1">{item.variant.title}</p>
             )}
-          </div>
-          
-          {/* Bottom Section: Quantity & Price */}
-          <div className="flex items-center justify-between mt-3">
+            
             {/* Quantity Controls */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mt-1">
               <span className="text-base font-neue-haas font-bold text-squarage-black">Quantity:</span>
               <div className="flex items-center border-2 border-squarage-orange rounded-full overflow-hidden">
                 <button
@@ -124,8 +121,10 @@ export default function CartItem({ item }: CartItemProps) {
                 </button>
               </div>
             </div>
-            
-            {/* Price */}
+          </div>
+          
+          {/* Bottom Section: Price */}
+          <div className="flex justify-end">
             <div className="text-right">
               <p className="font-neue-haas font-bold text-lg text-squarage-black">
                 {formatPrice(item.variant?.price)}
