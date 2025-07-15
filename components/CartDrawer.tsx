@@ -58,9 +58,14 @@ export default function CartDrawer() {
                 <p className="text-2xl font-neue-haas text-white mb-6">Your cart is empty</p>
                 <button
                   onClick={closeCart}
-                  className="bg-white text-squarage-green font-bold font-neue-haas text-xl py-3 px-6 hover:bg-squarage-yellow hover:text-white transition-colors duration-300"
+                  className="bg-squarage-orange font-bold font-neue-haas text-2xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 relative"
                 >
-                  Continue Shopping
+                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">
+                    Continue Shopping
+                  </span>
+                  <span className="relative z-10 text-white">
+                    Continue Shopping
+                  </span>
                 </button>
               </div>
             ) : (
