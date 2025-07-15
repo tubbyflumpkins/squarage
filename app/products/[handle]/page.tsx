@@ -12,45 +12,58 @@ interface ProductPageProps {
 // Generate metadata for SEO
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params
-  const product = await shopifyApi.getProductByHandle(handle)
   
-  if (!product) {
-    return {
-      title: 'Product Not Found | Squarage Studio'
+  try {
+    const product = await shopifyApi.getProductByHandle(handle)
+    
+    if (!product) {
+      return {
+        title: 'Product Not Found | Squarage Studio',
+        description: 'The requested product could not be found.'
+      }
     }
-  }
 
-  const title = `${product.title} | Squarage Studio`
-  const description = product.description || `Handcrafted ${product.title} from Squarage Studio. Made in Los Angeles with premium materials and traditional craftsmanship.`
-  const image = product.images?.[0]?.src
+    const title = `${product.title} | Squarage Studio`
+    const description = product.description || `Handcrafted ${product.title} from Squarage Studio. Made in Los Angeles with premium materials and traditional craftsmanship.`
+    const image = product.images?.[0]?.src
 
-  return {
-    title,
-    description,
-    openGraph: {
+    return {
       title,
       description,
-      images: image ? [{ url: image, alt: product.title }] : [],
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: image ? [image] : [],
-    },
+      openGraph: {
+        title,
+        description,
+        images: image ? [{ url: image, alt: product.title }] : [],
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: image ? [image] : [],
+      },
+    }
+  } catch (error) {
+    console.error('Error generating metadata:', error)
+    return {
+      title: 'Product Not Found | Squarage Studio',
+      description: 'The requested product could not be found.'
+    }
   }
 }
 
 export default async function ProductPageRoute({ params }: ProductPageProps) {
   const { handle } = await params
-  const product = await shopifyApi.getProductByHandle(handle)
   
-  if (!product) {
-    notFound()
-  }
+  try {
+    const product = await shopifyApi.getProductByHandle(handle)
+    
+    if (!product) {
+      notFound()
+      return // Ensure we don't continue execution
+    }
 
-  // Serialize the product data to plain object for client component
+    // Serialize the product data to plain object for client component
   const serializedProduct = {
     id: String(product.id),
     title: String(product.title),
@@ -109,4 +122,10 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
   }
 
   return <ProductPage product={serializedProduct} />
+  
+  } catch (error) {
+    console.error('Error loading product:', error)
+    notFound()
+    return
+  }
 }

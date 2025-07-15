@@ -272,12 +272,8 @@ export const shopifyApi = {
         return null
       }
       
-      console.log('Fetching all collections from Shopify...')
       const collections = await client.collection.fetchAllWithProducts()
-      console.log('All collections:', collections.map((c: any) => ({ handle: c.handle, title: c.title, productCount: c.products?.length || 0 })))
-      
       const collection = collections.find((c: any) => c.handle === handle)
-      console.log('Looking for handle:', handle, 'Found:', collection ? 'Yes' : 'No')
       return collection || null
     } catch (error) {
       console.error('Error fetching collection by handle:', error)
@@ -312,20 +308,12 @@ export const shopifyApi = {
       const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
       const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
       
-      console.log('getProductsByCollection - Environment check:', {
-        domain: domain ? 'SET' : 'MISSING',
-        token: token ? 'SET' : 'MISSING',
-        collectionHandle
-      })
-      
       if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
         console.log('Shopify credentials not configured')
         return []
       }
       
-      console.log('Fetching collection:', collectionHandle)
       const collection = await this.getCollectionByHandle(collectionHandle)
-      console.log('Collection found:', collection ? `Yes (${collection.products?.length || 0} products)` : 'No')
       return collection?.products || []
     } catch (error) {
       console.error('Error fetching products by collection:', error)
