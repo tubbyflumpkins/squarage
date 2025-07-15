@@ -49,10 +49,10 @@ export default function CartDrawer() {
                   className="bg-squarage-orange font-bold font-neue-haas text-2xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 relative"
                 >
                   <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">
-                    Continue Shopping
+                    Totally strange
                   </span>
                   <span className="relative z-10 text-white">
-                    Continue Shopping
+                    Totally strange
                   </span>
                 </button>
               </div>
