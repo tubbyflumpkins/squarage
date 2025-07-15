@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -48,8 +48,9 @@ export default function CollectionsSection() {
   const [hoverAnimatingLetters, setHoverAnimatingLetters] = useState<Set<number>>(new Set())
   const [initialAnimationStarted, setInitialAnimationStarted] = useState(false)
   const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
-  // Fixed delays to prevent hydration mismatch
-  const randomDelays = [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15]
+  
+  // Fixed delays to prevent hydration mismatch - memoized to prevent re-renders
+  const randomDelays = useMemo(() => [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15], [])
 
   const handleMouseMove = (e: React.MouseEvent, title: string) => {
     setTooltip({
@@ -99,7 +100,7 @@ export default function CollectionsSection() {
     }, 100)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [randomDelays])
 
   return (
     <>

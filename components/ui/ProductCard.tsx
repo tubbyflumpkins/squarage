@@ -21,7 +21,7 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
 
   // Get the current price from first variant
   const currentPrice = product.variants?.[0] 
-    ? formatPrice(product.variants[0].price.amount, product.variants[0].price.currencyCode)
+    ? formatPrice(String(product.variants[0].price.amount), product.variants[0].price.currencyCode)
     : 'Price unavailable'
 
 

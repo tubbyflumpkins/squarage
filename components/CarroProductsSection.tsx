@@ -51,7 +51,7 @@ export default function CarroProductsSection() {
         <ProductGrid 
           products={products}
           loading={loading}
-          emptyMessage="Products coming soon! We're currently setting up our Shopify integration."
+          emptyMessage="Products coming soon! We&apos;re currently setting up our Shopify integration."
         />
       </div>
     </section>
