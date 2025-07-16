@@ -37,7 +37,7 @@ export default function AboutSection() {
             </div>
 
             {/* Call to Action */}
-            <div className="mt-4 text-center md:text-left">
+            <div className="mt-4 md:mt-8 text-center md:text-left">
               <Link
                 href="/contact"
                 className="inline-block bg-squarage-green font-bold font-neue-haas text-4xl py-4 px-8 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 relative"

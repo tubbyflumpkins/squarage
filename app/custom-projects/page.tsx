@@ -158,7 +158,7 @@ export default function CustomProjectsPage() {
       <section>
         {processSteps.map((step, index) => {
           const backgrounds = ['bg-squarage-yellow', 'bg-squarage-dark-blue', 'bg-squarage-orange', 'bg-squarage-red']
-          const textColors = ['text-squarage-dark-blue', 'text-squarage-white', 'text-squarage-white', 'text-squarage-yellow']
+          const textColors = ['text-cream', 'text-cream', 'text-cream', 'text-cream']
           return (
             <div key={index} className={`${backgrounds[index]} py-4 md:py-12`}>
               <div className={`grid grid-cols-1 lg:grid-cols-2 gap-0 items-center ${
@@ -212,19 +212,12 @@ export default function CustomProjectsPage() {
             Let&apos;s collaborate to create something extraordinary for your space.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
+          <div className="flex justify-center">
             <Link
               href="/contact"
               className="inline-block px-8 sm:px-12 py-3 sm:py-4 sm:w-56 bg-white text-squarage-green font-bold font-neue-haas text-base sm:text-lg hover:bg-squarage-blue hover:text-white transition-all duration-300 transform hover:scale-105 text-center"
             >
               Get Started
-            </Link>
-            
-            <Link
-              href="/products"
-              className="inline-block px-8 sm:px-12 py-3 sm:py-4 sm:w-56 border-2 border-white text-white font-bold font-neue-haas text-base sm:text-lg hover:bg-white hover:text-squarage-green transition-all duration-300 transform hover:scale-105 text-center"
-            >
-              View Our Work
             </Link>
           </div>
         </div>

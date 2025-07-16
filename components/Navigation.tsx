@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import CartIcon from '@/components/CartIcon'
@@ -23,6 +24,11 @@ const InstagramIcon = ({ className }: { className: string }) => (
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { toggleCart, closeCart, state } = useCart()
+  const pathname = usePathname()
+  
+  // Use special logo on custom-projects and contact pages
+  const useSpecialLogo = pathname === '/custom-projects' || pathname === '/contact'
+  const logoSrc = useSpecialLogo ? '/images/logo_main_white_transparent.png' : '/images/logo_main.png'
   
   // Handle back button/swipe to close menus
   useEffect(() => {
@@ -103,7 +109,7 @@ export default function Navigation() {
         }}
       >
         <Image
-          src="/images/logo_main.png"
+          src={logoSrc}
           alt="Squarage Studio"
           width={480}
           height={114}
@@ -118,13 +124,21 @@ export default function Navigation() {
       {/* Floating Menu Button - Independent Element */}
       <button
         onClick={handleMenuToggle}
-        className="fixed top-6 right-6 md:right-10 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-squarage-green space-y-1 group z-[9999] md:hover:scale-110 transition-all duration-300 drop-shadow-lg"
+        className={`fixed top-6 right-6 md:right-10 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 space-y-1 group z-[9999] md:hover:scale-110 transition-all duration-300 drop-shadow-lg ${
+          useSpecialLogo ? 'bg-white' : 'bg-squarage-green'
+        }`}
         aria-label="Toggle menu"
         style={{ isolation: 'isolate' }}
       >
-        <span className="block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 bg-white transition-all duration-300 md:group-hover:w-7 md:group-hover:-translate-y-0.5" />
-        <span className="block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 bg-white transition-all duration-300 md:group-hover:w-7" />
-        <span className="block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 bg-white transition-all duration-300 md:group-hover:w-7 md:group-hover:translate-y-0.5" />
+        <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 transition-all duration-300 md:group-hover:w-7 md:group-hover:-translate-y-0.5 ${
+          useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+        }`} />
+        <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 transition-all duration-300 md:group-hover:w-7 ${
+          useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+        }`} />
+        <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 transition-all duration-300 md:group-hover:w-7 md:group-hover:translate-y-0.5 ${
+          useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+        }`} />
       </button>
 
       {/* Click Outside to Close Overlay - Remaining Space */}
