@@ -8,7 +8,7 @@ const SLIDE_INTERVAL = 4000
 
 const heroImages = [
   {
-    src: '/images/DSC05249.jpg',
+    src: '/images/hero-2-processed.jpg',
     alt: 'Squarage Studio Design',
   },
   {

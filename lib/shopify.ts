@@ -363,6 +363,21 @@ export const shopifyApi = {
       console.error('Error removing from checkout:', error)
       return null
     }
+  },
+
+  // Fetch existing checkout by ID
+  async getCheckout(checkoutId: string) {
+    try {
+      const checkout = await client.checkout.fetch(checkoutId)
+      // Check if checkout is still valid (not completed)
+      if (checkout && !checkout.completedAt) {
+        return checkout
+      }
+      return null
+    } catch (error) {
+      console.error('Error fetching checkout:', error)
+      return null
+    }
   }
 }
 

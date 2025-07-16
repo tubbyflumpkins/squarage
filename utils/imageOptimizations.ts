@@ -39,12 +39,12 @@ export const preloadNextImage = (
     // Handle load/error events
     link.onload = () => {
       resolve(true)
-      // Clean up after successful load
+      // Clean up after successful load - use shorter delay for faster cleanup
       setTimeout(() => {
         if (document.head.contains(link)) {
           document.head.removeChild(link)
         }
-      }, 1000)
+      }, 100)
     }
     
     link.onerror = () => {
@@ -87,9 +87,9 @@ export const batchPreloadNextImages = async (
       }
     })
     
-    // Small delay between batches
+    // Use requestAnimationFrame for smoother batching without blocking
     if (i + batchSize < imageSrcs.length) {
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)))
     }
   }
   

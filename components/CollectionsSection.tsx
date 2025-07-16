@@ -186,7 +186,7 @@ export default function CollectionsSection() {
               onMouseLeave={!isTouchDevice ? handleMouseLeave : undefined}
             >
               <div className={`p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 ${collection.bgColor} ${collection.hoverColor}`}>
-                <div className="relative overflow-hidden bg-gray-100 aspect-square border-4 md:border-0 border-squarage-black">
+                <div className="relative overflow-hidden bg-gray-100 aspect-square m-4">
                   <Image
                     src={collection.image}
                     alt={collection.title}
@@ -195,9 +195,9 @@ export default function CollectionsSection() {
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
                   
-                  {/* Mobile Button - Inside image, bottom center */}
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 md:hidden">
-                    <div className="px-4 py-2 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-lg hover:bg-squarage-yellow transition-colors duration-300 pointer-events-none">
+                  {/* Mobile Button - Inside image, bottom left */}
+                  <div className="absolute bottom-4 left-4 md:hidden">
+                    <div className="px-4 py-2 bg-squarage-white border-2 border-squarage-black font-bold font-neue-haas text-squarage-black text-lg hover:bg-squarage-yellow transition-colors duration-300 pointer-events-none">
                       {collection.title}
                     </div>
                   </div>

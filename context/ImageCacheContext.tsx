@@ -118,6 +118,12 @@ export const ImageCacheProvider: React.FC<ImageCacheProviderProps> = ({ children
     }
   })
 
+  // Use refs to access current state without dependencies
+  const cacheStateRef = React.useRef(cacheState)
+  React.useEffect(() => {
+    cacheStateRef.current = cacheState
+  }, [cacheState])
+
   // Simplified image preloading function without complex state dependencies
   const preloadImage = useCallback((imageSrc: string): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -195,14 +201,8 @@ export const ImageCacheProvider: React.FC<ImageCacheProviderProps> = ({ children
   const preloadProductImages = useCallback(async (product: SupportedProduct): Promise<void> => {
     const productId = product.id.toString()
     
-    // Use current state to check if already preloaded
-    let isAlreadyPreloaded = false
-    setCacheState(prev => {
-      isAlreadyPreloaded = prev.preloadedProducts.has(productId)
-      return prev
-    })
-    
-    if (isAlreadyPreloaded) {
+    // Use ref to check if already preloaded
+    if (cacheStateRef.current.preloadedProducts.has(productId)) {
       return
     }
 
@@ -226,18 +226,20 @@ export const ImageCacheProvider: React.FC<ImageCacheProviderProps> = ({ children
       }
     }))
 
-    // Preload images in small batches to avoid overwhelming the browser
-    const batchSize = 3
+    // Preload images in larger batches for faster loading
+    const batchSize = 6
     for (let i = 0; i < imageSrcs.length; i += batchSize) {
       const batch = imageSrcs.slice(i, i + batchSize)
       
-      // Process batch in parallel
+      // Process batch in parallel with no artificial delays
       await Promise.allSettled(
         batch.map(imageSrc => preloadImage(imageSrc))
       )
 
-      // Small delay between batches to prevent blocking
-      await new Promise(resolve => setTimeout(resolve, 10))
+      // Use requestAnimationFrame instead of setTimeout for better performance
+      if (i + batchSize < imageSrcs.length) {
+        await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)))
+      }
     }
 
     // Mark product as preloaded
@@ -249,7 +251,7 @@ export const ImageCacheProvider: React.FC<ImageCacheProviderProps> = ({ children
 
   // Preload a batch of image URLs
   const preloadImageBatch = useCallback(async (imageSrcs: string[]): Promise<void> => {
-    const batchSize = 5
+    const batchSize = 8
     
     for (let i = 0; i < imageSrcs.length; i += batchSize) {
       const batch = imageSrcs.slice(i, i + batchSize)
@@ -258,38 +260,24 @@ export const ImageCacheProvider: React.FC<ImageCacheProviderProps> = ({ children
         batch.map(imageSrc => preloadImage(imageSrc))
       )
 
-      // Small delay between batches
-      await new Promise(resolve => setTimeout(resolve, 20))
+      // Use requestAnimationFrame for smoother batching
+      if (i + batchSize < imageSrcs.length) {
+        await new Promise(resolve => requestAnimationFrame(() => resolve(undefined)))
+      }
     }
   }, [preloadImage])
 
   // Utility functions without state dependencies
   const isImageCached = useCallback((imageSrc: string): boolean => {
-    // Use ref to get current state without dependency
-    let isCached = false
-    setCacheState(prev => {
-      isCached = prev.cachedImages.has(imageSrc)
-      return prev
-    })
-    return isCached
+    return cacheStateRef.current.cachedImages.has(imageSrc)
   }, [])
 
   const isImageLoading = useCallback((imageSrc: string): boolean => {
-    let isLoading = false
-    setCacheState(prev => {
-      isLoading = prev.loadingImages.has(imageSrc)
-      return prev
-    })
-    return isLoading
+    return cacheStateRef.current.loadingImages.has(imageSrc)
   }, [])
 
   const isProductPreloaded = useCallback((productId: string): boolean => {
-    let isPreloaded = false
-    setCacheState(prev => {
-      isPreloaded = prev.preloadedProducts.has(productId)
-      return prev
-    })
-    return isPreloaded
+    return cacheStateRef.current.preloadedProducts.has(productId)
   }, [])
 
   const clearCache = useCallback(() => {
@@ -307,12 +295,7 @@ export const ImageCacheProvider: React.FC<ImageCacheProviderProps> = ({ children
   }, [])
 
   const getCacheStats = useCallback(() => {
-    let stats = { totalImages: 0, cachedCount: 0, failedCount: 0 }
-    setCacheState(prev => {
-      stats = prev.cacheStats
-      return prev
-    })
-    return stats
+    return cacheStateRef.current.cacheStats
   }, [])
 
   // Removed debug logging to prevent re-render loops

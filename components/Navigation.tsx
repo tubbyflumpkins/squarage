@@ -118,7 +118,7 @@ export default function Navigation() {
       {/* Floating Menu Button - Independent Element */}
       <button
         onClick={handleMenuToggle}
-        className="fixed top-6 right-6 md:right-12 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-squarage-green space-y-1 group z-[9999] md:hover:scale-110 transition-all duration-300 drop-shadow-lg"
+        className="fixed top-6 right-6 md:right-10 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-squarage-green space-y-1 group z-[9999] md:hover:scale-110 transition-all duration-300 drop-shadow-lg"
         aria-label="Toggle menu"
         style={{ isolation: 'isolate' }}
       >

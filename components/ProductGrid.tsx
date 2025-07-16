@@ -48,8 +48,8 @@ export default function ProductGrid({
       if (backgroundProducts.length > 0) {
         console.log('Preloading background products:', backgroundProducts.length)
         
-        // Small delay before background preloading to ensure visible images are prioritized
-        setTimeout(async () => {
+        // Use requestAnimationFrame for smooth background preloading without blocking
+        requestAnimationFrame(async () => {
           const backgroundPreloadPromises = backgroundProducts.map(async (product) => {
             if (!isProductPreloaded(product.id.toString())) {
               return preloadProductImages(product)
@@ -58,7 +58,7 @@ export default function ProductGrid({
 
           await Promise.allSettled(backgroundPreloadPromises)
           console.log('All products preloaded. Cache stats:', getCacheStats())
-        }, 500) // 500ms delay for background products
+        })
       }
     }
 

@@ -148,19 +148,28 @@ export function CartProvider({ children }: CartProviderProps) {
       const storedCheckoutId = localStorage.getItem('shopify_checkout_id')
       
       if (storedCheckoutId) {
-        // TODO: Fetch existing checkout from Shopify
-        // For now, create a new one
-        const checkout = await shopifyApi.createCheckout()
-        if (checkout) {
-          dispatch({ type: 'SET_CHECKOUT', payload: checkout })
-          localStorage.setItem('shopify_checkout_id', checkout.id)
+        console.log('Attempting to retrieve existing checkout:', storedCheckoutId)
+        // Try to fetch existing checkout
+        const existingCheckout = await shopifyApi.getCheckout(storedCheckoutId)
+        
+        if (existingCheckout) {
+          console.log('Successfully retrieved existing checkout with items:', existingCheckout.lineItems?.length || 0)
+          dispatch({ type: 'SET_CHECKOUT', payload: existingCheckout })
+          return
+        } else {
+          console.log('Existing checkout not found or expired, creating new one')
+          // Clear invalid checkout ID
+          localStorage.removeItem('shopify_checkout_id')
         }
-      } else {
-        const checkout = await shopifyApi.createCheckout()
-        if (checkout) {
-          dispatch({ type: 'SET_CHECKOUT', payload: checkout })
-          localStorage.setItem('shopify_checkout_id', checkout.id)
-        }
+      }
+      
+      // Create new checkout if no valid existing one
+      console.log('Creating new checkout')
+      const checkout = await shopifyApi.createCheckout()
+      if (checkout) {
+        dispatch({ type: 'SET_CHECKOUT', payload: checkout })
+        localStorage.setItem('shopify_checkout_id', checkout.id)
+        console.log('New checkout created:', checkout.id)
       }
     } catch (error) {
       console.error('Error initializing checkout:', error)

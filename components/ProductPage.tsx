@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useImageCache } from '@/context/ImageCacheContext'
@@ -88,7 +88,7 @@ export default function ProductPage({ product }: ProductPageProps) {
   }
 
   // Get color options from variants (all available since made to order)
-  const colorOptions = product.variants?.map((variant: any, index) => {
+  const unsortedColorOptions = product.variants?.map((variant: any, index) => {
     // Primary: Use Shopify's variant image if it exists
     let variantImage = variant.image
     
@@ -114,9 +114,26 @@ export default function ProductPage({ product }: ProductPageProps) {
     }
   }) || []
 
-  // Handle color selection with cache-aware switching and performance tracking
+  // Sort colors in the specified order
+  const colorOrder = ['Blue', 'Green', 'Yellow', 'Orange', 'Red', 'Black', 'White']
+  const colorOptions = unsortedColorOptions.sort((a, b) => {
+    const aIndex = colorOrder.indexOf(a.name)
+    const bIndex = colorOrder.indexOf(b.name)
+    
+    // If color not in order list, put it at the end
+    if (aIndex === -1 && bIndex === -1) return 0
+    if (aIndex === -1) return 1
+    if (bIndex === -1) return -1
+    
+    return aIndex - bIndex
+  })
+
+  // Handle color selection with enhanced performance tracking
   const handleColorSelect = (variantIndex: number) => {
-    const startTime = Date.now()
+    const startTime = performance.now()
+    const colorName = colorOptions[variantIndex]?.name || `variant-${variantIndex}`
+    
+    console.log(`🎨 Starting color switch to ${colorName}`)
     setSelectedVariantIndex(variantIndex)
     
     // Find image for this color variant and update main image
@@ -127,24 +144,37 @@ export default function ProductPage({ product }: ProductPageProps) {
       if (imageIndex !== -1) {
         const targetImageSrc = product.images[imageIndex]?.src
         
-        // Performance tracking and user feedback
+        // Enhanced performance tracking
         if (targetImageSrc && isImageCached(targetImageSrc)) {
-          const switchTime = Date.now() - startTime
-          console.log(`⚡ Instant color switch in ${switchTime}ms (cached)`)
+          const switchTime = performance.now() - startTime
+          console.log(`⚡ INSTANT color switch to ${colorName} in ${switchTime.toFixed(2)}ms (cached)`)
           
-          // Optional: Show success indicator in development
-          if (process.env.NODE_ENV === 'development') {
-            console.log(`🎯 Cache hit for ${colorOptions[variantIndex]?.name} variant`)
+          // Mark performance entry for tracking
+          if (typeof window !== 'undefined' && 'performance' in window) {
+            performance.mark(`color-switch-cached-${colorName}`)
           }
         } else {
-          console.log(`⏳ Loading ${colorOptions[variantIndex]?.name} variant (not cached)`)
+          console.log(`⏳ Loading ${colorName} variant (not cached - this may cause delay)`)
           
-          // Track how long it takes to load from network
+          // Track network loading with enhanced timing
           if (targetImageSrc) {
             const img = new window.Image()
             img.onload = () => {
-              const loadTime = Date.now() - startTime
-              console.log(`📡 Network load completed in ${loadTime}ms for ${colorOptions[variantIndex]?.name}`)
+              const loadTime = performance.now() - startTime
+              console.log(`📡 Network load for ${colorName} completed in ${loadTime.toFixed(2)}ms`)
+              
+              // Mark performance for slow loads
+              if (loadTime > 500) {
+                console.warn(`🐌 SLOW: ${colorName} took ${loadTime.toFixed(2)}ms to load`)
+              }
+              
+              if (typeof window !== 'undefined' && 'performance' in window) {
+                performance.mark(`color-switch-network-${colorName}`)
+              }
+            }
+            img.onerror = () => {
+              const errorTime = performance.now() - startTime
+              console.error(`❌ Failed to load ${colorName} after ${errorTime.toFixed(2)}ms`)
             }
             img.src = targetImageSrc
           }
@@ -156,8 +186,10 @@ export default function ProductPage({ product }: ProductPageProps) {
       // Fallback: if no specific image found, cycle through images based on variant index
       const fallbackImageIndex = variantIndex % (product.images?.length || 1)
       setSelectedImageIndex(fallbackImageIndex)
+      console.log(`🔄 Using fallback image index ${fallbackImageIndex} for ${colorName}`)
     }
   }
+
 
   // Get metafield value by key
   const getMetafieldValue = (namespace: string, key: string): string => {
@@ -176,22 +208,6 @@ export default function ProductPage({ product }: ProductPageProps) {
     return size || 'Custom sizing available'
   }
 
-  // Color mapping for styling dropdown options
-  const getColorStyle = (colorName: string): { color: string } => {
-    const colorMapping: { [key: string]: string } = {
-      'Black': '#333333',        // squarage-black
-      'Blue': '#01BAD5',         // squarage-blue
-      'Green': '#4A9B4E',        // squarage-green
-      'Orange': '#F7901E',       // squarage-orange
-      'Red': '#F04E23',          // squarage-red
-      'White': '#333333',        // Keep black for visibility on light background
-      'Yellow': '#F5B74C',       // squarage-yellow
-      'Pink': '#F2BAC9',         // squarage-pink
-      'Dark Blue': '#2274A5',    // squarage-dark-blue
-    }
-    
-    return { color: colorMapping[colorName] || '#333333' }
-  }
 
   // Color mapping for shadow effects
   const getShadowColorStyle = (colorName: string): { color: string } => {
@@ -209,6 +225,42 @@ export default function ProductPage({ product }: ProductPageProps) {
     
     return { color: colorMapping[colorName] || '#F5B74C' }
   }
+
+  // Get actual color for swatches (black/white as their real colors)
+  const getSwatchColor = (colorName: string): string => {
+    const colorMapping: { [key: string]: string } = {
+      'Black': '#000000',        // actual black
+      'Blue': '#01BAD5',         // squarage-blue
+      'Green': '#4A9B4E',        // squarage-green
+      'Orange': '#F7901E',       // squarage-orange
+      'Red': '#F04E23',          // squarage-red
+      'White': '#FFFFFF',        // actual white
+      'Yellow': '#F5B74C',       // squarage-yellow
+      'Pink': '#F2BAC9',         // squarage-pink
+      'Dark Blue': '#2274A5',    // squarage-dark-blue
+    }
+    
+    return colorMapping[colorName] || '#F5B74C'
+  }
+
+  // Color mapping for styling dropdown text
+  const getColorStyle = (colorName: string): { color: string } => {
+    const colorMapping: { [key: string]: string } = {
+      'Black': '#333333',        // squarage-black
+      'Blue': '#01BAD5',         // squarage-blue
+      'Green': '#4A9B4E',        // squarage-green
+      'Orange': '#F7901E',       // squarage-orange
+      'Red': '#F04E23',          // squarage-red
+      'White': '#333333',        // Keep black for visibility
+      'Yellow': '#F5B74C',       // squarage-yellow
+      'Pink': '#F2BAC9',         // squarage-pink
+      'Dark Blue': '#2274A5',    // squarage-dark-blue
+    }
+    
+    return { color: colorMapping[colorName] || '#333333' }
+  }
+
+
 
   // Use the global image cache for better performance
   useEffect(() => {
@@ -240,50 +292,63 @@ export default function ProductPage({ product }: ProductPageProps) {
     <main className="min-h-screen bg-cream">
 
       {/* Product Content */}
-      <div className="pt-32 pb-24">
+      <div className="pt-24 md:pt-32 pb-24">
         <div className="w-full">
           <div className="flex flex-col lg:flex-row">
             
             {/* Image Gallery - Top on Mobile, Left on Desktop */}
-            <div className="w-full lg:w-1/3 px-6 mb-8 lg:mb-0">
-              {/* Main Image */}
-              <div className="bg-gray-50 relative">
-                {product.images && product.images.length > 0 ? (
-                  <Image
-                    src={product.images[selectedImageIndex]?.src || product.images[0].src}
-                    alt={product.images[selectedImageIndex]?.altText || product.title}
-                    width={600}
-                    height={600}
-                    className="w-full h-auto object-contain"
-                    priority={selectedImageIndex === 0} // Prioritize first image load
-                  />
-                ) : (
-                  <div className="w-full h-96 flex items-center justify-center bg-gray-100">
-                    <span className="text-gray-400 font-neue-haas text-lg">No Image Available</span>
+            <div className="w-full lg:w-1/3 px-6 mb-8 lg:mb-0 lg:pr-1">
+              <div className="lg:flex lg:gap-4">
+                {/* Main Image */}
+                <div className="bg-gray-50 relative lg:flex-1">
+                  {product.images && product.images.length > 0 ? (
+                    <Image
+                      src={product.images[selectedImageIndex]?.src || product.images[0].src}
+                      alt={product.images[selectedImageIndex]?.altText || product.title}
+                      width={600}
+                      height={600}
+                      className="w-full h-auto object-contain"
+                      priority={selectedImageIndex === 0} // Prioritize first image load
+                    />
+                  ) : (
+                    <div className="w-full h-96 flex items-center justify-center bg-gray-100">
+                      <span className="text-gray-400 font-neue-haas text-lg">No Image Available</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Color Swatches - Mobile: below image, Desktop: right side vertical */}
+                {colorOptions.length > 1 && (
+                  <div className="flex flex-wrap gap-2 mt-4 justify-center lg:flex-col lg:justify-center lg:mt-0 lg:w-12">
+                    {colorOptions.map((option, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleColorSelect(index)}
+                        className={`w-8 h-8 md:w-6 md:h-6 lg:w-10 lg:h-10 border-2 transition-all duration-200 hover:scale-110 ${
+                          selectedVariantIndex === index 
+                            ? 'border-squarage-black' 
+                            : 'border-gray-300'
+                        }`}
+                        style={{ backgroundColor: getSwatchColor(option.name) }}
+                        aria-label={`Select ${option.name} color`}
+                        title={option.name}
+                      />
+                    ))}
                   </div>
                 )}
-                
               </div>
             </div>
 
             {/* Product Details - Bottom on Mobile, Right on Desktop */}
-            <div className="w-full lg:w-2/3 px-6">
+            <div className="w-full lg:w-2/3 px-6 lg:pl-1">
               <div className="space-y-0">
               {/* Title */}
-              <div className="mb-8">
-                <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-neue-haas text-squarage-black mb-4 relative">
-                  <span 
-                    className="absolute transform translate-x-1 translate-y-1"
-                    style={getShadowColorStyle(colorOptions[selectedVariantIndex]?.name || '')}
-                  >
-                    {product.title}
-                  </span>
-                  <span className="relative z-10 text-squarage-black">
-                    {product.title}
-                  </span>
+              <div className="mb-4 md:mb-8">
+                <h1 className="text-5xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-neue-haas text-squarage-black mb-4 text-center md:text-left">
+                  {product.title}
                 </h1>
                 {product.description && (
-                  <p className="text-lg md:text-2xl lg:text-4xl font-neue-haas text-squarage-black leading-relaxed mt-6">
+                  <p className="text-lg md:text-2xl lg:text-4xl font-neue-haas text-squarage-black leading-relaxed mt-6 text-center md:text-left">
                     {product.description}
                   </p>
                 )}
@@ -295,25 +360,12 @@ export default function ProductPage({ product }: ProductPageProps) {
               {/* Color Section */}
               <div className="flex justify-between items-center py-4">
                 <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Color</span>
-                <select
-                  value={selectedVariantIndex}
-                  onChange={(e) => handleColorSelect(parseInt(e.target.value))}
-                  className="text-xl md:text-2xl lg:text-4xl font-neue-haas bg-transparent border-none outline-none cursor-pointer font-medium"
+                <span 
+                  className="text-xl md:text-2xl lg:text-4xl font-neue-haas font-medium"
                   style={getColorStyle(colorOptions[selectedVariantIndex]?.name || '')}
-                  autoComplete="off"
-                  data-form-type="other"
                 >
-                  {colorOptions.map((option, index) => (
-                    <option 
-                      key={index} 
-                      value={index}
-                      style={getColorStyle(option.name)}
-                      className="bg-cream font-neue-haas"
-                    >
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
+                  {colorOptions[selectedVariantIndex]?.name || ''}
+                </span>
               </div>
 
               {/* Divider */}
@@ -348,10 +400,10 @@ export default function ProductPage({ product }: ProductPageProps) {
               </div>
 
               {/* Divider */}
-              <div className="h-px bg-squarage-black mb-8"></div>
+              <div className="h-px bg-squarage-black mb-12"></div>
 
               {/* Add to Cart */}
-              <div className="space-y-4">
+              <div className="pt-8">
                 <button
                   onClick={async () => {
                     if (!selectedVariant || isAddingToCart) return
@@ -381,9 +433,6 @@ export default function ProductPage({ product }: ProductPageProps) {
                     {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                   </span>
                 </button>
-                <p className="text-base md:text-lg lg:text-2xl font-neue-haas text-squarage-black text-center opacity-70">
-                  Each piece is made to order. Production time: 4-6 weeks.
-                </p>
               </div>
               </div>
 

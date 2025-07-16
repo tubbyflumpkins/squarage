@@ -76,48 +76,48 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
     productType: String(product.productType || ''),
     vendor: String(product.vendor || ''),
     tags: Array.isArray(product.tags) ? product.tags.map(tag => String(tag)) : [],
-    options: product.options?.map((option: any) => ({
+    options: product.options?.filter((option: any) => option && option.id).map((option: any) => ({
       id: String(option.id),
-      name: String(option.name),
+      name: String(option.name || ''),
       values: option.values?.map((value: any) => 
-        typeof value === 'string' ? value : value.value || String(value)
+        typeof value === 'string' ? value : value?.value || String(value || '')
       ) || []
     })) || [],
-    variants: product.variants?.map((variant: any) => ({
+    variants: product.variants?.filter((variant: any) => variant && variant.id).map((variant: any) => ({
       id: String(variant.id),
-      title: String(variant.title),
+      title: String(variant.title || ''),
       availableForSale: Boolean(variant.available), // Use 'available' field instead of 'availableForSale'
       price: {
         amount: String(variant.price?.amount || '0'),
         currencyCode: String(variant.price?.currencyCode || 'USD')
       },
       compareAtPrice: variant.compareAtPrice ? {
-        amount: String(variant.compareAtPrice.amount),
-        currencyCode: String(variant.compareAtPrice.currencyCode)
+        amount: String(variant.compareAtPrice.amount || '0'),
+        currencyCode: String(variant.compareAtPrice.currencyCode || 'USD')
       } : null,
       selectedOptions: variant.selectedOptions?.map((option: any) => ({
-        name: String(option.name),
-        value: String(option.value)
+        name: String(option?.name || ''),
+        value: String(option?.value || '')
       })) || [],
       image: variant.image ? {
-        id: String(variant.image.id),
-        src: String(variant.image.src),
+        id: String(variant.image.id || ''),
+        src: String(variant.image.src || ''),
         altText: String(variant.image.altText || '')
       } : null
     })) || [],
-    images: product.images?.map((image: any) => ({
+    images: product.images?.filter((image: any) => image && image.id && image.src).map((image: any) => ({
       id: String(image.id),
       src: String(image.src),
       altText: String(image.altText || ''),
       width: Number(image.width) || 800,
       height: Number(image.height) || 800
     })) || [],
-    metafields: product.metafields?.map((metafield: any) => ({
+    metafields: product.metafields?.filter((metafield: any) => metafield && metafield.id).map((metafield: any) => ({
       id: String(metafield.id),
-      namespace: String(metafield.namespace),
-      key: String(metafield.key),
-      value: String(metafield.value),
-      type: String(metafield.type)
+      namespace: String(metafield.namespace || ''),
+      key: String(metafield.key || ''),
+      value: String(metafield.value || ''),
+      type: String(metafield.type || '')
     })) || []
   }
 
