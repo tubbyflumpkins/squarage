@@ -128,6 +128,23 @@ export default function ProductPage({ product }: ProductPageProps) {
     return aIndex - bIndex
   })
 
+  // Find the default variant index that corresponds to the first image (shown in product grid)
+  const getDefaultVariantIndex = () => {
+    if (!product.images || product.images.length === 0 || colorOptions.length === 0) {
+      return 0
+    }
+    
+    const firstImage = product.images[0]
+    
+    // Find which color option has this image
+    const defaultColorIndex = colorOptions.findIndex((colorOption) => {
+      return colorOption.image?.id === firstImage.id
+    })
+    
+    // If found in sorted color options, use that index; otherwise default to 0
+    return defaultColorIndex !== -1 ? defaultColorIndex : 0
+  }
+
   // Handle color selection with enhanced performance tracking
   const handleColorSelect = (variantIndex: number) => {
     const startTime = performance.now()
@@ -261,6 +278,21 @@ export default function ProductPage({ product }: ProductPageProps) {
   }
 
 
+
+  // Set the correct default variant index on component mount
+  useEffect(() => {
+    const defaultIndex = getDefaultVariantIndex()
+    setSelectedVariantIndex(defaultIndex)
+    
+    // Also update the selected image to match the default variant
+    const defaultColorOption = colorOptions[defaultIndex]
+    if (defaultColorOption?.image) {
+      const imageIndex = product.images?.findIndex((img: any) => img.id === defaultColorOption.image?.id)
+      if (imageIndex !== -1) {
+        setSelectedImageIndex(imageIndex)
+      }
+    }
+  }, [product.id]) // Only run when product changes
 
   // Use the global image cache for better performance
   useEffect(() => {
