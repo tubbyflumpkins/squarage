@@ -10,9 +10,8 @@ export default function AboutSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           {/* About Content */}
           <div>
-            <h2 className="text-5xl md:text-7xl font-bold font-neue-haas text-squarage-black mb-8 relative text-center md:text-left">
-              <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">About Us</span>
-              <span className="relative z-10">About Us</span>
+            <h2 className="text-5xl md:text-7xl font-bold font-neue-haas text-squarage-black mb-8 text-center md:text-left">
+              About Us
             </h2>
             
             {/* About Text - Preserved from original */}

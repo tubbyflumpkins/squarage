@@ -11,8 +11,8 @@ const collections = [
     description: 'Custom dining and coffee tables crafted with precision',
     image: '/images/collection-tables.jpg',
     href: '/collections/tiled',
-    bgColor: 'bg-squarage-green',
-    hoverColor: 'hover:bg-squarage-yellow',
+    bgColor: 'bg-squarage-yellow',
+    hoverColor: 'hover:bg-squarage-green',
   },
   {
     id: 'shelves',
@@ -21,7 +21,7 @@ const collections = [
     image: '/images/collection-shelves.jpg',
     href: '/collections/shelves',
     bgColor: 'bg-cream',
-    hoverColor: 'hover:bg-squarage-yellow',
+    hoverColor: 'hover:bg-squarage-green',
   },
   {
     id: 'chairs',
@@ -30,7 +30,7 @@ const collections = [
     image: '/images/collection-chairs.jpg',
     href: '/collections/chairs',
     bgColor: 'bg-cream',
-    hoverColor: 'hover:bg-squarage-yellow',
+    hoverColor: 'hover:bg-squarage-green',
   },
   {
     id: 'objects',
@@ -38,8 +38,8 @@ const collections = [
     description: 'Unique decorative and functional objects',
     image: '/images/collection-objects.jpg',
     href: '/collections/objects',
-    bgColor: 'bg-squarage-green',
-    hoverColor: 'hover:bg-squarage-yellow',
+    bgColor: 'bg-squarage-yellow',
+    hoverColor: 'hover:bg-squarage-green',
   },
 ]
 
@@ -120,7 +120,7 @@ export default function CollectionsSection() {
 
   return (
     <>
-    <section className="bg-squarage-red">
+    <section className="bg-squarage-green">
       {/* Section Header */}
       <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
         <div className="max-w-7xl mx-auto">
