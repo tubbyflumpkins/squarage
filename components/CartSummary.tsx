@@ -6,10 +6,12 @@ export default function CartSummary() {
   const { state } = useCart()
   
   const formatPrice = (priceObj: any) => {
-    if (!priceObj || !priceObj.amount) return '$0.00'
+    if (!priceObj || !priceObj.amount) return '$0'
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: priceObj.currencyCode || 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(parseFloat(priceObj.amount))
   }
   
@@ -23,8 +25,8 @@ export default function CartSummary() {
     <div className="border-t-2 border-white p-6 space-y-4">
       {/* Subtotal */}
       <div className="flex justify-between items-center">
-        <span className="text-xl font-neue-haas text-white">Subtotal</span>
-        <span className="text-xl font-neue-haas font-bold text-white">
+        <span className="text-2xl font-neue-haas font-bold text-white">Subtotal</span>
+        <span className="text-2xl font-neue-haas font-bold text-white">
           {formatPrice(state.subtotalPrice)}
         </span>
       </div>

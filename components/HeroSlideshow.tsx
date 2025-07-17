@@ -66,7 +66,7 @@ export default function HeroSlideshow() {
               priority={index === 0}
               loading={index < 2 ? 'eager' : 'lazy'}
               sizes="100vw"
-              quality={85}
+              quality={90}
             />
           </div>
         ))}

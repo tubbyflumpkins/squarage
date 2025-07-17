@@ -23,6 +23,13 @@ const ShadowLabel = ({ htmlFor, children }: { htmlFor: string; children: string 
   </label>
 )
 
+// Simple label without shadow effect for form fields
+const SimpleLabel = ({ htmlFor, children }: { htmlFor: string; children: string }) => (
+  <label htmlFor={htmlFor} className="block text-2xl font-bold font-neue-haas text-white mb-2">
+    {children}
+  </label>
+)
+
 // Shared input styles for better performance
 const inputBaseClasses = "w-full px-4 py-3 bg-cream font-neue-haas font-medium text-xl focus:outline-none relative z-10 border-0"
 const textareaClasses = `${inputBaseClasses} resize-none`
@@ -80,7 +87,7 @@ const FormField = ({
   showErrors: boolean
 }) => (
   <div>
-    <ShadowLabel htmlFor={name}>{label}</ShadowLabel>
+    <SimpleLabel htmlFor={name}>{label}</SimpleLabel>
     <ShadowInput 
       register={register} 
       name={name} 
