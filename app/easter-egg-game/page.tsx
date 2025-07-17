@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -51,10 +51,10 @@ export default function EasterEggGame() {
   const recentMessagesRef = useRef<string[]>([]) // Track recent messages to prevent repeats
   
   // Color options for falling squares (removed green to avoid confusion with grass)
-  const squareColors = ['#F04E23', '#F7901E', '#F5B74C', '#01BAD5'] // red, orange, yellow, blue
+  const squareColors = useMemo(() => ['#F04E23', '#F7901E', '#F5B74C', '#01BAD5'], []) // red, orange, yellow, blue
   
   // Encouraging messages
-  const encouragementMessages = [
+  const encouragementMessages = useMemo(() => [
     "That'll look great in our living room!",
     "Wow!",
     "That's beautiful!",
@@ -65,7 +65,7 @@ export default function EasterEggGame() {
     "Yay, shopping!",
     "Squarage is so cool!",
     "Am I buying too much?"
-  ]
+  ], [])
   
   // Initialize cart position
   useEffect(() => {
@@ -488,7 +488,7 @@ export default function EasterEggGame() {
               Oh no!
             </h2>
             <p className="text-lg sm:text-xl font-neue-haas text-white mb-6">
-              You didn't add enough to your cart
+              You didn&apos;t add enough to your cart
             </p>
             <Link href="/">
               <button className="bg-squarage-orange font-bold font-neue-haas text-2xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 relative">

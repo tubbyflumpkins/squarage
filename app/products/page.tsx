@@ -87,15 +87,15 @@ export default function ProductsPage() {
     switch (sortBy) {
       case 'price-asc':
         filtered.sort((a, b) => {
-          const priceA = parseFloat(a.variants?.[0]?.price?.amount || '0')
-          const priceB = parseFloat(b.variants?.[0]?.price?.amount || '0')
+          const priceA = parseFloat(String(a.variants?.[0]?.price?.amount || '0'))
+          const priceB = parseFloat(String(b.variants?.[0]?.price?.amount || '0'))
           return priceA - priceB
         })
         break
       case 'price-desc':
         filtered.sort((a, b) => {
-          const priceA = parseFloat(a.variants?.[0]?.price?.amount || '0')
-          const priceB = parseFloat(b.variants?.[0]?.price?.amount || '0')
+          const priceA = parseFloat(String(a.variants?.[0]?.price?.amount || '0'))
+          const priceB = parseFloat(String(b.variants?.[0]?.price?.amount || '0'))
           return priceB - priceA
         })
         break
