@@ -84,6 +84,8 @@ export default function ProductPage({ product }: ProductPageProps) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currencyCode,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(parseFloat(price))
   }
 
@@ -108,7 +110,7 @@ export default function ProductPage({ product }: ProductPageProps) {
     
     return {
       name: variant.title,
-      index,
+      originalIndex: index, // Store the original variant index
       available: true, // Always available since made to order
       image: variantImage
     }
@@ -137,24 +139,26 @@ export default function ProductPage({ product }: ProductPageProps) {
     const firstImage = product.images[0]
     
     // Find which color option has this image
-    const defaultColorIndex = colorOptions.findIndex((colorOption) => {
+    const defaultColorOption = colorOptions.find((colorOption) => {
       return colorOption.image?.id === firstImage.id
     })
     
-    // If found in sorted color options, use that index; otherwise default to 0
-    return defaultColorIndex !== -1 ? defaultColorIndex : 0
+    // If found, return the original variant index; otherwise default to 0
+    return defaultColorOption?.originalIndex ?? 0
   }
 
   // Handle color selection with enhanced performance tracking
-  const handleColorSelect = (variantIndex: number) => {
+  const handleColorSelect = (colorOptionIndex: number) => {
     const startTime = performance.now()
-    const colorName = colorOptions[variantIndex]?.name || `variant-${variantIndex}`
+    const colorOption = colorOptions[colorOptionIndex]
+    const colorName = colorOption?.name || `variant-${colorOptionIndex}`
+    const originalVariantIndex = colorOption?.originalIndex || 0
     
-    console.log(`🎨 Starting color switch to ${colorName}`)
-    setSelectedVariantIndex(variantIndex)
+    console.log(`🎨 Starting color switch to ${colorName} (original variant index: ${originalVariantIndex})`)
+    setSelectedVariantIndex(originalVariantIndex)
     
     // Find image for this color variant and update main image
-    const variantImage = colorOptions[variantIndex]?.image
+    const variantImage = colorOption?.image
     
     if (variantImage) {
       const imageIndex = product.images?.findIndex((img: any) => img.id === variantImage.id)
@@ -200,8 +204,8 @@ export default function ProductPage({ product }: ProductPageProps) {
         setSelectedImageIndex(imageIndex)
       }
     } else {
-      // Fallback: if no specific image found, cycle through images based on variant index
-      const fallbackImageIndex = variantIndex % (product.images?.length || 1)
+      // Fallback: if no specific image found, cycle through images based on color option index
+      const fallbackImageIndex = colorOptionIndex % (product.images?.length || 1)
       setSelectedImageIndex(fallbackImageIndex)
       console.log(`🔄 Using fallback image index ${fallbackImageIndex} for ${colorName}`)
     }
@@ -285,7 +289,7 @@ export default function ProductPage({ product }: ProductPageProps) {
     setSelectedVariantIndex(defaultIndex)
     
     // Also update the selected image to match the default variant
-    const defaultColorOption = colorOptions[defaultIndex]
+    const defaultColorOption = colorOptions.find(opt => opt.originalIndex === defaultIndex)
     if (defaultColorOption?.image) {
       const imageIndex = product.images?.findIndex((img: any) => img.id === defaultColorOption.image?.id)
       if (imageIndex !== -1) {
@@ -357,7 +361,7 @@ export default function ProductPage({ product }: ProductPageProps) {
                         key={index}
                         onClick={() => handleColorSelect(index)}
                         className={`w-8 h-8 md:w-6 md:h-6 lg:w-10 lg:h-10 border-2 transition-all duration-200 hover:scale-110 ${
-                          selectedVariantIndex === index 
+                          selectedVariantIndex === option.originalIndex 
                             ? 'border-squarage-black' 
                             : 'border-gray-300'
                         }`}
@@ -394,9 +398,9 @@ export default function ProductPage({ product }: ProductPageProps) {
                 <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Color</span>
                 <span 
                   className="text-xl md:text-2xl lg:text-4xl font-neue-haas font-medium"
-                  style={getColorStyle(colorOptions[selectedVariantIndex]?.name || '')}
+                  style={getColorStyle(colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || '')}
                 >
-                  {colorOptions[selectedVariantIndex]?.name || ''}
+                  {colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || ''}
                 </span>
               </div>
 
@@ -447,7 +451,7 @@ export default function ProductPage({ product }: ProductPageProps) {
                         productId: product.id,
                         variantId: selectedVariant.id,
                         title: product.title,
-                        color: colorOptions[selectedVariantIndex]?.name
+                        color: colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name
                       })
                     } catch (error) {
                       console.error('Error adding to cart:', error)

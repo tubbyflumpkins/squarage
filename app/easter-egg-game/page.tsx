@@ -47,22 +47,24 @@ export default function EasterEggGame() {
   const messagesRef = useRef<EncouragementMessage[]>([])
   const nextMessageIdRef = useRef(0)
   const baseSpeedRef = useRef(4)
+  const nextMessageThresholdRef = useRef(Math.floor(Math.random() * 4) + 3) // Random 3-6
+  const recentMessagesRef = useRef<string[]>([]) // Track recent messages to prevent repeats
   
   // Color options for falling squares (removed green to avoid confusion with grass)
   const squareColors = ['#F04E23', '#F7901E', '#F5B74C', '#01BAD5'] // red, orange, yellow, blue
   
   // Encouraging messages
   const encouragementMessages = [
+    "That'll look great in our living room!",
     "Wow!",
-    "Good job!",
-    "Keep shopping!",
-    "Great work!",
-    "Awesome!",
-    "Fantastic!",
-    "You're amazing!",
-    "Well done!",
-    "Incredible!",
-    "Outstanding!"
+    "That's beautiful!",
+    "What a find!",
+    "I've been wanting one of these!",
+    "My girlfriend will love this!",
+    "I love shopping!",
+    "Yay, shopping!",
+    "Squarage is so cool!",
+    "Am I buying too much?"
   ]
   
   // Initialize cart position
@@ -124,39 +126,56 @@ export default function EasterEggGame() {
     })
   }, [])
 
-  // Spawn encouragement message above cart
+  // Spawn encouragement message above cart (only one at a time)
   const spawnEncouragementMessage = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     
-    const randomMessage = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)]
+    // Clear any existing messages - only show one at a time
+    messagesRef.current = []
+    
+    // Get available messages (not in recent history)
+    const availableMessages = encouragementMessages.filter(
+      message => !recentMessagesRef.current.includes(message)
+    )
+    
+    // If no available messages, reset the recent history (shouldn't happen with 10 messages and 5 history)
+    const messagesToChooseFrom = availableMessages.length > 0 ? availableMessages : encouragementMessages
+    
+    const randomMessage = messagesToChooseFrom[Math.floor(Math.random() * messagesToChooseFrom.length)]
+    
+    // Add to recent history and maintain max 5 recent messages
+    recentMessagesRef.current.push(randomMessage)
+    if (recentMessagesRef.current.length > 5) {
+      recentMessagesRef.current.shift() // Remove oldest message
+    }
+    
     const cartCenterX = cartRef.current.x + cartRef.current.width / 2
     
-    // Message size estimation (approximate width/height for bounds checking)
-    const messageWidth = 120 // Approximate width for bounds checking
-    const messageHeight = 40 // Approximate height for bounds checking
+    // Calculate approximate message width based on text length
+    // More conservative estimate for mobile: 10px per character for 32px font
+    const messageWidth = Math.max(300, randomMessage.length * 10)
+    const messageHeight = 50
     
-    let x, y
-    let attempts = 0
-    const maxAttempts = 20
+    // Check if we're on mobile (narrow screen)
+    const isMobile = canvas.width < 768
     
-    // Try to find a valid position that doesn't overlap and stays in bounds
-    do {
-      // Position above the cart with some horizontal variation
-      const offsetX = (Math.random() - 0.5) * 120 // -60 to +60 pixels from cart center
-      const offsetY = -60 - (Math.random() * 80) // 60-140 pixels above cart
-      x = cartCenterX + offsetX
-      y = cartRef.current.y + offsetY
-      
-      // Clamp to browser bounds with padding
-      x = Math.max(messageWidth / 2, Math.min(canvas.width - messageWidth / 2, x))
-      y = Math.max(messageHeight / 2, Math.min(canvas.height - messageHeight / 2, y))
-      
-      attempts++
-    } while (checkMessageOverlap(x, y) && attempts < maxAttempts)
+    // Position above the cart with less variation on mobile
+    const maxOffsetX = isMobile ? 30 : 50 // Less horizontal movement on mobile
+    const offsetX = (Math.random() - 0.5) * 2 * maxOffsetX
+    const offsetY = -80 - (Math.random() * 60) // 80-140 pixels above cart
+    let x = cartCenterX + offsetX
+    let y = cartRef.current.y + offsetY
     
-    // If we couldn't find a non-overlapping position after max attempts, use the last position anyway
-    const rotation = (Math.random() - 0.5) * 40 // -20 to +20 degrees
+    // More aggressive clamping for mobile
+    // Add extra padding for rotated text and mobile edges
+    const padding = isMobile ? 100 : 80 // Extra padding on mobile
+    x = Math.max(messageWidth / 2 + padding, Math.min(canvas.width - messageWidth / 2 - padding, x))
+    y = Math.max(messageHeight + padding, Math.min(canvas.height - messageHeight - padding, y))
+    
+    // Less rotation on mobile for better readability
+    const maxRotation = isMobile ? 20 : 30 // -10 to +10 degrees on mobile, -15 to +15 on desktop
+    const rotation = (Math.random() - 0.5) * maxRotation
     
     messagesRef.current.push({
       id: nextMessageIdRef.current++,
@@ -167,7 +186,7 @@ export default function EasterEggGame() {
       opacity: 1,
       fadeStartTime: Date.now()
     })
-  }, [encouragementMessages, checkMessageOverlap])
+  }, [encouragementMessages])
   
   // Check collision between square and cart
   const checkCollision = (square: FallingSquare, cart: CartPosition): boolean => {
@@ -341,9 +360,11 @@ export default function EasterEggGame() {
       if (checkCollision(square, cartRef.current)) {
         setScore(prev => {
           const newScore = prev + 1
-          // Spawn encouragement message every 7 squares
-          if (newScore % 7 === 0) {
+          // Spawn encouragement message at random intervals (3-6 squares)
+          if (newScore >= nextMessageThresholdRef.current) {
             spawnEncouragementMessage()
+            // Set next random threshold
+            nextMessageThresholdRef.current = newScore + Math.floor(Math.random() * 4) + 3
           }
           return newScore
         })

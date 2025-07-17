@@ -18,12 +18,14 @@ export default function CartItem({ item }: CartItemProps) {
   const formatPrice = (priceObj: any) => {
     console.log('formatPrice called with:', priceObj)
     if (!priceObj || !priceObj.amount) {
-      console.log('No price object or amount, returning $0.00')
-      return '$0.00'
+      console.log('No price object or amount, returning $0')
+      return '$0'
     }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: priceObj.currencyCode || 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(parseFloat(priceObj.amount))
   }
   

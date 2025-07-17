@@ -20,6 +20,8 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currencyCode,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(parseFloat(price))
   }
 

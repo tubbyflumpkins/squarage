@@ -38,7 +38,7 @@ export default function CartDrawer() {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="pt-20 pb-6 px-6 sm:pt-24 md:pt-28 lg:pt-32 border-b-2 border-white">
-            <h2 className="text-3xl font-bold font-neue-haas text-white">Your Cart</h2>
+            <h2 className="text-4xl md:text-5xl font-bold font-neue-haas text-white text-center">Your Cart</h2>
           </div>
           
           {/* Cart Contents */}

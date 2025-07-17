@@ -35,11 +35,11 @@ export default function CustomProjectSection() {
       <div className="grid grid-cols-1 gap-0">
         <Link
           href="/custom-projects"
-          className="group cursor-pointer"
+          className={isTouchDevice ? "block" : "group cursor-pointer"}
           onMouseMove={!isTouchDevice ? handleMouseMove : undefined}
           onMouseLeave={!isTouchDevice ? handleMouseLeave : undefined}
         >
-          <div className="p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 bg-squarage-blue hover:bg-squarage-green">
+          <div className={`p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 bg-squarage-blue ${isTouchDevice ? '' : 'hover:bg-squarage-green'}`}>
             <div className="bg-squarage-white px-6 py-4 sm:px-8 sm:py-6 md:px-12 md:py-8 text-center flex items-center justify-center border-2 md:border-0 border-squarage-black m-4 md:m-0">
               <h3 className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-bold font-neue-haas text-squarage-black">
                 Ready for a Custom Project?
@@ -54,7 +54,7 @@ export default function CustomProjectSection() {
             <div className="flex justify-center">
               <Link
                 href="/custom-projects"
-                className="px-6 py-3 bg-squarage-white border-2 border-squarage-black font-bold font-neue-haas text-squarage-black text-xl hover:bg-squarage-green transition-colors duration-300"
+                className="px-6 py-3 bg-squarage-white border-2 border-squarage-black font-bold font-neue-haas text-squarage-black text-xl"
               >
                 Start designing
               </Link>

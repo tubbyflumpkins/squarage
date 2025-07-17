@@ -98,6 +98,7 @@ export default function CollectionsSection() {
     }
   }
 
+
   useEffect(() => {
     // Detect touch device
     const checkTouchDevice = () => {
@@ -177,36 +178,36 @@ export default function CollectionsSection() {
     
     {/* Mobile Grid */}
     <div className="grid md:hidden grid-cols-1 gap-0">
-        {mobileCollections.map((collection) => (
-          <div key={collection.id} className="relative">
-            <Link
-              href={collection.href}
-              className="group cursor-pointer block"
-              onMouseMove={!isTouchDevice ? (e) => handleMouseMove(e, collection.title) : undefined}
-              onMouseLeave={!isTouchDevice ? handleMouseLeave : undefined}
-            >
-              <div className={`p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 ${collection.bgColor} ${collection.hoverColor}`}>
-                <div className="relative overflow-hidden bg-gray-100 aspect-square m-4">
-                  <Image
-                    src={collection.image}
-                    alt={collection.title}
-                    fill
-                    className="object-cover object-center"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  
-                  {/* Mobile Button - Inside image, bottom left */}
-                  <div className="absolute bottom-4 left-4 md:hidden">
-                    <div className="px-4 py-2 bg-squarage-white border-2 border-squarage-black font-bold font-neue-haas text-squarage-black text-lg hover:bg-squarage-yellow transition-colors duration-300 pointer-events-none">
-                      {collection.title}
+        {mobileCollections.map((collection) => {
+          return (
+            <div key={collection.id} className="relative">
+              <Link
+                href={collection.href}
+                className="block"
+              >
+                <div className={`p-4 sm:p-8 ${collection.bgColor}`}>
+                  <div className="relative overflow-hidden bg-gray-100 aspect-square m-4">
+                    <Image
+                      src={collection.image}
+                      alt={collection.title}
+                      fill
+                      className="object-cover object-center"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    
+                    {/* Mobile Button - Inside image, bottom left */}
+                    <div className="absolute bottom-4 left-4 md:hidden">
+                      <div className="px-4 py-2 bg-squarage-white border-2 border-squarage-black font-bold font-neue-haas text-squarage-black text-lg transition-colors duration-300 pointer-events-none">
+                        {collection.title}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-            
-          </div>
-        ))}
+              </Link>
+              
+            </div>
+          )
+        })}
     </div>
 
     {/* Cursor Following Tooltip - Only shown on non-touch devices */}
