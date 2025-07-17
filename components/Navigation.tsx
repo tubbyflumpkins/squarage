@@ -184,18 +184,8 @@ export default function Navigation() {
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}
                 >
-                  <span className={shadowTextClass}>Products</span>
-                  Products
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/collections"
-                  onClick={() => setIsMenuOpen(false)}
-                  className={menuItemClass}
-                >
-                  <span className={shadowTextClass}>Collections</span>
-                  Collections
+                  <span className={shadowTextClass}>All Products</span>
+                  All Products
                 </Link>
               </li>
               <li>
