@@ -37,6 +37,7 @@ export default function EasterEggGame() {
   const [lives, setLives] = useState(3)
   const [gameState, setGameState] = useState<'countdown' | 'playing' | 'gameOver'>('countdown')
   const [countdown, setCountdown] = useState(3)
+  const [showDamageFlash, setShowDamageFlash] = useState(false)
   
   // Game state refs to avoid stale closures
   const squaresRef = useRef<FallingSquare[]>([])
@@ -387,6 +388,9 @@ export default function EasterEggGame() {
           }
           return newLives
         })
+        // Trigger damage flash
+        setShowDamageFlash(true)
+        setTimeout(() => setShowDamageFlash(false), 300) // Flash for 300ms
       }
     })
     
@@ -440,6 +444,17 @@ export default function EasterEggGame() {
   
   return (
     <div className="fixed inset-0 bg-cream overflow-hidden">
+      {/* Damage flash overlay */}
+      <div 
+        className={`absolute inset-0 pointer-events-none z-50 transition-opacity duration-150 ${
+          showDamageFlash ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          background: showDamageFlash ? 'radial-gradient(ellipse at center, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.6) 100%)' : 'transparent',
+          boxShadow: showDamageFlash ? 'inset 0 0 100px rgba(239, 68, 68, 0.8)' : 'none'
+        }}
+      />
+      
       {/* Score and Lives display - positioned below main nav */}
       <div className="absolute top-16 sm:top-20 right-0 z-10 p-4 sm:p-6">
         <div className="text-right">

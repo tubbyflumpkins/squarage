@@ -42,7 +42,7 @@ export default function CustomProjectSection() {
           <div className={`p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 bg-squarage-blue ${isTouchDevice ? '' : 'hover:bg-squarage-green'}`}>
             <div className="bg-squarage-white px-6 py-4 sm:px-8 sm:py-6 md:px-12 md:py-8 text-center flex items-center justify-center border-2 md:border-0 border-squarage-black m-4 md:m-0">
               <h3 className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-bold font-neue-haas text-squarage-black">
-                Ready for a Custom Project?
+                Want a Custom Piece?
               </h3>
             </div>
           </div>

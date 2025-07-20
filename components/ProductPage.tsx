@@ -334,10 +334,10 @@ export default function ProductPage({ product }: ProductPageProps) {
           <div className="flex flex-col lg:flex-row">
             
             {/* Image Gallery - Top on Mobile, Left on Desktop */}
-            <div className="w-full lg:w-1/3 px-6 mb-8 lg:mb-0 lg:pr-1">
-              <div className="lg:flex lg:gap-4">
+            <div className="w-full lg:w-1/3 px-6 mb-8 lg:mb-0">
+              <div className="flex flex-col">
                 {/* Main Image */}
-                <div className="bg-gray-50 relative lg:flex-1">
+                <div className="bg-gray-50 relative">
                   {product.images && product.images.length > 0 ? (
                     <Image
                       src={product.images[selectedImageIndex]?.src || product.images[0].src}
@@ -354,14 +354,14 @@ export default function ProductPage({ product }: ProductPageProps) {
                   )}
                 </div>
 
-                {/* Color Swatches - Mobile: below image, Desktop: right side vertical */}
+                {/* Color Swatches - Below image, horizontal and centered */}
                 {colorOptions.length > 1 && (
-                  <div className="flex flex-wrap gap-2 mt-4 justify-center lg:flex-col lg:justify-center lg:mt-0 lg:w-12">
+                  <div className="flex flex-wrap gap-2 mt-4 justify-center">
                     {colorOptions.map((option, index) => (
                       <button
                         key={index}
                         onClick={() => handleColorSelect(index)}
-                        className={`w-8 h-8 md:w-6 md:h-6 lg:w-10 lg:h-10 border-2 transition-all duration-200 hover:scale-110 ${
+                        className={`w-8 h-8 md:w-10 md:h-10 lg:w-10 lg:h-10 border-2 transition-all duration-200 hover:scale-110 ${
                           selectedVariantIndex === option.originalIndex 
                             ? 'border-squarage-black' 
                             : 'border-gray-300'
@@ -377,7 +377,7 @@ export default function ProductPage({ product }: ProductPageProps) {
             </div>
 
             {/* Product Details - Bottom on Mobile, Right on Desktop */}
-            <div className="w-full lg:w-2/3 px-6 lg:pl-1">
+            <div className="w-full lg:w-2/3 px-6">
               <div className="space-y-0">
               {/* Title */}
               <div className="mb-4 md:mb-8">

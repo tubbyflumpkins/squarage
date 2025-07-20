@@ -94,8 +94,7 @@ export default function CustomProjectsPage() {
                     onMouseEnter={() => handleLetterHover(index)}
                     onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
                   >
-                    <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">{letter}</span>
-                    <span className="relative z-10 text-white">{letter}</span>
+                    <span className="text-white">{letter}</span>
                   </span>
                 ))}
               </div>
@@ -114,8 +113,7 @@ export default function CustomProjectsPage() {
                       onMouseEnter={() => handleLetterHover(adjustedIndex)}
                       onAnimationEnd={() => handleAnimationEnd(adjustedIndex, !initialAnimationCompleted)}
                     >
-                      <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">{letter}</span>
-                      <span className="relative z-10 text-white">{letter}</span>
+                      <span className="text-white">{letter}</span>
                     </span>
                   )
                 })}
@@ -140,8 +138,7 @@ export default function CustomProjectsPage() {
                     onMouseEnter={() => handleLetterHover(index)}
                     onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
                   >
-                    <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">{letter}</span>
-                    <span className="relative z-10 text-white">{letter}</span>
+                    <span className="text-white">{letter}</span>
                   </span>
                 )
               })}
@@ -169,7 +166,7 @@ export default function CustomProjectsPage() {
                 <div className={`px-6 lg:px-12 py-2 pb-6 md:py-8 ${index % 2 === 1 ? 'lg:order-2' : 'lg:order-1'}`}>
                   <div className="max-w-2xl mx-auto lg:mx-0">
                     <div className="flex items-center mb-6">
-                      <span className="text-7xl md:text-8xl font-black font-neue-haas text-squarage-green mr-6">
+                      <span className="text-7xl md:text-8xl font-black font-neue-haas text-squarage-white mr-6">
                         {step.step}
                       </span>
                       <h2 className={`text-2xl md:text-4xl lg:text-5xl font-bold font-neue-haas ${textColors[index]} leading-tight md:leading-normal`}>

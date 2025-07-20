@@ -139,8 +139,7 @@ export default function CollectionsSection() {
                   onMouseEnter={() => handleLetterHover(index)}
                   onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
                 >
-                  <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">{letter}</span>
-                  <span className="relative z-10 text-white">{letter}</span>
+                  <span className="text-white">{letter}</span>
                 </span>
               ))}
             </div>
