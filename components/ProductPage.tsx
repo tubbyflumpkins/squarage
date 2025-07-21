@@ -408,15 +408,6 @@ export default function ProductPage({ product }: ProductPageProps) {
               {/* Divider */}
               <div className="h-px bg-squarage-black"></div>
 
-              {/* Category Section */}
-              <div className="flex justify-between items-center py-4">
-                <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Category</span>
-                <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black">Tiled Collection</span>
-              </div>
-
-              {/* Divider */}
-              <div className="h-px bg-squarage-black"></div>
-
               {/* Price Section */}
               <div className="flex justify-between items-center py-4">
                 <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Price</span>
@@ -461,9 +452,9 @@ export default function ProductPage({ product }: ProductPageProps) {
                     }
                   }}
                   disabled={!selectedVariant || isAddingToCart}
-                  className="w-full inline-block bg-squarage-green font-bold font-neue-haas text-4xl py-4 px-8 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-[1.02] transition-all duration-300 relative disabled:bg-gray-400 disabled:border-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full bg-squarage-orange font-bold font-neue-haas text-2xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 relative disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  <span className="absolute inset-0 flex items-center justify-center text-squarage-yellow transform translate-x-0.5 translate-y-0.5">
+                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">
                     {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                   </span>
                   <span className="relative z-10 text-white">
