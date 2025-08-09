@@ -324,10 +324,18 @@ export const shopifyApi = {
   // Create checkout
   async createCheckout() {
     try {
+      if (!process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || !process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
+        console.error('Missing Shopify environment variables:')
+        console.error('NEXT_PUBLIC_SHOPIFY_DOMAIN:', process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN || 'NOT SET')
+        console.error('NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN:', process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN ? 'SET' : 'NOT SET')
+        throw new Error('Missing Shopify environment variables. Please check your .env.local file.')
+      }
       const checkout = await client.checkout.create()
       return checkout
     } catch (error) {
       console.error('Error creating checkout:', error)
+      console.error('Shopify Domain:', process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN)
+      console.error('Has Access Token:', !!process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN)
       return null
     }
   },

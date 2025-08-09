@@ -5,7 +5,7 @@ import { shopifyApi, Product } from '@/lib/shopify'
 import ProductGrid from '@/components/ProductGrid'
 
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc'
-type CollectionOption = 'all' | 'tiled' | 'shelves' | 'chairs' | 'objects'
+type CollectionOption = 'all' | 'tiled' | 'warped' | 'chairs' | 'objects'
 
 const sortOptions = {
   'featured': { icon: 'featured', label: 'Featured' },
@@ -40,7 +40,7 @@ export default function ProductsPage() {
         
         // Fetch products by collection
         const collections: Record<string, Product[]> = {}
-        const collectionNames = ['tiled', 'shelves', 'chairs', 'objects']
+        const collectionNames = ['tiled', 'warped', 'chairs', 'objects']
         
         for (const collectionName of collectionNames) {
           try {
@@ -161,7 +161,7 @@ export default function ProductsPage() {
               >
                 <option value="all">All Collections</option>
                 <option value="tiled">Tiled</option>
-                <option value="shelves">Shelves</option>
+                <option value="warped">Warped</option>
                 <option value="chairs">Chairs</option>
                 <option value="objects">Objects</option>
               </select>

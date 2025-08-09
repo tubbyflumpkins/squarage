@@ -16,10 +16,10 @@ const collections = [
   },
   {
     id: 'shelves',
-    title: 'Shelves',
-    description: 'Floating and modular shelving systems',
+    title: 'Warped',
+    description: 'Natural wood shelving with organic curves',
     image: '/images/collection-shelves.jpg',
-    href: '/collections/shelves',
+    href: '/collections/warped',
     bgColor: 'bg-cream',
     hoverColor: 'hover:bg-squarage-green',
   },
