@@ -30,7 +30,7 @@ export default function WarpedHeroSection() {
 
       {/* Organic Blob Overlay with Text */}
       <div 
-        className={`absolute bottom-0 z-50 ${isMobile ? 'w-full flex justify-center px-4' : 'left-[33.33%]'}`}
+        className={`absolute bottom-0 z-50 ${isMobile ? 'w-full flex justify-center px-4' : 'left-[37.5%]'}`}
         style={{ 
           transform: isMobile 
             ? 'translateY(calc(50% - 1rem)) scale(0.7)' 
