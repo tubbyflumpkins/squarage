@@ -40,8 +40,7 @@ export default function WarpedProductsSection() {
         {/* Section Header */}
         <div className="flex items-center mb-4 lg:mb-8" style={{ minHeight: '80px' }}>
           <h2 
-            className="text-4xl md:text-6xl font-bold font-neue-haas"
-            style={{ color: '#60432F' }}
+            className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black"
           >
             Our Warped Collection
           </h2>
