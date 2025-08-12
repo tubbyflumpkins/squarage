@@ -40,14 +40,9 @@ export default function AboutSection() {
             <div className="mt-4 md:mt-8 text-center md:text-left">
               <Link
                 href="/contact"
-                className="inline-block bg-squarage-green font-bold font-neue-haas text-4xl py-4 px-8 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 relative"
+                className="inline-block bg-squarage-green font-bold font-neue-haas text-4xl py-4 px-8 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 text-white"
               >
-                <span className="absolute inset-0 flex items-center justify-center text-squarage-yellow transform translate-x-0.5 translate-y-0.5">
-                  Contact Us
-                </span>
-                <span className="relative z-10 text-white">
-                  Contact Us
-                </span>
+                Contact Us
               </Link>
             </div>
 
