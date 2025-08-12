@@ -25,7 +25,7 @@ export default function CustomProjectSectionV3() {
               {/* Right - Description and CTA */}
               <div className="text-white space-y-6">
                 <p className="text-lg md:text-xl leading-relaxed">
-                  Every space deserves furniture as unique as you are. Let's create something extraordinary together.
+                  Every space deserves furniture as unique as you are. Let&apos;s create something extraordinary together.
                 </p>
                 
                 <Link
