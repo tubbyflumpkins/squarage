@@ -452,14 +452,9 @@ export default function ProductPage({ product }: ProductPageProps) {
                     }
                   }}
                   disabled={!selectedVariant || isAddingToCart}
-                  className="w-full bg-squarage-orange font-bold font-neue-haas text-2xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 relative disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full bg-squarage-orange font-bold font-neue-haas text-3xl md:text-4xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">
-                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-                  </span>
-                  <span className="relative z-10 text-white">
-                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-                  </span>
+                  {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
               </div>
               </div>

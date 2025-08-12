@@ -6,73 +6,32 @@ import Link from 'next/link'
 
 const collections = [
   {
-    id: 'tables',
-    title: 'Tiled',
-    description: 'Custom dining and coffee tables crafted with precision',
-    image: '/images/collection-tables.jpg',
-    href: '/collections/tiled',
-    bgColor: 'bg-squarage-yellow',
-    hoverColor: 'hover:bg-squarage-green',
-  },
-  {
-    id: 'shelves',
+    id: 'warped',
     title: 'Warped',
-    description: 'Natural wood shelving with organic curves',
+    subtitle: 'Shelving & Storage',
+    description: 'Natural wood shelving systems with organic curves that bring warmth and character to any space. Embracing the natural beauty of wood grain.',
     image: '/images/collection-warped.jpg',
     href: '/collections/warped',
-    bgColor: 'bg-cream',
-    hoverColor: 'hover:bg-squarage-green',
-  },
-  {
-    id: 'chairs',
-    title: 'Chairs',
-    description: 'Ergonomic seating with distinctive design',
-    image: '/images/collection-chairs.jpg',
-    href: '/collections/chairs',
-    bgColor: 'bg-cream',
-    hoverColor: 'hover:bg-squarage-green',
-  },
-  {
-    id: 'objects',
-    title: 'Objects',
-    description: 'Unique decorative and functional objects',
-    image: '/images/collection-objects.jpg',
-    href: '/collections/objects',
     bgColor: 'bg-squarage-yellow',
-    hoverColor: 'hover:bg-squarage-green',
+  },
+  {
+    id: 'tiled',
+    title: 'Tiled',
+    subtitle: 'Tables & Surfaces',
+    description: 'Custom dining and coffee tables featuring our signature tiled designs. Each piece is meticulously crafted with precision joinery and finished to perfection.',
+    image: '/images/collection-tiled.jpg',
+    href: '/collections/tiled',
+    bgColor: 'bg-squarage-green',
   },
 ]
 
 export default function CollectionsSection() {
-  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, text: '' })
   const [hoverAnimatingLetters, setHoverAnimatingLetters] = useState<Set<number>>(new Set())
   const [initialAnimationStarted, setInitialAnimationStarted] = useState(false)
   const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
-  
-  // Create mobile-specific order (swap chairs and objects for mobile only)
-  const mobileCollections = [...collections]
-  const chairsIndex = mobileCollections.findIndex(c => c.id === 'chairs')
-  const objectsIndex = mobileCollections.findIndex(c => c.id === 'objects')
-  if (chairsIndex !== -1 && objectsIndex !== -1) {
-    [mobileCollections[chairsIndex], mobileCollections[objectsIndex]] = [mobileCollections[objectsIndex], mobileCollections[chairsIndex]]
-  }
   
   // Fixed delays to prevent hydration mismatch - memoized to prevent re-renders
   const randomDelays = useMemo(() => [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15], [])
-
-  const handleMouseMove = (e: React.MouseEvent, title: string) => {
-    setTooltip({
-      visible: true,
-      x: e.pageX + 15,
-      y: e.pageY - 10,
-      text: title
-    })
-  }
-
-  const handleMouseLeave = () => {
-    setTooltip({ visible: false, x: 0, y: 0, text: '' })
-  }
 
   const handleLetterHover = (index: number) => {
     // Only start animation if not already animating and initial animation is done
@@ -98,15 +57,7 @@ export default function CollectionsSection() {
     }
   }
 
-
   useEffect(() => {
-    // Detect touch device
-    const checkTouchDevice = () => {
-      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
-    }
-    
-    checkTouchDevice()
-    
     const timer = setTimeout(() => {
       setInitialAnimationStarted(true)
       // Set completion after estimated time for all animations to finish
@@ -121,108 +72,80 @@ export default function CollectionsSection() {
 
   return (
     <>
-    <section className="bg-squarage-green">
-      {/* Section Header */}
-      <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 sm:gap-4 md:gap-6">
-              {'Collections'.split('').map((letter, index) => (
-                <span
-                  key={index}
-                  className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
-                    (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
-                  }`}
-                  style={{
-                    animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
-                  }}
-                  onMouseEnter={() => handleLetterHover(index)}
-                  onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
-                >
-                  <span className="text-white">{letter}</span>
-                </span>
-              ))}
+      {/* Green animated header section */}
+      <section className="bg-squarage-green">
+        <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 sm:gap-4 md:gap-6">
+                {'Collections'.split('').map((letter, index) => (
+                  <span
+                    key={index}
+                    className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
+                      (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
+                    }`}
+                    style={{
+                      animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
+                    }}
+                    onMouseEnter={() => handleLetterHover(index)}
+                    onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
+                  >
+                    <span className="text-white">{letter}</span>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    {/* Collections Grid - Full Width */}
-    {/* Desktop Grid */}
-    <div className="hidden md:grid grid-cols-2 gap-0">
-        {collections.map((collection) => (
-          <div key={collection.id} className="relative">
-            <Link
-              href={collection.href}
-              className="group cursor-pointer block"
-              onMouseMove={!isTouchDevice ? (e) => handleMouseMove(e, collection.title) : undefined}
-              onMouseLeave={!isTouchDevice ? handleMouseLeave : undefined}
-            >
-              <div className={`p-4 sm:p-8 md:p-12 lg:p-16 transition-colors duration-500 ${collection.bgColor} ${collection.hoverColor}`}>
-                <div className="relative overflow-hidden bg-gray-100 aspect-square">
-                  <Image
-                    src={collection.image}
-                    alt={collection.title}
-                    fill
-                    className="object-cover object-center"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                </div>
+      {/* Collections - Full width alternating layout */}
+      <div className="space-y-0 overflow-x-hidden">
+        {collections.map((collection, index) => (
+          <Link
+            key={collection.id}
+            href={collection.href}
+            className="group block"
+          >
+            <div className={`grid grid-cols-1 md:flex ${index % 2 === 0 ? '' : 'md:flex-row-reverse'} items-stretch w-full`}>
+              {/* Image Section - 70% height aspect ratio on mobile, fixed height on desktop */}
+              <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
+                <Image
+                  src={collection.image}
+                  alt={collection.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
               </div>
-            </Link>
-          </div>
-        ))}
-    </div>
-    
-    {/* Mobile Grid */}
-    <div className="grid md:hidden grid-cols-1 gap-0">
-        {mobileCollections.map((collection) => {
-          return (
-            <div key={collection.id} className="relative">
-              <Link
-                href={collection.href}
-                className="block"
-              >
-                <div className={`p-4 sm:p-8 ${collection.bgColor}`}>
-                  <div className="relative overflow-hidden bg-gray-100 aspect-square m-4">
-                    <Image
-                      src={collection.image}
-                      alt={collection.title}
-                      fill
-                      className="object-cover object-center"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                    
-                    {/* Mobile Button - Inside image, bottom left */}
-                    <div className="absolute bottom-4 left-4 md:hidden">
-                      <div className="px-4 py-2 bg-squarage-white border-2 border-squarage-black font-bold font-neue-haas text-squarage-black text-lg transition-colors duration-300 pointer-events-none">
-                        {collection.title}
-                      </div>
+              
+              {/* Content Section - 25% viewport height on mobile */}
+              <div className={`${collection.bgColor} h-[25vh] md:h-auto md:aspect-auto p-4 sm:p-10 md:p-16 lg:p-20 md:w-1/2 flex items-center w-full`}>
+                <div className="w-full max-w-xl mx-auto text-center md:text-left">
+                  <h3 className="text-3xl sm:text-5xl md:text-6xl font-neue-haas font-black mb-1 md:mb-2 text-white">
+                    {collection.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 md:mb-6 text-white opacity-90">
+                    {collection.subtitle}
+                  </p>
+                  <p className="text-sm sm:text-base md:text-lg mb-4 md:mb-8 leading-snug md:leading-relaxed text-white">
+                    {collection.description}
+                  </p>
+                  <div className="flex justify-center md:justify-start">
+                    <div className={`inline-block font-bold font-neue-haas text-lg sm:text-xl md:text-2xl py-2 px-4 md:py-3 md:px-6 border-2 hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 text-white ${
+                      index === 1 
+                        ? 'bg-squarage-yellow border-squarage-yellow' 
+                        : 'bg-squarage-green border-squarage-green'
+                    }`}>
+                      View Collection
                     </div>
                   </div>
                 </div>
-              </Link>
-              
+              </div>
             </div>
-          )
-        })}
-    </div>
-
-    {/* Cursor Following Tooltip - Only shown on non-touch devices */}
-    {tooltip.visible && !isTouchDevice && (
-      <div 
-        className="absolute z-50 px-9 py-6 bg-squarage-white border-4 border-squarage-black font-bold font-neue-haas text-squarage-black text-5xl pointer-events-none"
-        style={{
-          left: tooltip.x,
-          top: tooltip.y,
-          transform: 'translate(-50%, -100%)'
-        }}
-      >
-        {tooltip.text}
+          </Link>
+        ))}
       </div>
-    )}
-
     </>
   )
 }

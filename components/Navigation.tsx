@@ -84,8 +84,7 @@ export default function Navigation() {
   }
 
   // Menu item shared classes
-  const menuItemClass = "block text-4xl md:text-5xl font-bold font-neue-haas text-white hover:text-squarage-red hover:scale-105 transition-all duration-300 relative group"
-  const shadowTextClass = "absolute inset-0 text-squarage-yellow transform translate-x-1 translate-y-1 -z-10"
+  const menuItemClass = "block text-4xl md:text-5xl font-bold font-neue-haas text-white hover:text-squarage-red hover:scale-105 transition-all duration-300"
 
   return (
     <>
@@ -174,7 +173,6 @@ export default function Navigation() {
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}
                 >
-                  <span className={shadowTextClass}>Home</span>
                   Home
                 </Link>
               </li>
@@ -184,7 +182,6 @@ export default function Navigation() {
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}
                 >
-                  <span className={shadowTextClass}>All Products</span>
                   All Products
                 </Link>
               </li>
@@ -194,7 +191,6 @@ export default function Navigation() {
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}
                 >
-                  <span className={shadowTextClass}>Custom Projects</span>
                   Custom Projects
                 </Link>
               </li>
@@ -204,7 +200,6 @@ export default function Navigation() {
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}
                 >
-                  <span className={shadowTextClass}>Contact</span>
                   Contact
                 </Link>
               </li>
@@ -215,11 +210,10 @@ export default function Navigation() {
               {/* Email Icon */}
               <a 
                 href="mailto:squaragestudio@gmail.com"
-                className="relative group hover:text-squarage-red hover:scale-125 transition-all duration-300"
+                className="hover:text-squarage-red hover:scale-125 transition-all duration-300"
                 aria-label="Email us"
               >
-                <EmailIcon className="absolute w-10 h-10 text-squarage-yellow transform translate-x-1 translate-y-1 -z-10" />
-                <EmailIcon className="w-10 h-10 text-white group-hover:text-squarage-red relative z-10 transition-colors duration-300" />
+                <EmailIcon className="w-10 h-10 text-white hover:text-squarage-red transition-colors duration-300" />
               </a>
               
               {/* Instagram Icon */}
@@ -227,11 +221,10 @@ export default function Navigation() {
                 href="https://instagram.com/squaragestudio"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative group hover:text-squarage-red hover:scale-125 transition-all duration-300"
+                className="hover:text-squarage-red hover:scale-125 transition-all duration-300"
                 aria-label="Follow us on Instagram"
               >
-                <InstagramIcon className="absolute w-10 h-10 text-squarage-yellow transform translate-x-1 translate-y-1 -z-10" />
-                <InstagramIcon className="w-10 h-10 text-white group-hover:text-squarage-red relative z-10 transition-colors duration-300" />
+                <InstagramIcon className="w-10 h-10 text-white hover:text-squarage-red transition-colors duration-300" />
               </a>
             </div>
           </nav>
