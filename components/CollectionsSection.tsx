@@ -18,7 +18,7 @@ const collections = [
     id: 'shelves',
     title: 'Warped',
     description: 'Natural wood shelving with organic curves',
-    image: '/images/collection-shelves.jpg',
+    image: '/images/collection-warped.jpg',
     href: '/collections/warped',
     bgColor: 'bg-cream',
     hoverColor: 'hover:bg-squarage-green',
