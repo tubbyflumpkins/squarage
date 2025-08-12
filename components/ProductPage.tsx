@@ -333,105 +333,108 @@ export default function ProductPage({ product }: ProductPageProps) {
         <div className="w-full">
           <div className="flex flex-col lg:flex-row">
             
-            {/* Image Gallery - Top on Mobile, Left on Desktop */}
-            <div className="w-full lg:w-1/3 px-6 mb-8 lg:mb-0">
-              <div className="flex flex-col">
-                {/* Main Image */}
-                <div className="bg-gray-50 relative">
-                  {product.images && product.images.length > 0 ? (
-                    <Image
-                      src={product.images[selectedImageIndex]?.src || product.images[0].src}
-                      alt={product.images[selectedImageIndex]?.altText || product.title}
-                      width={600}
-                      height={600}
-                      className="w-full h-auto object-contain"
-                      priority={selectedImageIndex === 0} // Prioritize first image load
-                    />
-                  ) : (
-                    <div className="w-full h-96 flex items-center justify-center bg-gray-100">
-                      <span className="text-gray-400 font-neue-haas text-lg">No Image Available</span>
+            {/* Mobile Layout - Adaptive height with fixed bottom button */}
+            <div className="lg:hidden fixed inset-0 pt-24 flex flex-col">
+              {/* Scrollable Content Area */}
+              <div className="flex-1 overflow-y-auto px-6 pb-4">
+                {/* Image and Color Swatches */}
+                <div className="flex flex-col">
+                  {/* Main Image */}
+                  <div className="bg-gray-50 relative">
+                    {product.images && product.images.length > 0 ? (
+                      <Image
+                        src={product.images[selectedImageIndex]?.src || product.images[0].src}
+                        alt={product.images[selectedImageIndex]?.altText || product.title}
+                        width={600}
+                        height={600}
+                        className="w-full h-auto object-contain"
+                        priority={selectedImageIndex === 0}
+                      />
+                    ) : (
+                      <div className="w-full h-96 flex items-center justify-center bg-gray-100">
+                        <span className="text-gray-400 font-neue-haas text-lg">No Image Available</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Color Swatches */}
+                  {colorOptions.length > 1 && (
+                    <div className="flex flex-wrap gap-2 mt-2 justify-center">
+                      {colorOptions.map((option, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleColorSelect(index)}
+                          className={`w-8 h-8 border-2 transition-all duration-200 hover:scale-110 ${
+                            selectedVariantIndex === option.originalIndex 
+                              ? 'border-squarage-black' 
+                              : 'border-gray-300'
+                          }`}
+                          style={{ backgroundColor: getSwatchColor(option.name) }}
+                          aria-label={`Select ${option.name} color`}
+                          title={option.name}
+                        />
+                      ))}
                     </div>
                   )}
                 </div>
 
-                {/* Color Swatches - Below image, horizontal and centered */}
-                {colorOptions.length > 1 && (
-                  <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                    {colorOptions.map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleColorSelect(index)}
-                        className={`w-8 h-8 md:w-10 md:h-10 lg:w-10 lg:h-10 border-2 transition-all duration-200 hover:scale-110 ${
-                          selectedVariantIndex === option.originalIndex 
-                            ? 'border-squarage-black' 
-                            : 'border-gray-300'
-                        }`}
-                        style={{ backgroundColor: getSwatchColor(option.name) }}
-                        aria-label={`Select ${option.name} color`}
-                        title={option.name}
-                      />
-                    ))}
+                {/* Product Details */}
+                <div className="mt-4">
+                  {/* Title */}
+                  <div className="mb-2">
+                    <h1 className="text-4xl font-bold font-neue-haas text-squarage-black mb-2 text-center">
+                      {product.title}
+                    </h1>
+                    {product.description && (
+                      <p className="text-base font-neue-haas text-squarage-black leading-relaxed mt-2 text-center">
+                        {product.description}
+                      </p>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
 
-            {/* Product Details - Bottom on Mobile, Right on Desktop */}
-            <div className="w-full lg:w-2/3 px-6">
-              <div className="space-y-0">
-              {/* Title */}
-              <div className="mb-4 md:mb-8">
-                <h1 className="text-5xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-neue-haas text-squarage-black mb-4 text-center md:text-left">
-                  {product.title}
-                </h1>
-                {product.description && (
-                  <p className="text-lg md:text-2xl lg:text-4xl font-neue-haas text-squarage-black leading-relaxed mt-6 text-center md:text-left">
-                    {product.description}
-                  </p>
-                )}
-              </div>
+                  {/* Divider */}
+                  <div className="h-px bg-squarage-black mb-2"></div>
 
-              {/* Divider */}
-              <div className="h-px bg-squarage-black mb-6"></div>
+                  {/* Color Section */}
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Color</span>
+                    <span 
+                      className="text-lg font-neue-haas font-medium"
+                      style={getColorStyle(colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || '')}
+                    >
+                      {colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || ''}
+                    </span>
+                  </div>
 
-              {/* Color Section */}
-              <div className="flex justify-between items-center py-4">
-                <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Color</span>
-                <span 
-                  className="text-xl md:text-2xl lg:text-4xl font-neue-haas font-medium"
-                  style={getColorStyle(colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || '')}
-                >
-                  {colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || ''}
-                </span>
-              </div>
+                  {/* Divider */}
+                  <div className="h-px bg-squarage-black"></div>
 
-              {/* Divider */}
-              <div className="h-px bg-squarage-black"></div>
+                  {/* Price Section */}
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Price</span>
+                    {selectedVariant && (
+                      <span className="text-lg font-neue-haas text-squarage-black">
+                        {formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
+                      </span>
+                    )}
+                  </div>
 
-              {/* Price Section */}
-              <div className="flex justify-between items-center py-4">
-                <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Price</span>
-                {selectedVariant && (
-                  <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black">
-                    {formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
-                  </span>
-                )}
+                  {/* Divider */}
+                  <div className="h-px bg-squarage-black"></div>
+
+                  {/* Dimensions Section */}
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Dimensions</span>
+                    <span className="text-lg font-neue-haas text-squarage-black">{getSize()}</span>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-squarage-black"></div>
+                </div>
               </div>
 
-              {/* Divider */}
-              <div className="h-px bg-squarage-black"></div>
-
-              {/* Dimensions Section */}
-              <div className="flex justify-between items-center py-4">
-                <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Dimensions</span>
-                <span className="text-xl md:text-2xl lg:text-4xl font-neue-haas text-squarage-black">{getSize()}</span>
-              </div>
-
-              {/* Divider */}
-              <div className="h-px bg-squarage-black mb-12"></div>
-
-              {/* Add to Cart */}
-              <div className="pt-8">
+              {/* Fixed Add to Cart Button */}
+              <div className="px-6 pb-6 pt-4 bg-cream border-t border-gray-200">
                 <button
                   onClick={async () => {
                     if (!selectedVariant || isAddingToCart) return
@@ -452,13 +455,141 @@ export default function ProductPage({ product }: ProductPageProps) {
                     }
                   }}
                   disabled={!selectedVariant || isAddingToCart}
-                  className="w-full bg-squarage-orange font-bold font-neue-haas text-3xl md:text-4xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full bg-squarage-orange font-bold font-neue-haas text-2xl py-3 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
               </div>
+            </div>
+
+            {/* Desktop Layout - Original */}
+            <div className="hidden lg:flex lg:flex-row w-full">
+              {/* Image Gallery - Left on Desktop */}
+              <div className="w-1/3 px-6">
+                <div className="flex flex-col">
+                  {/* Main Image */}
+                  <div className="bg-gray-50 relative">
+                    {product.images && product.images.length > 0 ? (
+                      <Image
+                        src={product.images[selectedImageIndex]?.src || product.images[0].src}
+                        alt={product.images[selectedImageIndex]?.altText || product.title}
+                        width={600}
+                        height={600}
+                        className="w-full h-auto object-contain"
+                        priority={selectedImageIndex === 0}
+                      />
+                    ) : (
+                      <div className="w-full h-96 flex items-center justify-center bg-gray-100">
+                        <span className="text-gray-400 font-neue-haas text-lg">No Image Available</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Color Swatches */}
+                  {colorOptions.length > 1 && (
+                    <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                      {colorOptions.map((option, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleColorSelect(index)}
+                          className={`w-10 h-10 border-2 transition-all duration-200 hover:scale-110 ${
+                            selectedVariantIndex === option.originalIndex 
+                              ? 'border-squarage-black' 
+                              : 'border-gray-300'
+                          }`}
+                          style={{ backgroundColor: getSwatchColor(option.name) }}
+                          aria-label={`Select ${option.name} color`}
+                          title={option.name}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* Product Details - Right on Desktop */}
+              <div className="w-2/3 px-6">
+                <div className="space-y-0">
+                  {/* Title */}
+                  <div className="mb-8">
+                    <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold font-neue-haas text-squarage-black mb-4 text-left">
+                      {product.title}
+                    </h1>
+                    {product.description && (
+                      <p className="text-2xl lg:text-4xl font-neue-haas text-squarage-black leading-relaxed mt-6 text-left">
+                        {product.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-squarage-black mb-6"></div>
+
+                  {/* Color Section */}
+                  <div className="flex justify-between items-center py-4">
+                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Color</span>
+                    <span 
+                      className="text-2xl lg:text-4xl font-neue-haas font-medium"
+                      style={getColorStyle(colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || '')}
+                    >
+                      {colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || ''}
+                    </span>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-squarage-black"></div>
+
+                  {/* Price Section */}
+                  <div className="flex justify-between items-center py-4">
+                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Price</span>
+                    {selectedVariant && (
+                      <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black">
+                        {formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-squarage-black"></div>
+
+                  {/* Dimensions Section */}
+                  <div className="flex justify-between items-center py-4">
+                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Dimensions</span>
+                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black">{getSize()}</span>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-squarage-black mb-12"></div>
+
+                  {/* Add to Cart */}
+                  <div className="pt-8">
+                    <button
+                      onClick={async () => {
+                        if (!selectedVariant || isAddingToCart) return
+                        
+                        setIsAddingToCart(true)
+                        try {
+                          await addToCart(selectedVariant.id)
+                          console.log('Successfully added to cart:', {
+                            productId: product.id,
+                            variantId: selectedVariant.id,
+                            title: product.title,
+                            color: colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name
+                          })
+                        } catch (error) {
+                          console.error('Error adding to cart:', error)
+                        } finally {
+                          setIsAddingToCart(false)
+                        }
+                      }}
+                      disabled={!selectedVariant || isAddingToCart}
+                      className="w-full bg-squarage-orange font-bold font-neue-haas text-4xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                      {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
