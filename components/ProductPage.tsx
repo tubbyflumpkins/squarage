@@ -285,7 +285,6 @@ export default function ProductPage({ product }: ProductPageProps) {
 
   // Set the correct default variant index on component mount
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const defaultIndex = getDefaultVariantIndex()
     setSelectedVariantIndex(defaultIndex)
     
@@ -297,6 +296,7 @@ export default function ProductPage({ product }: ProductPageProps) {
         setSelectedImageIndex(imageIndex)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]) // Only run when product changes
 
   // Use the global image cache for better performance

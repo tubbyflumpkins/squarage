@@ -19,7 +19,7 @@ export default function CustomProjectSectionV2() {
         </h2>
         
         <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto">
-          Let's bring your vision to life
+          Let&apos;s bring your vision to life
         </p>
         
         <Link
