@@ -77,8 +77,8 @@ export default function CollectionsSection() {
         <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 sm:gap-4 md:gap-6">
-                {'Collections'.split('').map((letter, index) => (
+              <div className="flex justify-between items-center w-full">
+                {'COLLECTIONS'.split('').map((letter, index) => (
                   <span
                     key={index}
                     className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
