@@ -77,22 +77,24 @@ export default function CollectionsSection() {
         <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center">
-              <div className="flex justify-between items-center w-full">
-                {'COLLECTIONS'.split('').map((letter, index) => (
-                  <span
-                    key={index}
-                    className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
-                      (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
-                    }`}
-                    style={{
-                      animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
-                    }}
-                    onMouseEnter={() => handleLetterHover(index)}
-                    onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
-                  >
-                    <span className="text-white">{letter}</span>
-                  </span>
-                ))}
+              <div className="flex justify-center items-center w-full">
+                <div className="tracking-[0.3em]">
+                  {'COLLECTIONS'.split('').map((letter, index) => (
+                    <span
+                      key={index}
+                      className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer inline-block ${
+                        (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
+                      }`}
+                      style={{
+                        animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
+                      }}
+                      onMouseEnter={() => handleLetterHover(index)}
+                      onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
+                    >
+                      <span className="text-white">{letter}</span>
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

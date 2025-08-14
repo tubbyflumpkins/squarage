@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Navigation from '@/components/Navigation'
+import Footer from '@/components/Footer'
 import { ImageCacheProvider } from '@/context/ImageCacheContext'
 import { CartProvider } from '@/context/CartContext'
 import CartDrawer from '@/components/CartDrawer'
@@ -24,6 +25,7 @@ export default function RootLayout({
             <Navigation />
             <CartDrawer />
             {children}
+            <Footer />
           </CartProvider>
         </ImageCacheProvider>
       </body>
