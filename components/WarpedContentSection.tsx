@@ -11,15 +11,15 @@ export default function WarpedContentSection() {
           {/* Content - Left side */}
           <div>
             <h3 className="text-3xl md:text-4xl font-bold font-neue-haas mb-6 text-squarage-black">
-              Natural Craftsmanship
+              Sculptural Storage
             </h3>
             <div className="space-y-6 text-xl md:text-2xl font-medium font-neue-haas leading-relaxed text-squarage-black">
               <p>
-                The Warped collection celebrates the organic beauty of wood in its most natural form. Each shelving system showcases the unique character of carefully selected timber, with curves and grains that tell the story of the tree&apos;s growth.
+                Warped is our line of sculptural shelves where form takes a playful detour from the straight and narrow. Each piece features smooth, wavy curves that feel fresh, modern, and a little unexpected, while still working hard as functional storage.
               </p>
               
               <p>
-                Our artisans work with the wood&apos;s natural tendencies, embracing warps and curves to create functional art pieces that bring warmth and organic elegance to any space. Every shelf is a testament to sustainable craftsmanship and thoughtful design.
+                Choose from our ready-made corner shelves, full shelves, and wall-mounted designs, or have any shape custom-built to your exact size. Whether you&apos;re filling a tricky corner or creating a statement wall, Warped brings a fluid, wavy touch to everyday storage.
               </p>
             </div>
           </div>
@@ -27,7 +27,7 @@ export default function WarpedContentSection() {
           {/* Featured Image - Right side */}
           <div className="relative w-full">
             <Image
-              src="/images/warped/curved_shelf_dark_05.png"
+              src="/images/warped/curved_shelf_light_05.png"
               alt="Warped Collection - Natural Wood Shelving"
               width={600}
               height={800}

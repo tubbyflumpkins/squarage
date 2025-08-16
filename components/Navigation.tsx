@@ -28,7 +28,7 @@ export default function Navigation() {
   
   // Use special logo on custom-projects and contact pages
   const useSpecialLogo = pathname === '/custom-projects' || pathname === '/contact'
-  const logoSrc = useSpecialLogo ? '/images/logo_main_white_transparent.png' : '/images/logo_main.png'
+  const logoSrc = useSpecialLogo ? '/images/logo_main_white_transparent_small.png' : '/images/logo_main_small.png'
   
   // Handle back button/swipe to close menus
   useEffect(() => {
@@ -110,9 +110,9 @@ export default function Navigation() {
         <Image
           src={logoSrc}
           alt="Squarage Studio"
-          width={480}
-          height={114}
-          className="w-auto h-12 sm:h-16 md:h-20 lg:h-24 drop-shadow-lg"
+          width={254}
+          height={61}
+          className="w-auto h-[26px] sm:h-[34px] md:h-[42px] lg:h-[50px] drop-shadow-lg"
           priority
         />
       </Link>

@@ -22,15 +22,15 @@ export default function WarpedHeroSection() {
         <div 
           className="absolute inset-0 bg-cover bg-no-repeat"
           style={{
-            backgroundImage: 'url(/images/warped/corner_shelf_medium_02.png)',
-            backgroundPosition: isMobile ? 'center 30%' : 'center 35%',
+            backgroundImage: 'url(/images/collection-warped.jpg)',
+            backgroundPosition: isMobile ? 'center 60%' : 'center 60%',
           }}
         />
       </div>
 
       {/* Organic Blob Overlay with Text */}
       <div 
-        className={`absolute bottom-0 z-50 ${isMobile ? 'w-full flex justify-center px-4' : 'left-[37.5%]'}`}
+        className={`absolute bottom-0 z-50 ${isMobile ? 'w-full flex justify-center px-4' : 'left-[25%]'}`}
         style={{ 
           transform: isMobile 
             ? 'translateY(calc(50% - 1rem)) scale(0.7)' 

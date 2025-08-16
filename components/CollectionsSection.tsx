@@ -9,7 +9,7 @@ const collections = [
     id: 'warped',
     title: 'Warped',
     subtitle: 'Shelving & Storage',
-    description: 'Natural wood shelving systems with organic curves that bring warmth and character to any space. Embracing the natural beauty of wood grain.',
+    description: 'Natural wood shelving systems with smooth, wavy lines that add warmth and character to any space. Sculptural storage, custom built.',
     image: '/images/collection-warped.jpg',
     href: '/collections/warped',
     bgColor: 'bg-squarage-yellow',
@@ -18,7 +18,7 @@ const collections = [
     id: 'tiled',
     title: 'Tiled',
     subtitle: 'Tables & Surfaces',
-    description: 'Custom dining and coffee tables featuring our signature tiled designs. Each piece is meticulously crafted with precision joinery and finished to perfection.',
+    description: 'Vibrant tiled surfaces that bring energy, texture, and a playful sense of style to your space.',
     image: '/images/collection-tiled.jpg',
     href: '/collections/tiled',
     bgColor: 'bg-squarage-green',
@@ -77,22 +77,24 @@ export default function CollectionsSection() {
         <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 sm:gap-4 md:gap-6">
-                {'Collections'.split('').map((letter, index) => (
-                  <span
-                    key={index}
-                    className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer ${
-                      (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
-                    }`}
-                    style={{
-                      animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
-                    }}
-                    onMouseEnter={() => handleLetterHover(index)}
-                    onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
-                  >
-                    <span className="text-white">{letter}</span>
-                  </span>
-                ))}
+              <div className="flex justify-center items-center w-full">
+                <div className="tracking-[0.3em]">
+                  {'COLLECTIONS'.split('').map((letter, index) => (
+                    <span
+                      key={index}
+                      className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer inline-block ${
+                        (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
+                      }`}
+                      style={{
+                        animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
+                      }}
+                      onMouseEnter={() => handleLetterHover(index)}
+                      onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
+                    >
+                      <span className="text-white">{letter}</span>
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

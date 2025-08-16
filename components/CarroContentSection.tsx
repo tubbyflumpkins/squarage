@@ -11,15 +11,15 @@ export default function CarroContentSection() {
           {/* Content - First on mobile, second on desktop */}
           <div className="lg:order-2">
             <h3 className="text-3xl md:text-4xl font-bold font-neue-haas text-squarage-black mb-6">
-              Design Philosophy
+              Playfully Elegant
             </h3>
             <div className="space-y-6 text-xl md:text-2xl font-medium font-neue-haas text-squarage-black leading-relaxed">
               <p>
-                The Tiled collection embodies our commitment to creating pieces that serve as both functional furniture and artistic statements. Each table begins with carefully selected materials and evolves through a process of thoughtful design and expert craftsmanship.
+                Tiled is our signature line of grid-based furniture, where clean geometry meets bold color. Each piece is built by hand, then finished with 2x2 mosaic tiles for a sleek, durable surface that feels both playful and refined.
               </p>
               
               <p>
-                From intimate coffee tables to grand dining pieces, every Tiled table is built to become a centerpiece in your space, facilitating connection and creating lasting memories.
+                Browse our ready-made tables, benches, and shelves, or customize any shape and size to fit your space. With endless tile combinations, Tiled lets you create a functional art piece that&apos;s entirely your own.
               </p>
             </div>
           </div>
