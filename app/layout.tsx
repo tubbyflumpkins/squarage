@@ -5,6 +5,7 @@ import Footer from '@/components/Footer'
 import { ImageCacheProvider } from '@/context/ImageCacheContext'
 import { CartProvider } from '@/context/CartContext'
 import CartDrawer from '@/components/CartDrawer'
+import GA from '@/components/GoogleAnalytics'
 
 export const metadata: Metadata = {
   title: 'Squarage Studio - Made in Los Angeles',
@@ -26,6 +27,7 @@ export default function RootLayout({
             <CartDrawer />
             {children}
             <Footer />
+            <GA />
           </CartProvider>
         </ImageCacheProvider>
       </body>
