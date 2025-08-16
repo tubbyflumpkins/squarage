@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import ProductPage from '@/components/ProductPage'
 import { shopifyApi } from '@/lib/shopify'
+import StructuredData, { generateProductSchema, generateBreadcrumbSchema } from '@/components/StructuredData'
 
 interface ProductPageProps {
   params: Promise<{
@@ -30,6 +31,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     return {
       title,
       description,
+      alternates: {
+        canonical: `https://squaragestudio.com/products/${handle}`,
+      },
       openGraph: {
         title,
         description,
@@ -121,7 +125,32 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
     })) || []
   }
 
-  return <ProductPage product={serializedProduct} />
+  // Generate structured data for this product
+  const productSchema = generateProductSchema({
+    name: serializedProduct.title,
+    description: serializedProduct.description || `Handcrafted ${serializedProduct.title} from Squarage Studio`,
+    image: serializedProduct.images[0]?.src || '/images/logo_main.png',
+    price: serializedProduct.variants[0]?.price?.amount || '0',
+    currency: 'USD',
+    availability: serializedProduct.availableForSale ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    brand: 'Squarage Studio',
+    url: `https://squaragestudio.com/products/${handle}`,
+    sku: serializedProduct.variants[0]?.id,
+  })
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: 'https://squaragestudio.com' },
+    { name: 'Products', url: 'https://squaragestudio.com/products' },
+    { name: serializedProduct.title, url: `https://squaragestudio.com/products/${handle}` },
+  ])
+
+  return (
+    <>
+      <StructuredData data={productSchema} />
+      <StructuredData data={breadcrumbSchema} />
+      <ProductPage product={serializedProduct} />
+    </>
+  )
   
   } catch (error) {
     console.error('Error loading product:', error)
