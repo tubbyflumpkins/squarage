@@ -31,11 +31,14 @@ This is a **modern Next.js 15 application** with the following structure:
 ├── lib/
 │   └── shopify.ts         # Shopify API integration
 ├── context/
-│   └── CartContext.tsx    # Shopping cart state management
+│   ├── CartContext.tsx    # Shopping cart state management
+│   └── ImageCacheContext.tsx # Image preloading and caching
 ├── public/
 │   ├── images/            # Product photos, logos, assets
 │   └── fonts/             # Neue Haas Grotesk font family
-└── MIGRATION_PLAN.md      # Detailed migration documentation
+├── MIGRATION_PLAN.md      # Detailed migration documentation
+├── PRELOADING.md          # Image preloading system documentation
+└── CACHE_SYSTEM_DOCUMENTATION.md # Cache system details
 ```
 
 ### Key Features Implemented
@@ -45,9 +48,10 @@ This is a **modern Next.js 15 application** with the following structure:
 - **E-commerce**: Shopify API setup with cart context
 - **Responsive Design**: Mobile-first approach with Tailwind
 - **Product Catalog**: 6+ real products with professional photography
-- **Collection Pages**: Custom-designed pages (Tiled, Shelves, Chairs, Objects)
+- **Collection Pages**: Custom-designed pages (Tiled, Warped, Chairs, Objects)
 - **Contact System**: Full email integration via Zoho SMTP
 - **Mobile Optimization**: Complete responsive design across all components
+- **Image Preloading**: Comprehensive multi-strategy preloading system (see [PRELOADING.md](./PRELOADING.md))
 
 ## Development Commands
 
@@ -164,9 +168,26 @@ All products have professional photography stored in `/public/images/products/[p
 
 ## Performance Considerations
 
-- **Image Optimization**: Next.js Image component with proper sizing
+- **Image Optimization**: Comprehensive preloading system with WebP/AVIF support
 - **Font Loading**: Self-hosted fonts with `font-display: swap`
 - **Bundle Size**: Tree-shaking and code splitting enabled
 - **SEO**: Proper metadata and semantic HTML structure
 
-When working on this project, prioritize the existing design language, maintain the clean aesthetic, and ensure all new features integrate seamlessly with the Shopify e-commerce flow.
+### Image Preloading System
+
+**For detailed information about the image preloading system, see [PRELOADING.md](./PRELOADING.md)**
+
+Key highlights:
+- **3-Strategy Preloading**: Link tags + Image constructor + ImageCache
+- **Shopify CDN Optimization**: Automatic WebP conversion with quality settings
+- **Collection Preloading**: Images load from homepage before navigation
+- **<10ms Color Switching**: Instant variant changes after initial cache
+- **Performance Tracking**: Real-time console feedback for optimization
+
+## Important Documentation
+
+- **[PRELOADING.md](./PRELOADING.md)**: Complete guide to the image preloading system
+- **[CACHE_SYSTEM_DOCUMENTATION.md](./CACHE_SYSTEM_DOCUMENTATION.md)**: Cache implementation details
+- **[MIGRATION_PLAN.md](./MIGRATION_PLAN.md)**: Migration from Webflow details
+
+When working on this project, prioritize the existing design language, maintain the clean aesthetic, and ensure all new features integrate seamlessly with the Shopify e-commerce flow. For any image-related optimizations or preloading questions, refer to PRELOADING.md.
