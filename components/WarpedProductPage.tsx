@@ -466,7 +466,11 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                           
                           // Track performance
                           const switchTime = performance.now() - startTime
-                          const isCached = imagesByColor[color].every(img => isImageCached(img.src))
+                          const isMobile = window.innerWidth < 1024
+                          const isCached = imagesByColor[color].every(img => {
+                            const cacheKey = `${img.src}_${isMobile ? 400 : 600}`
+                            return window.__imageCache?.has(cacheKey) || false
+                          })
                           
                           if (isCached) {
                             console.log(`⚡ INSTANT color switch from ${prevColor} to ${color} in ${switchTime.toFixed(2)}ms (cached)`)

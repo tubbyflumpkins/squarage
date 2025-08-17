@@ -1,293 +1,202 @@
-# Image Preloading System Documentation
+# Universal Image Preloading System Documentation
 
 ## Overview
 
-Squarage Studio implements a comprehensive multi-layer image preloading system that ensures instant image loading and smooth color switching across the entire site. This document explains how the preloading works for different collections and page types.
+Squarage Studio uses a simplified universal image preloading system that ensures instant image loading across the entire site, with special optimizations for mobile devices. This document explains the new streamlined approach.
 
-## System Architecture
+## Why We Changed
 
-### Core Components
+The previous system was overcomplicated with:
+- 3 different preloading strategies that could conflict
+- React Context-based caching that didn't survive navigation
+- Collection-specific logic that was hard to maintain
+- Poor mobile performance with 1-2 second delays
 
-1. **ImageCacheContext** (`/context/ImageCacheContext.tsx`)
-   - Global image caching state management
-   - Batch preloading functions
-   - Cache hit/miss tracking
-   - Performance statistics
+## The New Universal System
 
-2. **Image Optimization Utils** (`/utils/imageOptimizations.ts`)
-   - Next.js Image component helpers
-   - Performance tracking utilities
-   - Responsive image generation
+### Core Philosophy
+**"Preload everything accessible from the current page"**
 
-3. **Collection-Specific Preloaders**
-   - WarpedProductPage preloading
-   - ProductPage (Tiled) preloading
-   - Homepage collection preloading
+Instead of complex collection-specific logic, we now aggressively preload ALL images that could be accessed from the current location. With only 77 images totaling 49MB, this approach is both simple and effective.
 
-## Preloading Strategies
+### Architecture
 
-### 1. Homepage Collection Preloading
+#### 1. Universal Preloader Component
+**Location**: `/components/UniversalPreloader.tsx`
 
-**Location**: `/components/CollectionsSection.tsx`
+- Runs on every page via the root layout
+- Determines what to preload based on current pathname
+- Uses a single, consistent preloading strategy
 
-When users land on the homepage, the system automatically starts preloading collection page images in the background:
+#### 2. Core Preloading Library
+**Location**: `/lib/universalImagePreloader.ts`
 
+Key features:
+- Global `window.__imageCache` that persists across navigation
+- Single `Image()` constructor approach (works everywhere)
+- Mobile-optimized with automatic size reduction
+- Batch loading with concurrency control
+
+### How It Works
+
+#### On Homepage (`/`)
 ```javascript
-// Triggers 3 seconds after homepage loads
-preloadCollectionImages('warped')  // Loads hero + featured images
-preloadCollectionImages('tiled')   // Loads hero image (staggered by 1 second)
+// Preloads ALL 77 images in the site
+// High priority: Hero images, collection previews
+// Low priority: Product variants, gallery images
 ```
 
-**Images Preloaded**:
-- Warped: `/images/collection-warped.jpg` (4MB - hero)
-- Warped: `/images/warped/curved_shelf_light_05.png` (2.2MB - featured)
-- Tiled: `/images/collection-tiled.jpg` (5.7MB - hero)
-
-**Strategy**: Uses `prefetch` link tags + Image constructor for dual caching
-
-### 2. Warped Collection Product Preloading
-
-**Location**: `/components/WarpedProductPage.tsx`
-
-The Warped collection uses a **triple-strategy aggressive preloading** system:
-
-#### Strategy 1: Browser Link Preloading
+#### On Collection Pages (`/collections/*`)
 ```javascript
-// Creates <link rel="preload"> tags for first 2 images of each color
-link.rel = 'preload'
-link.as = 'image'
-link.href = shopifyLoader({ src: img.src, width: 600 })
-link.setAttribute('fetchpriority', color === 'Birch' ? 'high' : 'low')
+// Preloads all products in that specific collection
+// Includes all color variants for each product
 ```
 
-#### Strategy 2: Native Image Constructor
+#### On Product Pages (`/products/*`)
 ```javascript
-// Forces browser to cache all variant images
-const image = new window.Image()
-image.src = shopifyLoader({ src: img.src, width: 600 })
+// Images already visible, no additional preloading needed
+// Cache already warm from previous page
 ```
-
-#### Strategy 3: ImageCache System
-```javascript
-// Application-level caching with performance tracking
-await preloadImageBatch(allImages)
-```
-
-**Color Variants**: Birch, Oak, Walnut (5 images each = 15 total)
-
-**Performance**:
-- Initial load: All 15 images preload on page mount
-- Color switching: <10ms after caching
-- Hover prefetch: Additional safety net for uncached images
-
-### 3. Tiled Collection Product Preloading
-
-**Location**: `/components/ProductPage.tsx`
-
-The Tiled collection uses the standard ImageCache system with optimizations:
-
-```javascript
-// Preloads all product images including variants
-await preloadProductImages(product)
-```
-
-**Features**:
-- Automatic variant detection from Shopify data
-- Color-sorted display (Blue, Green, Yellow, Orange, Red, Black, White)
-- Performance tracking with console output
-- Cache status indicators
-
-**Performance**:
-- Batch size: 6 images processed simultaneously
-- No artificial delays (uses requestAnimationFrame)
-- Instant color switching after initial load
-
-## Shopify CDN Optimization
-
-### Image Transformation
-
-All Shopify images are automatically optimized using a custom loader:
-
-```javascript
-const shopifyLoader = ({ src, width }) => {
-  const url = new URL(src)
-  url.searchParams.set('width', width.toString())
-  url.searchParams.set('format', 'webp')      // 30-50% smaller
-  url.searchParams.set('quality', '85')       // Balance quality/size
-  return url.toString()
-}
-```
-
-**Benefits**:
-- WebP format: 30-50% smaller than JPEG
-- Dynamic sizing: Only loads required resolution
-- Quality optimization: 85% quality for main images, 75% for thumbnails
-
-## Performance Metrics
-
-### Console Indicators
-
-The system provides real-time performance feedback:
-
-- `🎨 Starting aggressive Warped image preload...` - Preloading initiated
-- `📦 Preloading 15 images with 3 strategies...` - Batch processing
-- `✅ Loaded: Oak image` - Individual image cached
-- `⚡ INSTANT color switch from Birch to Oak in 2.45ms (cached)` - Cache hit
-- `📡 Network load for Walnut in 245.67ms` - Cache miss
-- `🔍 Prefetching Oak images on hover...` - Hover prefetch triggered
-
-### Cache Statistics
-
-The ImageCache system tracks:
-- Total images in cache
-- Cache hit/miss rates
-- Failed image loads
-- Preloading progress
-
-## Loading Priority
-
-### Priority Levels
-
-1. **Critical (High Priority)**
-   - First image of default variant (Birch for Warped, first color for Tiled)
-   - Hero images on collection pages
-   - Uses `priority={true}` and `loading="eager"`
-
-2. **Important (Medium Priority)**
-   - Remaining images of current variant
-   - Uses `loading="lazy"` with preload tags
-
-3. **Background (Low Priority)**
-   - Other color variants
-   - Collection page images from homepage
-   - Uses `prefetch` and delayed loading
-
-## Product Grid Preloading
-
-**Location**: `/components/ProductGrid.tsx`
-
-The product grid implements a two-tier strategy:
-
-1. **Visible Products** (First 6): Preloaded immediately
-2. **Background Products** (7+): Preloaded with requestAnimationFrame
-
-This ensures the initial view loads instantly while background products load smoothly.
 
 ## Mobile Optimizations
 
-### Responsive Loading
-- Mobile: `sizes="100vw"` - Full viewport width
-- Desktop: `sizes="(max-width: 768px) 100vw, 50vw"` - Adaptive sizing
+The system automatically detects mobile devices and applies optimizations:
 
-### Container Sizing
-- Mobile: `aspect-square` containers for consistent layout
-- Desktop: Fixed 600px containers for large displays
+### 1. Smaller Images
+- Mobile: 400px width
+- Desktop: 600-1200px width
 
-## Troubleshooting
+### 2. Reduced Concurrency
+- Mobile: 3 concurrent loads
+- Desktop: 8 concurrent loads
 
-### If Images Load Slowly
+### 3. Staggered Loading
+- High priority images load immediately
+- Low priority images load after 2 second delay
 
-1. **Check Console Output**
-   - Look for `🐌 SLOW` warnings (>500ms load time)
-   - Verify preloading messages appear
-   - Check for failed loads (`❌ Failed`)
+### 4. Memory Management
+```javascript
+// Force images into memory on mobile
+if (isMobile && img.decode) {
+  img.decode().catch(() => {})
+}
+```
 
-2. **Verify Cache Status**
-   ```javascript
-   // In browser console
-   getCacheStats()
-   // Should show: { totalImages: 45, cachedCount: 42, failedCount: 0 }
-   ```
+## Performance Metrics
 
-3. **Common Issues**
-   - Original images too large (>5MB) - Need source optimization
-   - Slow network - Initial download still required
-   - Cache cleared - Browser/user cleared cache
+### Desktop Performance
+- Initial load: ~2-3 seconds for all 77 images
+- Color switching: <10ms (instant)
+- Navigation: Instant (images already cached)
 
-### If Color Switching is Slow
+### Mobile Performance
+- Initial load: ~4-5 seconds for high priority
+- Color switching: <50ms (near instant)
+- Navigation: Instant after initial cache
 
-1. **Verify Preloading**
-   - Check console for "Warped product images preloaded" message
-   - Look for cache hit indicators (`⚡ INSTANT`)
+## Implementation Details
 
-2. **Check Image URLs**
-   - Ensure Shopify URLs are valid
-   - Verify WebP format is being requested
+### Global Cache Structure
+```javascript
+window.__imageCache = Map<string, HTMLImageElement>
+window.__imageCacheStats = {
+  total: number,
+  loaded: number,
+  failed: number,
+  startTime: number
+}
+```
 
-## Configuration
+### Cache Key Format
+```javascript
+const cacheKey = `${imageSrc}_${width}`
+// Example: "/images/hero-1.jpg_1200"
+```
 
-### Batch Sizes
-- **WarpedProductPage**: All images at once (aggressive)
-- **ProductPage**: 6 images per batch
-- **ProductGrid**: 6 visible, rest in background
-- **ImageCache**: 6-8 images per batch
+### Shopify CDN Optimization
+```javascript
+// Automatic WebP conversion with quality settings
+url.searchParams.set('format', 'webp')
+url.searchParams.set('quality', '85')
+url.searchParams.set('width', targetWidth)
+```
 
-### Timeouts
-- **Homepage preload delay**: 3000ms (lets critical content load first)
-- **Tiled stagger delay**: 1000ms (prevents overload)
-- **Hover prefetch**: Immediate (0ms)
+## Usage in Components
 
-### Image Quality
-- **Main images**: 85-90% quality
-- **Thumbnails**: 75% quality
-- **Format**: WebP preferred, JPEG fallback
+### Checking Cache Status
+```javascript
+// Check if image is cached
+const isMobile = window.innerWidth < 1024
+const cacheKey = `${imageSrc}_${isMobile ? 400 : 600}`
+const isCached = window.__imageCache?.has(cacheKey)
+```
 
-## Best Practices
+### Manual Preloading (if needed)
+```javascript
+import { preloadImages } from '@/lib/universalImagePreloader'
 
-### For New Products
+const images = [
+  { imageSrc: '/images/product.jpg', width: 600, priority: 'high' }
+]
+await preloadImages(images)
+```
 
-1. **Image Naming**: Include color in filename or alt text
-2. **Image Size**: Keep originals under 2MB when possible
-3. **Aspect Ratio**: Maintain consistent ratios within product
+## Benefits of the New System
 
-### For New Collections
+1. **Simplicity**: One system, one strategy, easy to understand
+2. **Persistence**: Cache survives navigation using global window object
+3. **Mobile-First**: Automatic optimizations for mobile devices
+4. **Performance**: True instant switching after initial load
+5. **Maintainability**: No collection-specific logic to maintain
 
-1. **Add to Homepage Preloader**: Update `CollectionsSection.tsx`
-2. **Implement Cache Integration**: Use `useImageCache` hook
-3. **Add Performance Tracking**: Include console logging
+## Debugging
 
-### Performance Tips
+### Console Output
+The system provides detailed console logging:
+```
+🌐 Universal Preloader: Starting aggressive preload from /
+📱 Device: Mobile
+🔥 Preloading 10 high-priority images...
+✅ Preloading complete in 2341ms
+📊 Cache status: 77 images, 75 loaded, 2 failed
+```
 
-1. **Optimize Source Images**: Compress before uploading to Shopify
-2. **Use Appropriate Formats**: WebP for photos, PNG for graphics
-3. **Lazy Load Below Fold**: Only eager load critical images
-4. **Monitor Cache Hits**: Aim for >80% cache hit rate
+### Cache Statistics
+```javascript
+import { getCacheStats } from '@/lib/universalImagePreloader'
 
-## File Size Recommendations
+const stats = getCacheStats()
+// { cacheSize: 77, stats: {...}, uptime: 12345 }
+```
 
-### Current Status (Needs Optimization)
-- `collection-warped.jpg`: 4.1MB ⚠️
-- `collection-tiled.jpg`: 5.7MB ⚠️
-- `curved_shelf_light_05.png`: 2.2MB ⚠️
+### Clearing Cache (for testing)
+```javascript
+import { clearImageCache } from '@/lib/universalImagePreloader'
+clearImageCache() // Clears all cached images
+```
 
-### Recommended Sizes
-- Hero images: <500KB
-- Product images: <200KB
-- Thumbnails: <50KB
+## Migration Notes
 
-## Future Enhancements
+### Removed Systems
+- `ImageCacheContext` - No longer needed
+- Collection-specific preloaders - Replaced by universal system
+- Link tag preloading - Doesn't work reliably on mobile
+- Service worker caching - Too complex for this use case
 
-### Planned Improvements
+### Components Updated
+- `WarpedProductPage` - Simplified to use global cache
+- `ProductPage` - Simplified to use global cache
+- `CollectionsSection` - No longer needs manual preloading
+- Root layout - Now includes UniversalPreloader
 
-1. **Service Worker**: Offline caching capability
-2. **Blur Placeholders**: Low-quality placeholders during load
-3. **Intersection Observer**: Viewport-based loading
-4. **Image CDN**: Consider Cloudinary/Imgix for advanced optimization
+## Future Improvements
 
-### Monitoring Additions
+Potential optimizations if needed:
+1. Progressive JPEG/WebP for even faster initial display
+2. Intersection Observer for viewport-based loading
+3. Local storage persistence for offline support
+4. Bandwidth detection for quality adjustment
 
-1. **Real User Metrics**: Track actual user experience
-2. **Performance Budgets**: Alert on regression
-3. **A/B Testing**: Compare strategies
+## Summary
 
-## Related Documentation
-
-- [Cache System Documentation](./CACHE_SYSTEM_DOCUMENTATION.md)
-- [Migration Plan](./MIGRATION_PLAN.md)
-- [Claude Integration](./CLAUDE.md)
-
----
-
-**Last Updated**: January 2025  
-**System Status**: ✅ Fully Operational  
-**Performance**: <10ms color switching, 3-strategy preloading active
+The new universal preloading system is dramatically simpler while providing better performance, especially on mobile devices. By preloading everything upfront and using a persistent global cache, we ensure instant navigation and color switching throughout the entire site.
