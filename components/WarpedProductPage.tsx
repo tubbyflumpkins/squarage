@@ -151,7 +151,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     })
 
     return grouped
-  }, [product.images])
+  }, [product.images, product])
 
   // Get the selected variant based on color
   const selectedVariant = useMemo(() => {
