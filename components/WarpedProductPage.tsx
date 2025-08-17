@@ -196,32 +196,39 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     return { backgroundColor: colorMapping[colorName] || '#999' }
   }
 
-  // Aggressive preloading of ALL images using multiple strategies
+  // Aggressive preloading of ALL images using multiple strategies (optimized for mobile)
   useEffect(() => {
     const preloadAllColorImages = async () => {
       console.log('🎨 Starting aggressive Warped image preload...')
       const startTime = performance.now()
+      
+      // Detect if mobile device
+      const isMobile = window.innerWidth < 1024
+      const preloadWidth = isMobile ? 400 : 600  // Smaller images for mobile
       
       // Strategy 1: Use native browser preloading with link tags
       WARPED_COLORS.forEach(color => {
         const colorImages = imagesByColor[color]
         if (colorImages && colorImages.length > 0) {
           colorImages.forEach((img, index) => {
-            // Create link preload tags for first 2 images of each color
-            if (index < 2 && img.src) {
+            // Create link preload tags for ALL images on mobile (not just first 2)
+            if ((isMobile || index < 2) && img.src) {
               const link = document.createElement('link')
               link.rel = 'preload'
               link.as = 'image'
-              link.href = shopifyLoader({ src: img.src, width: 600 })
-              link.setAttribute('fetchpriority', color === 'Birch' ? 'high' : 'low')
+              link.href = shopifyLoader({ src: img.src, width: preloadWidth })
+              link.setAttribute('fetchpriority', color === selectedColor ? 'high' : 'low')
+              link.setAttribute('data-color', color)
               document.head.appendChild(link)
             }
           })
         }
       })
       
-      // Strategy 2: Use Image constructor for browser caching
+      // Strategy 2: Use Image constructor for browser caching with mobile optimization
       const imagePromises: Promise<void>[] = []
+      const imageCache = new Map<string, HTMLImageElement>()
+      
       WARPED_COLORS.forEach(color => {
         const colorImages = imagesByColor[color]
         if (colorImages && colorImages.length > 0) {
@@ -229,9 +236,19 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
             if (img.src) {
               const promise = new Promise<void>((resolve) => {
                 const image = new window.Image()
+                const optimizedSrc = shopifyLoader({ src: img.src, width: preloadWidth })
+                
+                // Store in local cache map for instant access
+                imageCache.set(`${color}-${img.src}`, image)
+                
                 image.onload = () => {
-                  console.log(`✅ Loaded: ${color} image`)
+                  console.log(`✅ Loaded: ${color} image (${isMobile ? 'mobile' : 'desktop'})`)
                   setPreloadStatus(prev => ({ ...prev, [img.src]: true }))
+                  
+                  // Force browser to keep image in memory on mobile
+                  if (isMobile) {
+                    image.decode?.().catch(() => {})  // Decode image data into memory
+                  }
                   resolve()
                 }
                 image.onerror = () => {
@@ -239,7 +256,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   resolve()
                 }
                 // Load optimized version from Shopify CDN
-                image.src = shopifyLoader({ src: img.src, width: 600 })
+                image.src = optimizedSrc
               })
               imagePromises.push(promise)
             }
@@ -247,7 +264,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
         }
       })
       
-      // Strategy 3: Also use the ImageCache system
+      // Strategy 3: Also use the ImageCache system with mobile-specific settings
       const allImages: string[] = []
       WARPED_COLORS.forEach(color => {
         const colorImages = imagesByColor[color]
@@ -260,7 +277,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
         }
       })
       
-      console.log(`📦 Preloading ${allImages.length} images with 3 strategies...`)
+      console.log(`📦 Preloading ${allImages.length} images (${isMobile ? 'mobile' : 'desktop'}) with 3 strategies...`)
       
       // Execute all strategies in parallel
       const [browserResults] = await Promise.all([
@@ -278,12 +295,17 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
         console.log(`${cached ? '⚡' : '🔄'} ${color}: ${cached ? 'Cached' : 'Loading'}`)
       })
       
+      // Store image cache reference for mobile
+      if (isMobile) {
+        (window as any).__warpedImageCache = imageCache
+      }
+      
       setImagesPreloaded(true)
     }
     
     // Start preloading immediately
     preloadAllColorImages()
-  }, [imagesByColor, preloadImageBatch, isImageCached, product])
+  }, [imagesByColor, preloadImageBatch, isImageCached, product, selectedColor])
   
   // Reset active index when color changes
   useEffect(() => {
@@ -322,8 +344,12 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
           {/* Mobile Layout */}
             <div className="lg:hidden fixed inset-0 pt-24 flex flex-col">
               <div className="flex-1 overflow-y-auto px-6 pb-4">
-                {/* Mobile Carousel */}
-                <div className="bg-gray-50 relative aspect-square">
+                {/* Mobile Carousel - Dynamic aspect ratio based on actual image dimensions */}
+                <div className="bg-gray-50 relative" style={{ 
+                  aspectRatio: imagesByColor[selectedColor][0] ? 
+                    `${imagesByColor[selectedColor][0].width} / ${imagesByColor[selectedColor][0].height}` : 
+                    '1 / 1' 
+                }}>
                   <Swiper
                     spaceBetween={10}
                     navigation={true}
@@ -339,10 +365,10 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                             alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
                             fill
                             className="object-contain"
-                            priority={index === 0 && selectedColor === 'Birch'}
-                            sizes="100vw"
-                            loading={index === 0 && selectedColor === 'Birch' ? 'eager' : 'lazy'}
-                            quality={90}
+                            priority={index === 0}
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                            loading={index === 0 ? 'eager' : 'lazy'}
+                            quality={85}
                           />
                         </div>
                       </SwiperSlide>
@@ -355,10 +381,28 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   {WARPED_COLORS.map(color => (
                     <button
                       key={color}
+                      onTouchStart={() => handleColorHover(color)}  // Prefetch on touch for mobile
                       onMouseEnter={() => handleColorHover(color)}
                       onClick={() => {
                         const startTime = performance.now()
                         const prevColor = selectedColor
+                        
+                        // On mobile, ensure images are in memory before switching
+                        if (window.innerWidth < 1024) {
+                          const colorImages = imagesByColor[color]
+                          if (colorImages && colorImages.length > 0) {
+                            // Touch the cached images to keep them hot in memory
+                            colorImages.forEach(img => {
+                              if ((window as any).__warpedImageCache?.has(`${color}-${img.src}`)) {
+                                const cachedImg = (window as any).__warpedImageCache.get(`${color}-${img.src}`)
+                                if (cachedImg?.complete) {
+                                  console.log(`📱 Using memory-cached image for ${color}`)
+                                }
+                              }
+                            })
+                          }
+                        }
+                        
                         setSelectedColor(color)
                         
                         // Track performance
