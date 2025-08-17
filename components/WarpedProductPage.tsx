@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
 import { useCart } from '@/context/CartContext'
+import { useImageCache } from '@/context/ImageCacheContext'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -73,12 +74,37 @@ interface WarpedProductPageProps {
 // Color variants for warped collection
 const WARPED_COLORS = ['Birch', 'Oak', 'Walnut']
 
+// Shopify image loader for optimized CDN delivery with format conversion
+const shopifyLoader = ({ src, width }: { src: string; width: number }) => {
+  try {
+    const url = new URL(src)
+    // Set width for responsive sizing
+    url.searchParams.set('width', width.toString())
+    // Request WebP format for better compression
+    url.searchParams.set('format', 'webp')
+    // Set quality for balance of size and visual quality
+    url.searchParams.set('quality', '85')
+    return url.toString()
+  } catch {
+    // Fallback for non-URL strings
+    const separator = src.includes('?') ? '&' : '?'
+    return `${src}${separator}width=${width}&format=webp&quality=85`
+  }
+}
+
 export default function WarpedProductPage({ product }: WarpedProductPageProps) {
   const [mainSwiper, setMainSwiper] = useState<SwiperType | null>(null)
   const [selectedColor, setSelectedColor] = useState<string>('Birch')
   const [activeIndex, setActiveIndex] = useState(0)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [imagesPreloaded, setImagesPreloaded] = useState(false)
+  const [preloadStatus, setPreloadStatus] = useState<Record<string, boolean>>({})
+  
+  // Use cart context
   const { addToCart } = useCart()
+  
+  // Use image cache for instant color switching
+  const { preloadProductImages, isProductPreloaded, isImageCached, preloadImageBatch } = useImageCache()
 
   // Group images by color variant
   const imagesByColor = useMemo(() => {
@@ -125,7 +151,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     })
 
     return grouped
-  }, [product.images])
+  }, [product.images, product])
 
   // Get the selected variant based on color
   const selectedVariant = useMemo(() => {
@@ -170,6 +196,95 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     return { backgroundColor: colorMapping[colorName] || '#999' }
   }
 
+  // Aggressive preloading of ALL images using multiple strategies
+  useEffect(() => {
+    const preloadAllColorImages = async () => {
+      console.log('🎨 Starting aggressive Warped image preload...')
+      const startTime = performance.now()
+      
+      // Strategy 1: Use native browser preloading with link tags
+      WARPED_COLORS.forEach(color => {
+        const colorImages = imagesByColor[color]
+        if (colorImages && colorImages.length > 0) {
+          colorImages.forEach((img, index) => {
+            // Create link preload tags for first 2 images of each color
+            if (index < 2 && img.src) {
+              const link = document.createElement('link')
+              link.rel = 'preload'
+              link.as = 'image'
+              link.href = shopifyLoader({ src: img.src, width: 600 })
+              link.setAttribute('fetchpriority', color === 'Birch' ? 'high' : 'low')
+              document.head.appendChild(link)
+            }
+          })
+        }
+      })
+      
+      // Strategy 2: Use Image constructor for browser caching
+      const imagePromises: Promise<void>[] = []
+      WARPED_COLORS.forEach(color => {
+        const colorImages = imagesByColor[color]
+        if (colorImages && colorImages.length > 0) {
+          colorImages.forEach(img => {
+            if (img.src) {
+              const promise = new Promise<void>((resolve) => {
+                const image = new window.Image()
+                image.onload = () => {
+                  console.log(`✅ Loaded: ${color} image`)
+                  setPreloadStatus(prev => ({ ...prev, [img.src]: true }))
+                  resolve()
+                }
+                image.onerror = () => {
+                  console.error(`❌ Failed: ${color} image`)
+                  resolve()
+                }
+                // Load optimized version from Shopify CDN
+                image.src = shopifyLoader({ src: img.src, width: 600 })
+              })
+              imagePromises.push(promise)
+            }
+          })
+        }
+      })
+      
+      // Strategy 3: Also use the ImageCache system
+      const allImages: string[] = []
+      WARPED_COLORS.forEach(color => {
+        const colorImages = imagesByColor[color]
+        if (colorImages && colorImages.length > 0) {
+          colorImages.forEach(img => {
+            if (img.src && !allImages.includes(img.src)) {
+              allImages.push(img.src)
+            }
+          })
+        }
+      })
+      
+      console.log(`📦 Preloading ${allImages.length} images with 3 strategies...`)
+      
+      // Execute all strategies in parallel
+      const [browserResults] = await Promise.all([
+        Promise.allSettled(imagePromises),
+        preloadImageBatch(allImages)
+      ])
+      
+      const loadTime = performance.now() - startTime
+      const successCount = browserResults.filter(r => r.status === 'fulfilled').length
+      console.log(`✅ Preloaded ${successCount}/${imagePromises.length} images in ${loadTime.toFixed(2)}ms`)
+      
+      // Verify cache status
+      WARPED_COLORS.forEach(color => {
+        const cached = imagesByColor[color].every(img => isImageCached(img.src))
+        console.log(`${cached ? '⚡' : '🔄'} ${color}: ${cached ? 'Cached' : 'Loading'}`)
+      })
+      
+      setImagesPreloaded(true)
+    }
+    
+    // Start preloading immediately
+    preloadAllColorImages()
+  }, [imagesByColor, preloadImageBatch, isImageCached, product])
+  
   // Reset active index when color changes
   useEffect(() => {
     setActiveIndex(0)
@@ -185,6 +300,20 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
       setActiveIndex(index)
     }
   }
+  
+  // Prefetch images on hover for instant switching
+  const handleColorHover = useCallback((color: string) => {
+    const images = imagesByColor[color]
+    if (images && images.length > 0) {
+      const imageSrcs = images.map(img => img.src)
+      // Only prefetch if not already cached
+      const uncachedImages = imageSrcs.filter(src => !isImageCached(src))
+      if (uncachedImages.length > 0) {
+        console.log(`🔍 Prefetching ${color} images on hover...`)
+        preloadImageBatch(uncachedImages)
+      }
+    }
+  }, [imagesByColor, isImageCached, preloadImageBatch])
 
   return (
     <main className="min-h-screen bg-cream">
@@ -194,23 +323,28 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
             <div className="lg:hidden fixed inset-0 pt-24 flex flex-col">
               <div className="flex-1 overflow-y-auto px-6 pb-4">
                 {/* Mobile Carousel */}
-                <div className="bg-gray-50 relative">
+                <div className="bg-gray-50 relative aspect-square">
                   <Swiper
                     spaceBetween={10}
                     navigation={true}
                     modules={[Navigation]}
-                    className="warped-swiper-mobile"
+                    className="warped-swiper-mobile h-full"
                   >
                     {imagesByColor[selectedColor].map((image, index) => (
                       <SwiperSlide key={`${selectedColor}-${index}`}>
-                        <Image
-                          src={image.src}
-                          alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
-                          width={600}
-                          height={600}
-                          className="w-full h-auto object-contain"
-                          priority={index === 0}
-                        />
+                        <div className="relative w-full h-full">
+                          <Image
+                            loader={shopifyLoader}
+                            src={image.src}
+                            alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
+                            fill
+                            className="object-contain"
+                            priority={index === 0 && selectedColor === 'Birch'}
+                            sizes="100vw"
+                            loading={index === 0 && selectedColor === 'Birch' ? 'eager' : 'lazy'}
+                            quality={90}
+                          />
+                        </div>
                       </SwiperSlide>
                     ))}
                   </Swiper>
@@ -221,7 +355,24 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   {WARPED_COLORS.map(color => (
                     <button
                       key={color}
-                      onClick={() => setSelectedColor(color)}
+                      onMouseEnter={() => handleColorHover(color)}
+                      onClick={() => {
+                        const startTime = performance.now()
+                        const prevColor = selectedColor
+                        setSelectedColor(color)
+                        
+                        // Track performance
+                        const switchTime = performance.now() - startTime
+                        const isCached = imagesByColor[color].every(img => isImageCached(img.src))
+                        
+                        if (isCached) {
+                          console.log(`⚡ INSTANT color switch from ${prevColor} to ${color} in ${switchTime.toFixed(2)}ms (cached)`)
+                          performance.mark(`warped-color-switch-cached-${color}`)
+                        } else {
+                          console.log(`📡 Network load for ${color} in ${switchTime.toFixed(2)}ms`)
+                          performance.mark(`warped-color-switch-network-${color}`)
+                        }
+                      }}
                       className={`w-8 h-8 border-2 transition-all duration-200 hover:scale-110 ${
                         selectedColor === color 
                           ? 'border-squarage-black' 
@@ -320,11 +471,15 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                           }`}
                         >
                           <Image
+                            loader={shopifyLoader}
                             src={image.src}
                             alt={`Thumbnail ${index + 1}`}
                             width={56}
                             height={56}
                             className="w-full h-full object-contain"
+                            sizes="56px"
+                            loading="eager"
+                            quality={75}
                           />
                         </button>
                       ))}
@@ -342,14 +497,17 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                       >
                         {imagesByColor[selectedColor].map((image, index) => (
                           <SwiperSlide key={`${selectedColor}-${index}`}>
-                            <div className="w-full h-[600px] flex items-center justify-center">
+                            <div className="w-full h-[600px] relative">
                               <Image
+                                loader={shopifyLoader}
                                 src={image.src}
                                 alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
-                                width={600}
-                                height={600}
-                                className="w-auto h-auto max-w-full max-h-full object-contain"
-                                priority={index === 0}
+                                fill
+                                className="object-contain"
+                                priority={index === 0 && selectedColor === 'Birch'}
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                loading={index === 0 && selectedColor === 'Birch' ? 'eager' : 'lazy'}
+                                quality={90}
                               />
                             </div>
                           </SwiperSlide>
@@ -363,7 +521,24 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                     {WARPED_COLORS.map(color => (
                       <button
                         key={color}
-                        onClick={() => setSelectedColor(color)}
+                        onMouseEnter={() => handleColorHover(color)}
+                        onClick={() => {
+                          const startTime = performance.now()
+                          const prevColor = selectedColor
+                          setSelectedColor(color)
+                          
+                          // Track performance
+                          const switchTime = performance.now() - startTime
+                          const isCached = imagesByColor[color].every(img => isImageCached(img.src))
+                          
+                          if (isCached) {
+                            console.log(`⚡ INSTANT color switch from ${prevColor} to ${color} in ${switchTime.toFixed(2)}ms (cached)`)
+                            performance.mark(`warped-color-switch-cached-${color}`)
+                          } else {
+                            console.log(`📡 Network load for ${color} in ${switchTime.toFixed(2)}ms`)
+                            performance.mark(`warped-color-switch-network-${color}`)
+                          }
+                        }}
                         className={`w-10 h-10 border-2 transition-all duration-200 hover:scale-110 ${
                           selectedColor === color 
                             ? 'border-squarage-black' 
