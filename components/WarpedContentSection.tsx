@@ -33,6 +33,8 @@ export default function WarpedContentSection() {
               height={800}
               className="w-full h-auto"
               priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              quality={85}
               style={{ maxWidth: '100%', height: 'auto' }}
             />
           </div>

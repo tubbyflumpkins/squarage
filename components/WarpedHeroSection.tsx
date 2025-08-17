@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 export default function WarpedHeroSection() {
   const [isMobile, setIsMobile] = useState(false)
@@ -17,13 +18,18 @@ export default function WarpedHeroSection() {
 
   return (
     <section className="relative w-full overflow-visible bg-cream" style={{ height: isMobile ? '35vh' : 'clamp(50vh, 45vh + 25vw, 90vh)' }}>
-      {/* Hero Background Image */}
+      {/* Hero Background Image - Using Next.js Image for optimization */}
       <div className="absolute inset-0 z-0">
-        <div 
-          className="absolute inset-0 bg-cover bg-no-repeat"
+        <Image
+          src="/images/collection-warped.jpg"
+          alt="Warped Collection Hero"
+          fill
+          priority
+          quality={90}
+          sizes="100vw"
+          className="object-cover"
           style={{
-            backgroundImage: 'url(/images/collection-warped.jpg)',
-            backgroundPosition: isMobile ? 'center 60%' : 'center 60%',
+            objectPosition: isMobile ? 'center 60%' : 'center 60%',
           }}
         />
       </div>
