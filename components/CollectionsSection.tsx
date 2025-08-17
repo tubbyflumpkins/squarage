@@ -122,7 +122,7 @@ export default function CollectionsSection() {
               </div>
               
               {/* Content Section - 25% viewport height on mobile */}
-              <div className={`${collection.bgColor} h-[25vh] md:h-auto md:aspect-auto p-4 sm:p-10 md:p-16 lg:p-20 md:w-1/2 flex items-center w-full`}>
+              <div className={`${index === 1 ? 'bg-squarage-yellow md:bg-squarage-green' : collection.bgColor} h-[25vh] md:h-auto md:aspect-auto p-4 sm:p-10 md:p-16 lg:p-20 md:w-1/2 flex items-center w-full`}>
                 <div className="w-full max-w-xl mx-auto text-center md:text-left">
                   <h3 className="text-3xl sm:text-5xl md:text-6xl font-neue-haas font-black mb-1 md:mb-2 text-white">
                     {collection.title}
@@ -136,7 +136,7 @@ export default function CollectionsSection() {
                   <div className="flex justify-center md:justify-start">
                     <div className={`inline-block font-bold font-neue-haas text-lg sm:text-xl md:text-2xl py-2 px-4 md:py-3 md:px-6 border-2 hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 text-white ${
                       index === 1 
-                        ? 'bg-squarage-yellow border-squarage-yellow' 
+                        ? 'bg-squarage-green border-squarage-green md:bg-squarage-yellow md:border-squarage-yellow' 
                         : 'bg-squarage-green border-squarage-green'
                     }`}>
                       View Collection
