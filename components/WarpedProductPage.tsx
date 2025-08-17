@@ -323,27 +323,28 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
             <div className="lg:hidden fixed inset-0 pt-24 flex flex-col">
               <div className="flex-1 overflow-y-auto px-6 pb-4">
                 {/* Mobile Carousel */}
-                <div className="bg-gray-50 relative">
+                <div className="bg-gray-50 relative aspect-square">
                   <Swiper
                     spaceBetween={10}
                     navigation={true}
                     modules={[Navigation]}
-                    className="warped-swiper-mobile"
+                    className="warped-swiper-mobile h-full"
                   >
                     {imagesByColor[selectedColor].map((image, index) => (
                       <SwiperSlide key={`${selectedColor}-${index}`}>
-                        <Image
-                          loader={shopifyLoader}
-                          src={image.src}
-                          alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
-                          width={600}
-                          height={600}
-                          className="w-full h-auto object-contain"
-                          priority={index === 0 && selectedColor === 'Birch'}
-                          sizes="100vw"
-                          loading={index === 0 && selectedColor === 'Birch' ? 'eager' : 'lazy'}
-                          quality={90}
-                        />
+                        <div className="relative w-full h-full">
+                          <Image
+                            loader={shopifyLoader}
+                            src={image.src}
+                            alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
+                            fill
+                            className="object-contain"
+                            priority={index === 0 && selectedColor === 'Birch'}
+                            sizes="100vw"
+                            loading={index === 0 && selectedColor === 'Birch' ? 'eager' : 'lazy'}
+                            quality={90}
+                          />
+                        </div>
                       </SwiperSlide>
                     ))}
                   </Swiper>
@@ -496,14 +497,13 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                       >
                         {imagesByColor[selectedColor].map((image, index) => (
                           <SwiperSlide key={`${selectedColor}-${index}`}>
-                            <div className="w-full h-[600px] flex items-center justify-center">
+                            <div className="w-full h-[600px] relative">
                               <Image
                                 loader={shopifyLoader}
                                 src={image.src}
                                 alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
-                                width={600}
-                                height={600}
-                                className="w-auto h-auto max-w-full max-h-full object-contain"
+                                fill
+                                className="object-contain"
                                 priority={index === 0 && selectedColor === 'Birch'}
                                 sizes="(max-width: 768px) 100vw, 50vw"
                                 loading={index === 0 && selectedColor === 'Birch' ? 'eager' : 'lazy'}
