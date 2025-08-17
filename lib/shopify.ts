@@ -131,7 +131,7 @@ export const shopifyApi = {
       
       // Try GraphQL first for metafields, fall back to SDK if it fails
       try {
-        // Custom GraphQL query to fetch product with metafields
+        // Custom GraphQL query to fetch product with metafields and collections
         const query = `
           query getProductByHandle($handle: String!) {
             productByHandle(handle: $handle) {
@@ -154,6 +154,15 @@ export const shopifyApi = {
                 key
                 value
                 type
+              }
+              collections(first: 10) {
+                edges {
+                  node {
+                    id
+                    handle
+                    title
+                  }
+                }
               }
               options {
                 id
@@ -236,6 +245,7 @@ export const shopifyApi = {
             src: edge.node.url, // SDK expects 'src' not 'url'
           })) || [],
           metafields: product.metafields || [], // Metafields are returned directly, not in edges
+          collections: product.collections?.edges?.map((edge: any) => edge.node) || [], // Add collections
         }
       } catch (graphqlError) {
         console.warn('GraphQL metafields query failed, falling back to SDK:', graphqlError)
@@ -245,10 +255,11 @@ export const shopifyApi = {
         const product = products.find((p: any) => p.handle === handle)
         
         if (product) {
-          // Add empty metafields array for compatibility
+          // Add empty metafields and collections arrays for compatibility
           return {
             ...product,
             metafields: [],
+            collections: [],
           }
         }
         

@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import ProductPage from '@/components/ProductPage'
+import WarpedProductPage from '@/components/WarpedProductPage'
 import { shopifyApi } from '@/lib/shopify'
 import StructuredData, { generateProductSchema, generateBreadcrumbSchema } from '@/components/StructuredData'
 
@@ -66,6 +67,11 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
       notFound()
       return // Ensure we don't continue execution
     }
+
+    // Check if product is in the warped collection
+    const isWarpedProduct = product.collections?.some((collection: any) => 
+      collection.handle === 'warped'
+    ) || false
 
     // Serialize the product data to plain object for client component
   const serializedProduct = {
@@ -148,7 +154,11 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
     <>
       <StructuredData data={productSchema} />
       <StructuredData data={breadcrumbSchema} />
-      <ProductPage product={serializedProduct} />
+      {isWarpedProduct ? (
+        <WarpedProductPage product={serializedProduct} />
+      ) : (
+        <ProductPage product={serializedProduct} />
+      )}
     </>
   )
   
