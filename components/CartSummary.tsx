@@ -22,7 +22,7 @@ export default function CartSummary() {
   }
   
   return (
-    <div className="border-t-2 border-white p-6 space-y-4">
+    <div className="p-6 space-y-4">
       {/* Subtotal */}
       <div className="flex justify-between items-center">
         <span className="text-2xl font-neue-haas font-bold text-white">Subtotal</span>
@@ -40,14 +40,9 @@ export default function CartSummary() {
       <button
         onClick={handleCheckout}
         disabled={!state.checkoutUrl || state.isLoading}
-        className="w-full bg-squarage-orange font-bold font-neue-haas text-2xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 relative disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+        className="w-full bg-squarage-yellow font-bold font-neue-haas text-2xl py-4 px-8 text-white hover:bg-squarage-orange hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
       >
-        <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">
-          Proceed to Checkout
-        </span>
-        <span className="relative z-10 text-white">
-          Proceed to Checkout
-        </span>
+        Checkout
       </button>
       
       {/* Test Mode Notice */}

@@ -56,7 +56,7 @@ export default function CartItem({ item }: CartItemProps) {
   }
   
   return (
-    <div className={`bg-cream p-4 rounded-lg border-2 border-squarage-orange relative ${isUpdating ? 'opacity-50' : ''}`}>
+    <div className={`bg-cream p-4 rounded-lg relative ${isUpdating ? 'opacity-50' : ''}`}>
       {/* Remove Button - Top Right */}
       <button
         onClick={handleRemove}
