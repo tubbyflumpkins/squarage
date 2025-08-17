@@ -24,12 +24,12 @@ const ALL_SITE_IMAGES: PreloadConfig[] = [
   { imageSrc: '/images/about-studio.jpg', width: 600 },
   { imageSrc: '/images/custom-process.jpg', width: 600 },
   
-  // Warped collection images
-  { imageSrc: '/images/warped/curved_shelf_light_01.png', width: 600 },
-  { imageSrc: '/images/warped/curved_shelf_light_02.png', width: 600 },
-  { imageSrc: '/images/warped/curved_shelf_light_03.png', width: 600 },
-  { imageSrc: '/images/warped/curved_shelf_light_04.png', width: 600 },
+  // Warped collection images (local files)
   { imageSrc: '/images/warped/curved_shelf_light_05.png', width: 600 },
+  { imageSrc: '/images/warped/curved_shelf_dark_05.png', width: 600 },
+  { imageSrc: '/images/warped/corner_shelf_light_05.png', width: 600 },
+  { imageSrc: '/images/warped/corner_shelf_medium_02.png', width: 600 },
+  { imageSrc: '/images/warped/corner_shelf_medium_07.png', width: 600 },
   
   // Product images - The Matis
   { imageSrc: '/images/products/the-matis/matis-blue.jpg', width: 600 },
@@ -67,10 +67,20 @@ export default function UniversalPreloader() {
   
   useEffect(() => {
     const preloadAllImages = async () => {
+      // Wait for page to be interactive before starting preload
+      if (document.readyState !== 'complete') {
+        await new Promise(resolve => {
+          window.addEventListener('load', resolve, { once: true })
+        })
+      }
+      
+      // Additional delay to ensure smooth page load
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
       const isMobile = window.innerWidth < 768
       const startTime = performance.now()
       
-      console.log(`🌐 Universal Preloader: Starting aggressive preload from ${pathname}`)
+      console.log(`🌐 Universal Preloader: Starting background preload from ${pathname}`)
       console.log(`📱 Device: ${isMobile ? 'Mobile' : 'Desktop'}`)
       
       // Check current cache status
