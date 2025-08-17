@@ -95,6 +95,26 @@ export interface ShopifyCollection {
 // Export native Shopify types for use in components
 export type { Product, Collection, ProductVariant, Image, CheckoutLineItem }
 
+// Export function for fetching all products (for preloader)
+export async function fetchAllProducts(): Promise<Product[]> {
+  try {
+    // Check if Shopify is configured
+    const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
+    const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
+    
+    if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
+      console.log('Shopify credentials not configured for preloader')
+      return []
+    }
+    
+    const products = await client.product.fetchAll()
+    return products
+  } catch (error) {
+    console.error('Error fetching products for preloader:', error)
+    return []
+  }
+}
+
 // Shopify API functions
 export const shopifyApi = {
   // Fetch all products
