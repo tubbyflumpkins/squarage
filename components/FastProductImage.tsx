@@ -52,15 +52,7 @@ export default function FastProductImage({
           width: '100%',
           height: '100%',
           objectFit: 'contain'
-        } : { 
-          // Default behavior for regular product images
-          width: '100%', 
-          height: 'auto',
-          // Prevent layout shift
-          aspectRatio: `${width} / ${height}`,
-          // Smooth fade between images
-          transition: 'opacity 0.1s ease-in-out'
-        }}
+        } : undefined}
         onLoad={() => {
           // Ensure image is visible once loaded
           if (imgRef.current) {
