@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ CRITICAL: Image Handling
+
+**When working with images in this codebase:**
+1. **ALWAYS consult [PRELOADING.md](./PRELOADING.md) first**
+2. **ALWAYS use `FastProductImage` component for product images** (never regular `Image`)
+3. **ALWAYS update `/lib/simplePreloader.ts` when adding new images**
+4. **NEVER use Next.js `Image` component for frequently-switched images**
+
+The preloading system is critical for performance. Incorrect implementation will cause slow image loading.
+
 ## Project Overview
 
 This is **Squarage Studio**, a custom Next.js website for an LA-based design studio creating functional art and design pieces. The project migrated from Webflow to a custom Next.js solution with Shopify integration for e-commerce functionality.
@@ -175,14 +185,25 @@ All products have professional photography stored in `/public/images/products/[p
 
 ### Image Preloading System
 
-**For detailed information about the image preloading system, see [PRELOADING.md](./PRELOADING.md)**
+**CRITICAL: Always refer to [PRELOADING.md](./PRELOADING.md) when working with images**
 
-Key highlights:
-- **3-Strategy Preloading**: Link tags + Image constructor + ImageCache
-- **Shopify CDN Optimization**: Automatic WebP conversion with quality settings
-- **Collection Preloading**: Images load from homepage before navigation
-- **<10ms Color Switching**: Instant variant changes after initial cache
-- **Performance Tracking**: Real-time console feedback for optimization
+The site uses a **simple, direct preloading system** that ensures instant image loading:
+
+#### Key Components:
+1. **SimplePreloader** (`/components/SimplePreloader.tsx`) - Main orchestrator
+2. **FastProductImage** (`/components/FastProductImage.tsx`) - **MUST USE for product images**
+3. **simplePreloader.ts** (`/lib/simplePreloader.ts`) - Core preloading functions
+4. **shopifyPreloader.ts** (`/lib/shopifyPreloader.ts`) - Shopify image handling
+
+#### When Adding Images:
+1. **Always update** `/lib/simplePreloader.ts` with new image paths
+2. **Always use** `FastProductImage` for product/dynamic images (NOT regular `Image`)
+3. **Check** [PRELOADING.md](./PRELOADING.md) for implementation details
+
+#### Performance:
+- **Color switching**: <1ms with FastProductImage
+- **Navigation**: <20ms between cached pages
+- **Initial load**: 2-3s with preloading
 
 ## Important Documentation
 

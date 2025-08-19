@@ -7,7 +7,7 @@ import { CartProvider } from '@/context/CartContext'
 import CartDrawer from '@/components/CartDrawer'
 import GA from '@/components/GoogleAnalytics'
 import StructuredData, { organizationSchema, localBusinessSchema, websiteSchema } from '@/components/StructuredData'
-import SmartPreloader from '@/components/SmartPreloader'
+import SimplePreloader from '@/components/SimplePreloader'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://squaragestudio.com'),
@@ -88,7 +88,7 @@ export default function RootLayout({
       <body className="bg-cream font-neue-haas-text">
         <ImageCacheProvider>
           <CartProvider>
-            <SmartPreloader />
+            <SimplePreloader />
             <Navigation />
             <CartDrawer />
             {children}

@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useImageCache } from '@/context/ImageCacheContext'
 import { useCart } from '@/context/CartContext'
+import { preloadImages, isImageCached, prefetchOnTouch } from '@/lib/navigationPreloader'
+import { getProductImages } from '@/lib/universalImageRegistry'
+import FastProductImage from '@/components/FastProductImage'
 interface SerializedProduct {
   id: string
   title: string
@@ -69,9 +71,6 @@ export default function ProductPage({ product }: ProductPageProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [imagesPreloaded, setImagesPreloaded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  
-  // Use global image cache
-  const { preloadProductImages, isProductPreloaded, isImageCached } = useImageCache()
   
   // Use cart context
   const { addToCart } = useCart()
@@ -299,31 +298,39 @@ export default function ProductPage({ product }: ProductPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]) // Only run when product changes
 
-  // Use the global image cache for better performance
+  // Preload all color variant images for instant switching
   useEffect(() => {
     if (!product.images || product.images.length === 0) return
 
-    // Check if product is already preloaded by the global cache
-    const productId = product.id.toString()
-    
-    if (isProductPreloaded(productId)) {
-      console.log('Product images already cached, ready for instant switching')
-      setImagesPreloaded(true)
-      return
-    }
-
-    // If not cached, preload now as fallback
-    console.log('Product not in cache, preloading now...')
-    preloadProductImages(product)
-      .then(() => {
+    const preloadAllVariants = async () => {
+      console.log(`🎨 Preloading ${product.images.length} images for ${product.title}`)
+      
+      // Check what's already cached
+      const uncachedImages = product.images
+        .map(img => img.src)
+        .filter(src => !isImageCached(src))
+      
+      if (uncachedImages.length === 0) {
+        console.log('✅ All product images already cached')
         setImagesPreloaded(true)
-        console.log('Product images preloaded successfully')
+        return
+      }
+      
+      console.log(`📦 Loading ${uncachedImages.length} uncached images...`)
+      
+      // Preload all product images
+      const results = await preloadImages(uncachedImages, {
+        priority: 'high',
+        maxConcurrent: window.innerWidth < 768 ? 2 : 4
       })
-      .catch((error) => {
-        console.error('Error preloading product images:', error)
-        setImagesPreloaded(true) // Don't block UI
-      })
-  }, [product, preloadProductImages, isProductPreloaded])
+      
+      const successCount = results.filter(r => r.success).length
+      console.log(`✅ Loaded ${successCount}/${uncachedImages.length} images for instant color switching`)
+      setImagesPreloaded(true)
+    }
+    
+    preloadAllVariants()
+  }, [product])
 
   return (
     <main className="min-h-screen bg-cream">
@@ -340,15 +347,14 @@ export default function ProductPage({ product }: ProductPageProps) {
                 {/* Image and Color Swatches */}
                 <div className="flex flex-col">
                   {/* Main Image */}
-                  <div className="bg-gray-50 relative">
+                  <div className="relative w-full">
                     {product.images && product.images.length > 0 ? (
-                      <Image
+                      <FastProductImage
                         src={product.images[selectedImageIndex]?.src || product.images[0].src}
                         alt={product.images[selectedImageIndex]?.altText || product.title}
                         width={600}
                         height={600}
-                        className="w-full h-auto object-contain"
-                        priority={selectedImageIndex === 0}
+                        className="w-full h-auto"
                       />
                     ) : (
                       <div className="w-full h-96 flex items-center justify-center bg-gray-100">
@@ -364,6 +370,12 @@ export default function ProductPage({ product }: ProductPageProps) {
                         <button
                           key={index}
                           onClick={() => handleColorSelect(index)}
+                          onTouchStart={() => {
+                            // Prefetch variant image on touch for instant switching
+                            if (option.image?.src && !isImageCached(option.image.src)) {
+                              prefetchOnTouch([option.image.src], { priority: 'high' })
+                            }
+                          }}
                           className={`w-8 h-8 border-2 transition-all duration-200 hover:scale-110 ${
                             selectedVariantIndex === option.originalIndex 
                               ? 'border-squarage-black' 
@@ -468,15 +480,14 @@ export default function ProductPage({ product }: ProductPageProps) {
               <div className="w-1/3 px-6">
                 <div className="flex flex-col">
                   {/* Main Image */}
-                  <div className="bg-gray-50 relative">
+                  <div className="relative">
                     {product.images && product.images.length > 0 ? (
-                      <Image
+                      <FastProductImage
                         src={product.images[selectedImageIndex]?.src || product.images[0].src}
                         alt={product.images[selectedImageIndex]?.altText || product.title}
                         width={600}
                         height={600}
                         className="w-full h-auto object-contain"
-                        priority={selectedImageIndex === 0}
                       />
                     ) : (
                       <div className="w-full h-96 flex items-center justify-center bg-gray-100">

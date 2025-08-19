@@ -6,6 +6,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
 import { useCart } from '@/context/CartContext'
+import FastProductImage from '@/components/FastProductImage'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -147,7 +148,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     })
 
     return grouped
-  }, [product.images, product])
+  }, [product])
 
   // Get the selected variant based on color
   const selectedVariant = useMemo(() => {
@@ -262,31 +263,28 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
           {/* Mobile Layout */}
             <div className="lg:hidden fixed inset-0 flex flex-col">
               <div className="flex-1 overflow-y-auto px-6 pb-4 pt-20">
-                {/* Mobile Carousel - Dynamic aspect ratio based on actual image dimensions */}
-                <div className="bg-gray-50 relative" style={{ 
+                {/* Mobile Carousel - Dynamic aspect ratio to match images */}
+                <div className="relative" style={{ 
                   aspectRatio: imagesByColor[selectedColor][0] ? 
                     `${imagesByColor[selectedColor][0].width} / ${imagesByColor[selectedColor][0].height}` : 
                     '1 / 1' 
                 }}>
                   <Swiper
-                    spaceBetween={10}
+                    spaceBetween={0}
                     navigation={true}
                     modules={[Navigation]}
                     className="warped-swiper-mobile h-full"
                   >
                     {imagesByColor[selectedColor].map((image, index) => (
-                      <SwiperSlide key={`${selectedColor}-${index}`}>
-                        <div className="relative w-full h-full">
-                          <Image
-                            loader={shopifyLoader}
+                      <SwiperSlide key={index}>
+                        <div className="relative w-full h-full flex items-center justify-center">
+                          <FastProductImage
                             src={image.src}
                             alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
-                            fill
-                            className="object-contain"
-                            priority={index === 0}
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            loading={index === 0 ? 'eager' : 'lazy'}
-                            quality={85}
+                            width={600}
+                            height={600}
+                            className="w-full h-full object-contain"
+                            fillContainer={true}
                           />
                         </div>
                       </SwiperSlide>
@@ -407,23 +405,19 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                               : 'border-gray-300 opacity-60 hover:opacity-100'
                           }`}
                         >
-                          <Image
-                            loader={shopifyLoader}
+                          <FastProductImage
                             src={image.src}
                             alt={`Thumbnail ${index + 1}`}
                             width={56}
                             height={56}
                             className="w-full h-full object-contain"
-                            sizes="56px"
-                            loading="eager"
-                            quality={75}
                           />
                         </button>
                       ))}
                     </div>
 
                     {/* Main Image Carousel */}
-                    <div className="flex-1 bg-gray-50 relative max-h-[600px] overflow-hidden">
+                    <div className="flex-1 relative max-h-[600px] overflow-hidden transition-all duration-200">
                       <Swiper
                         spaceBetween={10}
                         navigation={true}
@@ -433,18 +427,15 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                         className="warped-swiper-main h-full"
                       >
                         {imagesByColor[selectedColor].map((image, index) => (
-                          <SwiperSlide key={`${selectedColor}-${index}`}>
+                          <SwiperSlide key={index}>
                             <div className="w-full h-[600px] relative">
-                              <Image
-                                loader={shopifyLoader}
+                              <FastProductImage
                                 src={image.src}
                                 alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
-                                fill
-                                className="object-contain"
-                                priority={index === 0 && selectedColor === 'Birch'}
-                                sizes="(max-width: 768px) 100vw, 50vw"
-                                loading={index === 0 && selectedColor === 'Birch' ? 'eager' : 'lazy'}
-                                quality={90}
+                                width={600}
+                                height={600}
+                                className="object-contain w-full h-full"
+                                fillContainer={true}
                               />
                             </div>
                           </SwiperSlide>
