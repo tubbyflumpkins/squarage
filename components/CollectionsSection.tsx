@@ -29,7 +29,6 @@ export default function CollectionsSection() {
   const [hoverAnimatingLetters, setHoverAnimatingLetters] = useState<Set<number>>(new Set())
   const [initialAnimationStarted, setInitialAnimationStarted] = useState(false)
   const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
-  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set())
   
   // Fixed delays to prevent hydration mismatch - memoized to prevent re-renders
   const randomDelays = useMemo(() => [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15], [])
@@ -58,61 +57,7 @@ export default function CollectionsSection() {
     }
   }
 
-  // Preload collection page images for instant loading
-  const preloadCollectionImages = useCallback((collectionId: string) => {
-    let imagesToPreload: string[] = []
-    
-    if (collectionId === 'warped') {
-      imagesToPreload = [
-        '/images/collection-warped.jpg', // 4MB - Hero background (needs optimization!)
-        '/images/warped/curved_shelf_light_05.png', // 2.2MB - Featured image
-      ]
-    } else if (collectionId === 'tiled') {
-      imagesToPreload = [
-        '/images/collection-tiled.jpg', // 5.7MB - Hero background (needs optimization!)
-      ]
-    }
-    
-    if (imagesToPreload.length === 0) return
-    
-    console.log(`🖼️ Preloading ${collectionId} collection images...`)
-    const startTime = performance.now()
-    
-    imagesToPreload.forEach(src => {
-      if (!preloadedImages.has(src)) {
-        // Create link preload tag
-        const link = document.createElement('link')
-        link.rel = 'prefetch' // Use prefetch instead of preload for lower priority
-        link.as = 'image'
-        link.href = src
-        document.head.appendChild(link)
-        
-        // Also use Image constructor for browser cache
-        const img = new window.Image()
-        img.onload = () => {
-          setPreloadedImages(prev => new Set(prev).add(src))
-          const loadTime = performance.now() - startTime
-          console.log(`✅ Cached ${src.split('/').pop()} in ${loadTime.toFixed(0)}ms`)
-        }
-        img.onerror = () => {
-          console.error(`❌ Failed: ${src.split('/').pop()}`)
-        }
-        img.src = src
-      }
-    })
-  }, [preloadedImages])
-  
-  // Preload collection images after homepage loads
-  useEffect(() => {
-    // Wait for homepage to fully load before preloading
-    const preloadTimer = setTimeout(() => {
-      // Preload both collections in the background
-      preloadCollectionImages('warped')
-      setTimeout(() => preloadCollectionImages('tiled'), 1000) // Stagger the loads
-    }, 3000) // Wait 3 seconds after homepage loads
-    
-    return () => clearTimeout(preloadTimer)
-  }, [preloadCollectionImages])
+  // Removed old preloading logic - now handled by NavigationAwarePreloader
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -166,8 +111,7 @@ export default function CollectionsSection() {
             href={collection.href}
             className="group block"
             onMouseEnter={() => {
-              // Preload collection images on hover
-              preloadCollectionImages(collection.id)
+              // Collection images are preloaded by NavigationAwarePreloader
             }}
           >
             <div className={`grid grid-cols-1 md:flex ${index % 2 === 0 ? '' : 'md:flex-row-reverse'} items-stretch w-full`}>

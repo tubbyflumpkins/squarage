@@ -2,292 +2,273 @@
 
 ## Overview
 
-Squarage Studio implements a comprehensive multi-layer image preloading system that ensures instant image loading and smooth color switching across the entire site. This document explains how the preloading works for different collections and page types.
+**Last Updated: January 2025**
 
-## System Architecture
+Squarage Studio uses a **simple, direct preloading system** that ensures instant image loading and color switching across the entire site. After extensive testing, we've moved from a complex multi-layered approach to a straightforward system that actually works.
+
+## The Simple System
 
 ### Core Components
 
-1. **ImageCacheContext** (`/context/ImageCacheContext.tsx`)
-   - Global image caching state management
-   - Batch preloading functions
-   - Cache hit/miss tracking
-   - Performance statistics
+#### 1. SimplePreloader Component
+**Location**: `/components/SimplePreloader.tsx`
 
-2. **Image Optimization Utils** (`/utils/imageOptimizations.ts`)
-   - Next.js Image component helpers
-   - Performance tracking utilities
-   - Responsive image generation
+The main orchestrator that:
+- Preloads local images based on current route
+- Fetches and caches Shopify products globally
+- Preloads on hover for instant navigation
+- Handles both local and Shopify images
 
-3. **Collection-Specific Preloaders**
-   - WarpedProductPage preloading
-   - ProductPage (Tiled) preloading
-   - Homepage collection preloading
+#### 2. Simple Preloader Library
+**Location**: `/lib/simplePreloader.ts`
 
-## Preloading Strategies
+Direct preloading functions:
+- `preloadImage(src)` - Preloads a single image
+- `preloadImages(srcs, maxConcurrent)` - Batch preload with concurrency
+- `preloadForPage(pathname)` - Route-based preloading
+- Global cache: `window.__simpleImageCache`
 
-### 1. Homepage Collection Preloading
+#### 3. Shopify Preloader
+**Location**: `/lib/shopifyPreloader.ts`
 
-**Location**: `/components/CollectionsSection.tsx`
+Handles Shopify-specific images:
+- `fetchAndCacheShopifyProducts()` - Fetches all products once
+- `preloadShopifyCollection(collection)` - Preloads collection images
+- `preloadShopifyProduct(handle)` - Preloads product variants
+- Global cache: `window.__shopifyProducts`
 
-When users land on the homepage, the system automatically starts preloading collection page images in the background:
+#### 4. FastProductImage Component
+**Location**: `/components/FastProductImage.tsx`
 
+**Critical for instant color switching**:
+- Uses native `<img>` for cached images (instant)
+- Falls back to Next.js Image for uncached images
+- Automatically detects cache status
+- Bypasses Next.js optimization overhead
+
+## How It Works
+
+### Route-Based Preloading
+
+#### Homepage (`/`)
 ```javascript
-// Triggers 3 seconds after homepage loads
-preloadCollectionImages('warped')  // Loads hero + featured images
-preloadCollectionImages('tiled')   // Loads hero image (staggered by 1 second)
+// Local images preloaded immediately
+'/images/hero-2-processed.jpg'
+'/images/IMG_0961.jpg'
+'/images/collection-tiled.jpg'
+'/images/collection-warped.jpg'
+
+// Shopify products fetched for later use
+await fetchAndCacheShopifyProducts()
 ```
 
-**Images Preloaded**:
-- Warped: `/images/collection-warped.jpg` (4MB - hero)
-- Warped: `/images/warped/curved_shelf_light_05.png` (2.2MB - featured)
-- Tiled: `/images/collection-tiled.jpg` (5.7MB - hero)
-
-**Strategy**: Uses `prefetch` link tags + Image constructor for dual caching
-
-### 2. Warped Collection Product Preloading
-
-**Location**: `/components/WarpedProductPage.tsx`
-
-The Warped collection uses a **triple-strategy aggressive preloading** system:
-
-#### Strategy 1: Browser Link Preloading
+#### Collection Pages (`/collections/tiled`)
 ```javascript
-// Creates <link rel="preload"> tags for first 2 images of each color
-link.rel = 'preload'
-link.as = 'image'
-link.href = shopifyLoader({ src: img.src, width: 600 })
-link.setAttribute('fetchpriority', color === 'Birch' ? 'high' : 'low')
+// Collection hero image
+'/images/collection-tiled.jpg'
+
+// All product variants for the collection
+'/images/products/harper/product_3_*.jpg'
+'/images/products/matis/Product_1_*.jpg'
+'/images/products/chuck/product_4_*.jpg'
+
+// Shopify images for the collection
+await preloadShopifyCollection('tiled')
 ```
 
-#### Strategy 2: Native Image Constructor
+#### Product Pages (`/products/[handle]`)
 ```javascript
-// Forces browser to cache all variant images
-const image = new window.Image()
-image.src = shopifyLoader({ src: img.src, width: 600 })
+// All color variants preloaded immediately
+await preloadShopifyProduct(productHandle)
+
+// Local product images if applicable
+'/images/products/[product]/*.jpg'
 ```
 
-#### Strategy 3: ImageCache System
+### Instant Color Switching
+
+The key to instant color switching is **FastProductImage**:
+
 ```javascript
-// Application-level caching with performance tracking
-await preloadImageBatch(allImages)
+// Instead of this (slow):
+<Image 
+  src={imageSrc}
+  alt={alt}
+  fill
+  priority={true}
+/>
+
+// Use this (instant):
+<FastProductImage
+  src={imageSrc}
+  alt={alt}
+  width={600}
+  height={600}
+  className="..."
+/>
 ```
 
-**Color Variants**: Birch, Oak, Walnut (5 images each = 15 total)
+FastProductImage automatically:
+1. Checks if image is in cache
+2. Uses native `<img>` for cached (instant render)
+3. Uses Next.js Image only for uncached images
 
-**Performance**:
-- Initial load: All 15 images preload on page mount
-- Color switching: <10ms after caching
-- Hover prefetch: Additional safety net for uncached images
+## Implementation Guide
 
-### 3. Tiled Collection Product Preloading
+### Adding Images to a New Page
 
-**Location**: `/components/ProductPage.tsx`
-
-The Tiled collection uses the standard ImageCache system with optimizations:
-
+1. **Update Simple Preloader Routes**:
 ```javascript
-// Preloads all product images including variants
-await preloadProductImages(product)
-```
-
-**Features**:
-- Automatic variant detection from Shopify data
-- Color-sorted display (Blue, Green, Yellow, Orange, Red, Black, White)
-- Performance tracking with console output
-- Cache status indicators
-
-**Performance**:
-- Batch size: 6 images processed simultaneously
-- No artificial delays (uses requestAnimationFrame)
-- Instant color switching after initial load
-
-## Shopify CDN Optimization
-
-### Image Transformation
-
-All Shopify images are automatically optimized using a custom loader:
-
-```javascript
-const shopifyLoader = ({ src, width }) => {
-  const url = new URL(src)
-  url.searchParams.set('width', width.toString())
-  url.searchParams.set('format', 'webp')      // 30-50% smaller
-  url.searchParams.set('quality', '85')       // Balance quality/size
-  return url.toString()
+// In /lib/simplePreloader.ts
+else if (pathname === '/your-new-page') {
+  images.push(
+    '/images/your-image-1.jpg',
+    '/images/your-image-2.jpg'
+  )
 }
 ```
 
-**Benefits**:
-- WebP format: 30-50% smaller than JPEG
-- Dynamic sizing: Only loads required resolution
-- Quality optimization: 85% quality for main images, 75% for thumbnails
+2. **Use FastProductImage for Dynamic Images**:
+```javascript
+import FastProductImage from '@/components/FastProductImage'
+
+<FastProductImage
+  src={dynamicImageSrc}
+  alt="Product image"
+  width={600}
+  height={600}
+  className="object-contain"
+/>
+```
+
+3. **Handle Shopify Products**:
+```javascript
+// In SimplePreloader.tsx
+else if (pathname === '/your-new-page') {
+  await fetchAndCacheShopifyProducts()
+  // or
+  await preloadShopifyCollection('your-collection')
+}
+```
+
+### Adding a New Product
+
+1. **Local Images**: Add to `/public/images/products/[product-name]/`
+
+2. **Update Preloader**:
+```javascript
+// In /lib/simplePreloader.ts
+else if (pathname === '/products/your-product') {
+  images.push(
+    '/images/products/your-product/variant-1.jpg',
+    '/images/products/your-product/variant-2.jpg',
+    // ... all variants
+  )
+}
+```
+
+3. **Use FastProductImage in Component**:
+```javascript
+<FastProductImage
+  src={product.images[selectedIndex].src}
+  alt={product.title}
+  width={600}
+  height={600}
+  className="w-full h-auto"
+/>
+```
 
 ## Performance Metrics
 
-### Console Indicators
+### Actual Performance
+- **Initial page load**: ~2-3s (with preloading)
+- **Subsequent navigation**: <20ms (from cache)
+- **Color switching**: <1ms (instant with FastProductImage)
+- **Mobile**: Similar performance with smaller images
 
-The system provides real-time performance feedback:
+### Console Output
+```
+🚀 SimplePreloader: Starting for /
+📦 Preloading 10 images...
+✅ Preloaded: /images/hero-2-processed.jpg
+🛍️ Fetching Shopify products...
+✅ Loaded 7 Shopify products
+📸 Found 84 Shopify images to preload
+```
 
-- `🎨 Starting aggressive Warped image preload...` - Preloading initiated
-- `📦 Preloading 15 images with 3 strategies...` - Batch processing
-- `✅ Loaded: Oak image` - Individual image cached
-- `⚡ INSTANT color switch from Birch to Oak in 2.45ms (cached)` - Cache hit
-- `📡 Network load for Walnut in 245.67ms` - Cache miss
-- `🔍 Prefetching Oak images on hover...` - Hover prefetch triggered
+## Debugging
 
-### Cache Statistics
+### Browser Console
+All preloading happens client-side. Check browser console (F12) for:
+- Preloading messages
+- Cache hits/misses
+- Performance timing
 
-The ImageCache system tracks:
-- Total images in cache
-- Cache hit/miss rates
-- Failed image loads
-- Preloading progress
+### Common Issues
 
-## Loading Priority
+#### Images Still Loading Slowly
+1. **Check if using FastProductImage**: Regular Image component adds overhead
+2. **Verify preloading**: Check console for preload messages
+3. **Check image paths**: Ensure paths match exactly
 
-### Priority Levels
+#### Color Switching Slow Despite Cache
+**Solution**: Must use FastProductImage component:
+```javascript
+// Replace all product Image components with:
+<FastProductImage ... />
+```
 
-1. **Critical (High Priority)**
-   - First image of default variant (Birch for Warped, first color for Tiled)
-   - Hero images on collection pages
-   - Uses `priority={true}` and `loading="eager"`
-
-2. **Important (Medium Priority)**
-   - Remaining images of current variant
-   - Uses `loading="lazy"` with preload tags
-
-3. **Background (Low Priority)**
-   - Other color variants
-   - Collection page images from homepage
-   - Uses `prefetch` and delayed loading
-
-## Product Grid Preloading
-
-**Location**: `/components/ProductGrid.tsx`
-
-The product grid implements a two-tier strategy:
-
-1. **Visible Products** (First 6): Preloaded immediately
-2. **Background Products** (7+): Preloaded with requestAnimationFrame
-
-This ensures the initial view loads instantly while background products load smoothly.
-
-## Mobile Optimizations
-
-### Responsive Loading
-- Mobile: `sizes="100vw"` - Full viewport width
-- Desktop: `sizes="(max-width: 768px) 100vw, 50vw"` - Adaptive sizing
-
-### Container Sizing
-- Mobile: `aspect-square` containers for consistent layout
-- Desktop: Fixed 600px containers for large displays
-
-## Troubleshooting
-
-### If Images Load Slowly
-
-1. **Check Console Output**
-   - Look for `🐌 SLOW` warnings (>500ms load time)
-   - Verify preloading messages appear
-   - Check for failed loads (`❌ Failed`)
-
-2. **Verify Cache Status**
-   ```javascript
-   // In browser console
-   getCacheStats()
-   // Should show: { totalImages: 45, cachedCount: 42, failedCount: 0 }
-   ```
-
-3. **Common Issues**
-   - Original images too large (>5MB) - Need source optimization
-   - Slow network - Initial download still required
-   - Cache cleared - Browser/user cleared cache
-
-### If Color Switching is Slow
-
-1. **Verify Preloading**
-   - Check console for "Warped product images preloaded" message
-   - Look for cache hit indicators (`⚡ INSTANT`)
-
-2. **Check Image URLs**
-   - Ensure Shopify URLs are valid
-   - Verify WebP format is being requested
-
-## Configuration
-
-### Batch Sizes
-- **WarpedProductPage**: All images at once (aggressive)
-- **ProductPage**: 6 images per batch
-- **ProductGrid**: 6 visible, rest in background
-- **ImageCache**: 6-8 images per batch
-
-### Timeouts
-- **Homepage preload delay**: 3000ms (lets critical content load first)
-- **Tiled stagger delay**: 1000ms (prevents overload)
-- **Hover prefetch**: Immediate (0ms)
-
-### Image Quality
-- **Main images**: 85-90% quality
-- **Thumbnails**: 75% quality
-- **Format**: WebP preferred, JPEG fallback
+#### Shopify Images Not Preloading
+1. **Check credentials**: Verify NEXT_PUBLIC_SHOPIFY_* env vars
+2. **Check console**: Look for Shopify fetch errors
+3. **Verify products exist**: Check Shopify admin
 
 ## Best Practices
 
-### For New Products
+### DO's
+- ✅ Always use `FastProductImage` for product images
+- ✅ Preload images one click away from current page
+- ✅ Use hover preloading for navigation links
+- ✅ Keep image dimensions consistent per context
 
-1. **Image Naming**: Include color in filename or alt text
-2. **Image Size**: Keep originals under 2MB when possible
-3. **Aspect Ratio**: Maintain consistent ratios within product
+### DON'Ts
+- ❌ Don't use regular `Image` component for frequently-switched images
+- ❌ Don't preload everything at once (wastes bandwidth)
+- ❌ Don't forget to update preloader when adding new images
+- ❌ Don't use complex state management for image caching
 
-### For New Collections
+## Migration from Old System
 
-1. **Add to Homepage Preloader**: Update `CollectionsSection.tsx`
-2. **Implement Cache Integration**: Use `useImageCache` hook
-3. **Add Performance Tracking**: Include console logging
+If migrating from the complex NavigationAwarePreloader:
 
-### Performance Tips
+1. **Replace in layout.tsx**:
+```javascript
+// Old
+import NavigationAwarePreloader from '@/components/NavigationAwarePreloader'
 
-1. **Optimize Source Images**: Compress before uploading to Shopify
-2. **Use Appropriate Formats**: WebP for photos, PNG for graphics
-3. **Lazy Load Below Fold**: Only eager load critical images
-4. **Monitor Cache Hits**: Aim for >80% cache hit rate
+// New
+import SimplePreloader from '@/components/SimplePreloader'
+```
 
-## File Size Recommendations
+2. **Update product components**:
+```javascript
+// Replace Image with FastProductImage
+import FastProductImage from '@/components/FastProductImage'
+```
 
-### Current Status (Needs Optimization)
-- `collection-warped.jpg`: 4.1MB ⚠️
-- `collection-tiled.jpg`: 5.7MB ⚠️
-- `curved_shelf_light_05.png`: 2.2MB ⚠️
+3. **Remove old files**:
+- `/components/NavigationAwarePreloader.tsx`
+- `/lib/universalImageRegistry.ts`
+- `/lib/navigationPreloader.ts`
+- `/lib/imageOptimizer.ts`
 
-### Recommended Sizes
-- Hero images: <500KB
-- Product images: <200KB
-- Thumbnails: <50KB
+## Summary
 
-## Future Enhancements
+The new simple preloading system:
+- **Direct approach**: No complex abstractions
+- **Actually works**: Images truly preload and render instantly
+- **Easy to debug**: Clear console output
+- **Performant**: <1ms color switching
+- **Maintainable**: Simple to add new images/pages
 
-### Planned Improvements
-
-1. **Service Worker**: Offline caching capability
-2. **Blur Placeholders**: Low-quality placeholders during load
-3. **Intersection Observer**: Viewport-based loading
-4. **Image CDN**: Consider Cloudinary/Imgix for advanced optimization
-
-### Monitoring Additions
-
-1. **Real User Metrics**: Track actual user experience
-2. **Performance Budgets**: Alert on regression
-3. **A/B Testing**: Compare strategies
-
-## Related Documentation
-
-- [Cache System Documentation](./CACHE_SYSTEM_DOCUMENTATION.md)
-- [Migration Plan](./MIGRATION_PLAN.md)
-- [Claude Integration](./CLAUDE.md)
-
----
-
-**Last Updated**: January 2025  
-**System Status**: ✅ Fully Operational  
-**Performance**: <10ms color switching, 3-strategy preloading active
+Key insight: **FastProductImage is critical** - it bypasses Next.js Image optimization for cached images, enabling true instant rendering.

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preloading System Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #fffaf4;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #333;
+        }
+        .status { 
+            padding: 10px;
+            margin: 10px 0;
+            background: #f0f0f0;
+        }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .info { background: #d1ecf1; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Squarage Studio - Preloading System Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button onclick="testHomepage()">Test Homepage</button>
+        <button onclick="testCollectionPage()">Test Collection Page</button>
+        <button onclick="testProductPage()">Test Product Page</button>
+        <button onclick="testMobile()">Test Mobile Mode</button>
+        <button onclick="clearCache()">Clear Cache</button>
+        <button onclick="showStats()">Show Cache Stats</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            resultsDiv.insertBefore(div, resultsDiv.firstChild);
+        }
+
+        async function testHomepage() {
+            log('Testing Homepage Preloading...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3000/');
+                const html = await response.text();
+                
+                // Check if NavigationAwarePreloader is present
+                if (html.includes('NavigationAwarePreloader')) {
+                    log('✅ NavigationAwarePreloader found in HTML', 'success');
+                } else {
+                    log('❌ NavigationAwarePreloader not found', 'error');
+                }
+                
+                // Check for hero images
+                const heroImages = [
+                    '/images/hero-1.jpg',
+                    '/images/hero-2.jpg',
+                    '/images/hero-3.jpg',
+                    '/images/hero-4.jpg',
+                    '/images/hero-5.jpg'
+                ];
+                
+                let foundCount = 0;
+                heroImages.forEach(img => {
+                    if (html.includes(img)) foundCount++;
+                });
+                
+                log(`Found ${foundCount}/${heroImages.length} hero images referenced`, 
+                    foundCount > 0 ? 'success' : 'error');
+                
+                // Check for collection images
+                const collectionImages = [
+                    '/images/collection-tiled.jpg',
+                    '/images/collection-warped.jpg'
+                ];
+                
+                let collectionCount = 0;
+                collectionImages.forEach(img => {
+                    if (html.includes(img)) collectionCount++;
+                });
+                
+                log(`Found ${collectionCount}/${collectionImages.length} collection images referenced`, 
+                    collectionCount > 0 ? 'success' : 'error');
+                
+            } catch (error) {
+                log(`Error testing homepage: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCollectionPage() {
+            log('Testing Collection Page (Tiled)...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3000/collections/tiled');
+                const html = await response.text();
+                
+                // Check for product images
+                if (html.includes('product') && html.includes('image')) {
+                    log('✅ Product images found in collection page', 'success');
+                } else {
+                    log('⚠️ No product images found in collection page', 'error');
+                }
+                
+                // Check for color switching functionality
+                if (html.includes('handleColorSelect') || html.includes('color')) {
+                    log('✅ Color switching functionality present', 'success');
+                } else {
+                    log('⚠️ Color switching functionality not found', 'error');
+                }
+                
+            } catch (error) {
+                log(`Error testing collection page: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProductPage() {
+            log('Testing Product Page...', 'info');
+            
+            try {
+                // First get a product handle
+                const productsResponse = await fetch('http://localhost:3000/products');
+                const productsHtml = await productsResponse.text();
+                
+                // Extract first product link
+                const productMatch = productsHtml.match(/href="\/products\/([^"]+)"/);
+                
+                if (productMatch) {
+                    const productHandle = productMatch[1];
+                    log(`Testing product: ${productHandle}`, 'info');
+                    
+                    const response = await fetch(`http://localhost:3000/products/${productHandle}`);
+                    const html = await response.text();
+                    
+                    // Check for preloading logic
+                    if (html.includes('preloadImages') || html.includes('isImageCached')) {
+                        log('✅ Image preloading logic found in product page', 'success');
+                    } else {
+                        log('⚠️ No preloading logic found in product page', 'error');
+                    }
+                    
+                    // Check for color variants
+                    if (html.includes('colorOptions') || html.includes('variant')) {
+                        log('✅ Color variants functionality present', 'success');
+                    } else {
+                        log('⚠️ No color variants found', 'error');
+                    }
+                    
+                } else {
+                    log('❌ Could not find any products to test', 'error');
+                }
+                
+            } catch (error) {
+                log(`Error testing product page: ${error.message}`, 'error');
+            }
+        }
+
+        function testMobile() {
+            log('Testing Mobile Mode...', 'info');
+            
+            // Check viewport
+            const viewport = window.innerWidth;
+            log(`Current viewport width: ${viewport}px`, 'info');
+            
+            // Check if mobile detection would trigger
+            const isMobile = viewport < 768;
+            log(`Mobile mode: ${isMobile ? 'YES' : 'NO'}`, isMobile ? 'success' : 'info');
+            
+            // Check sessionStorage support
+            if (typeof(Storage) !== "undefined") {
+                log('✅ SessionStorage supported', 'success');
+                
+                // Test saving to sessionStorage
+                try {
+                    sessionStorage.setItem('test', 'value');
+                    sessionStorage.removeItem('test');
+                    log('✅ SessionStorage is writable', 'success');
+                } catch (e) {
+                    log('❌ SessionStorage is not writable', 'error');
+                }
+            } else {
+                log('❌ SessionStorage not supported', 'error');
+            }
+            
+            // Check touch support
+            const hasTouch = 'ontouchstart' in window;
+            log(`Touch support: ${hasTouch ? 'YES' : 'NO'}`, hasTouch ? 'success' : 'info');
+        }
+
+        function clearCache() {
+            log('Clearing cache...', 'info');
+            
+            // Clear sessionStorage
+            if (typeof(Storage) !== "undefined") {
+                sessionStorage.clear();
+                log('✅ SessionStorage cleared', 'success');
+            }
+            
+            // Clear window cache if it exists
+            if (window.__imageCache) {
+                window.__imageCache.clear();
+                log('✅ Window image cache cleared', 'success');
+            } else {
+                log('ℹ️ No window image cache found', 'info');
+            }
+            
+            // Clear browser cache hint
+            log('ℹ️ To fully clear browser cache, use DevTools > Network > Disable cache', 'info');
+        }
+
+        function showStats() {
+            log('Checking cache statistics...', 'info');
+            
+            // Check window cache
+            if (window.__imageCache) {
+                log(`Image cache size: ${window.__imageCache.size} images`, 'success');
+                
+                if (window.__imageCacheMetadata) {
+                    let totalSize = 0;
+                    let totalLoadTime = 0;
+                    let count = 0;
+                    
+                    window.__imageCacheMetadata.forEach((meta) => {
+                        totalSize += meta.size || 0;
+                        totalLoadTime += meta.loadTime || 0;
+                        count++;
+                    });
+                    
+                    if (count > 0) {
+                        log(`Total size: ${(totalSize / 1024 / 1024).toFixed(2)} MB`, 'info');
+                        log(`Average load time: ${(totalLoadTime / count).toFixed(2)} ms`, 'info');
+                    }
+                }
+            } else {
+                log('ℹ️ No image cache found - navigate to the site first', 'info');
+            }
+            
+            // Check sessionStorage
+            if (typeof(Storage) !== "undefined") {
+                const cacheData = sessionStorage.getItem('imageCache');
+                if (cacheData) {
+                    try {
+                        const cached = JSON.parse(cacheData);
+                        log(`SessionStorage cache: ${cached.length} images`, 'success');
+                    } catch (e) {
+                        log('SessionStorage cache: invalid data', 'error');
+                    }
+                } else {
+                    log('SessionStorage cache: empty', 'info');
+                }
+            }
+        }
+
+        // Initial test
+        log('Test page loaded. Click buttons above to run tests.', 'info');
+        log('Make sure the development server is running on http://localhost:3000', 'info');
+    </script>
+</body>
+</html>
