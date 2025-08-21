@@ -1,13 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
+import LayoutWrapper from '@/components/LayoutWrapper'
 import { ImageCacheProvider } from '@/context/ImageCacheContext'
 import { CartProvider } from '@/context/CartContext'
-import CartDrawer from '@/components/CartDrawer'
 import GA from '@/components/GoogleAnalytics'
 import StructuredData, { organizationSchema, localBusinessSchema, websiteSchema } from '@/components/StructuredData'
-import SimplePreloader from '@/components/SimplePreloader'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://squaragestudio.com'),
@@ -100,11 +97,9 @@ export default function RootLayout({
       <body className="bg-cream font-neue-haas-text">
         <ImageCacheProvider>
           <CartProvider>
-            <SimplePreloader />
-            <Navigation />
-            <CartDrawer />
-            {children}
-            <Footer />
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
             <GA />
           </CartProvider>
         </ImageCacheProvider>
