@@ -1,13 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Navigation from '@/components/Navigation'
-import Footer from '@/components/Footer'
+import LayoutWrapper from '@/components/LayoutWrapper'
 import { ImageCacheProvider } from '@/context/ImageCacheContext'
 import { CartProvider } from '@/context/CartContext'
-import CartDrawer from '@/components/CartDrawer'
 import GA from '@/components/GoogleAnalytics'
 import StructuredData, { organizationSchema, localBusinessSchema, websiteSchema } from '@/components/StructuredData'
-import SimplePreloader from '@/components/SimplePreloader'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://squaragestudio.com'),
@@ -84,15 +81,25 @@ export default function RootLayout({
         <StructuredData data={organizationSchema} />
         <StructuredData data={localBusinessSchema} />
         <StructuredData data={websiteSchema} />
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "sy4kv4wk64");
+            `
+          }}
+        />
       </head>
       <body className="bg-cream font-neue-haas-text">
         <ImageCacheProvider>
           <CartProvider>
-            <SimplePreloader />
-            <Navigation />
-            <CartDrawer />
-            {children}
-            <Footer />
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
             <GA />
           </CartProvider>
         </ImageCacheProvider>
