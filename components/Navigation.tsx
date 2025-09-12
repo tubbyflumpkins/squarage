@@ -157,11 +157,8 @@ export default function Navigation() {
     // Contact page has red background
     headerClasses += ' bg-squarage-red'
   } else {
-    // All other pages have cream background
+    // All other pages have cream background (no shadow)
     headerClasses += ' bg-cream'
-    if (isScrolled) {
-      headerClasses += ' shadow-md'
-    }
   }
 
 
