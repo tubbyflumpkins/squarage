@@ -1,12 +1,18 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 import { preloadImages, isImageCached, prefetchOnTouch } from '@/lib/navigationPreloader'
-import { getProductImages } from '@/lib/universalImageRegistry'
 import FastProductImage from '@/components/FastProductImage'
+import ProductFAQ from '@/components/ProductFAQ'
+import ShippingEstimator from '@/components/ShippingEstimator'
+import StickyAddToCart from '@/components/StickyAddToCart'
+import ProductDetailsAccordion from '@/components/ProductDetailsAccordion'
+import ProductTrustBadges from '@/components/ProductTrustBadges'
+import { CreditCardIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
+
 interface SerializedProduct {
   id: string
   title: string
@@ -60,6 +66,10 @@ interface SerializedProduct {
     value: string
     type: string
   }>
+  collections?: Array<{
+    handle: string
+    title: string
+  }>
 }
 
 interface ProductPageProps {
@@ -68,9 +78,11 @@ interface ProductPageProps {
 
 export default function ProductPage({ product }: ProductPageProps) {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [selectedColor, setSelectedColor] = useState<string>('')
   const [imagesPreloaded, setImagesPreloaded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [showStickyCart, setShowStickyCart] = useState(false)
+  const addToCartRef = useRef<HTMLDivElement>(null)
   
   // Use cart context
   const { addToCart } = useCart()
@@ -90,17 +102,14 @@ export default function ProductPage({ product }: ProductPageProps) {
 
   // Get color options from variants (all available since made to order)
   const unsortedColorOptions = product.variants?.map((variant: any, index) => {
-    // Primary: Use Shopify's variant image if it exists
     let variantImage = variant.image
     
-    // Fallback: Try to find matching image by altText
     if (!variantImage) {
       variantImage = product.images?.find((img: any) => 
         img.altText?.toLowerCase().includes(variant.title.toLowerCase())
       )
     }
     
-    // Second fallback: Try to find by filename containing color name
     if (!variantImage) {
       variantImage = product.images?.find((img: any) => 
         img.src?.toLowerCase().includes(variant.title.toLowerCase())
@@ -109,8 +118,8 @@ export default function ProductPage({ product }: ProductPageProps) {
     
     return {
       name: variant.title,
-      originalIndex: index, // Store the original variant index
-      available: true, // Always available since made to order
+      originalIndex: index,
+      available: true,
       image: variantImage
     }
   }) || []
@@ -121,7 +130,6 @@ export default function ProductPage({ product }: ProductPageProps) {
     const aIndex = colorOrder.indexOf(a.name)
     const bIndex = colorOrder.indexOf(b.name)
     
-    // If color not in order list, put it at the end
     if (aIndex === -1 && bIndex === -1) return 0
     if (aIndex === -1) return 1
     if (bIndex === -1) return -1
@@ -129,87 +137,65 @@ export default function ProductPage({ product }: ProductPageProps) {
     return aIndex - bIndex
   })
 
-  // Find the default variant index that corresponds to the first image (shown in product grid)
+  // Group images by color - each color typically has one image for Tiled collection
+  const imagesByColor = useMemo(() => {
+    const grouped: Record<string, Array<typeof product.images[0]>> = {}
+    
+    colorOptions.forEach(option => {
+      grouped[option.name] = []
+      if (option.image) {
+        // Find the actual image object from product.images
+        const actualImage = product.images?.find(img => 
+          img.id === option.image.id || img.src === option.image.src
+        )
+        if (actualImage) {
+          grouped[option.name].push(actualImage)
+        }
+      }
+    })
+
+    // Fallback: if a color has no images, use the first product image
+    const fallbackImage = product.images?.[0]
+    Object.keys(grouped).forEach(color => {
+      if (grouped[color].length === 0 && fallbackImage) {
+        grouped[color].push(fallbackImage)
+      }
+    })
+
+    return grouped
+  }, [product.images, colorOptions])
+
+  // Find the default variant index that corresponds to the first image
   const getDefaultVariantIndex = useCallback(() => {
     if (!product.images || product.images.length === 0 || colorOptions.length === 0) {
       return 0
     }
     
     const firstImage = product.images[0]
-    
-    // Find which color option has this image
     const defaultColorOption = colorOptions.find((colorOption) => {
       return colorOption.image?.id === firstImage.id
     })
     
-    // If found, return the original variant index; otherwise default to 0
     return defaultColorOption?.originalIndex ?? 0
   }, [product.images, colorOptions])
 
-  // Handle color selection with enhanced performance tracking
+  // Get current variant images based on selected color
+  const currentVariantImages = useMemo(() => {
+    if (!selectedColor || !imagesByColor[selectedColor]) {
+      return product.images || []
+    }
+    return imagesByColor[selectedColor]
+  }, [selectedColor, imagesByColor, product.images])
+
+  // Handle color selection
   const handleColorSelect = (colorOptionIndex: number) => {
-    const startTime = performance.now()
     const colorOption = colorOptions[colorOptionIndex]
     const colorName = colorOption?.name || `variant-${colorOptionIndex}`
     const originalVariantIndex = colorOption?.originalIndex || 0
     
-    console.log(`🎨 Starting color switch to ${colorName} (original variant index: ${originalVariantIndex})`)
     setSelectedVariantIndex(originalVariantIndex)
-    
-    // Find image for this color variant and update main image
-    const variantImage = colorOption?.image
-    
-    if (variantImage) {
-      const imageIndex = product.images?.findIndex((img: any) => img.id === variantImage.id)
-      if (imageIndex !== -1) {
-        const targetImageSrc = product.images[imageIndex]?.src
-        
-        // Enhanced performance tracking
-        if (targetImageSrc && isImageCached(targetImageSrc)) {
-          const switchTime = performance.now() - startTime
-          console.log(`⚡ INSTANT color switch to ${colorName} in ${switchTime.toFixed(2)}ms (cached)`)
-          
-          // Mark performance entry for tracking
-          if (typeof window !== 'undefined' && 'performance' in window) {
-            performance.mark(`color-switch-cached-${colorName}`)
-          }
-        } else {
-          console.log(`⏳ Loading ${colorName} variant (not cached - this may cause delay)`)
-          
-          // Track network loading with enhanced timing
-          if (targetImageSrc) {
-            const img = new window.Image()
-            img.onload = () => {
-              const loadTime = performance.now() - startTime
-              console.log(`📡 Network load for ${colorName} completed in ${loadTime.toFixed(2)}ms`)
-              
-              // Mark performance for slow loads
-              if (loadTime > 500) {
-                console.warn(`🐌 SLOW: ${colorName} took ${loadTime.toFixed(2)}ms to load`)
-              }
-              
-              if (typeof window !== 'undefined' && 'performance' in window) {
-                performance.mark(`color-switch-network-${colorName}`)
-              }
-            }
-            img.onerror = () => {
-              const errorTime = performance.now() - startTime
-              console.error(`❌ Failed to load ${colorName} after ${errorTime.toFixed(2)}ms`)
-            }
-            img.src = targetImageSrc
-          }
-        }
-        
-        setSelectedImageIndex(imageIndex)
-      }
-    } else {
-      // Fallback: if no specific image found, cycle through images based on color option index
-      const fallbackImageIndex = colorOptionIndex % (product.images?.length || 1)
-      setSelectedImageIndex(fallbackImageIndex)
-      console.log(`🔄 Using fallback image index ${fallbackImageIndex} for ${colorName}`)
-    }
+    setSelectedColor(colorName)
   }
-
 
   // Get metafield value by key
   const getMetafieldValue = (namespace: string, key: string): string => {
@@ -228,263 +214,265 @@ export default function ProductPage({ product }: ProductPageProps) {
     return size || 'Custom sizing available'
   }
 
-
-  // Color mapping for shadow effects
-  const getShadowColorStyle = (colorName: string): { color: string } => {
-    const colorMapping: { [key: string]: string } = {
-      'Black': '#666666',        // gray for black selection
-      'Blue': '#01BAD5',         // squarage-blue
-      'Green': '#4A9B4E',        // squarage-green
-      'Orange': '#F7901E',       // squarage-orange
-      'Red': '#F04E23',          // squarage-red
-      'White': '#666666',        // gray for white selection
-      'Yellow': '#F5B74C',       // squarage-yellow
-      'Pink': '#F2BAC9',         // squarage-pink
-      'Dark Blue': '#2274A5',    // squarage-dark-blue
-    }
-    
-    return { color: colorMapping[colorName] || '#F5B74C' }
-  }
-
-  // Get actual color for swatches (black/white as their real colors)
+  // Get actual color for buttons
   const getSwatchColor = (colorName: string): string => {
     const colorMapping: { [key: string]: string } = {
-      'Black': '#000000',        // actual black
-      'Blue': '#01BAD5',         // squarage-blue
-      'Green': '#4A9B4E',        // squarage-green
-      'Orange': '#F7901E',       // squarage-orange
-      'Red': '#F04E23',          // squarage-red
-      'White': '#FFFFFF',        // actual white
-      'Yellow': '#F5B74C',       // squarage-yellow
-      'Pink': '#F2BAC9',         // squarage-pink
-      'Dark Blue': '#2274A5',    // squarage-dark-blue
+      'Black': '#000000',
+      'Blue': '#01BAD5',
+      'Green': '#4A9B4E',
+      'Orange': '#F7901E',
+      'Red': '#F04E23',
+      'White': '#FFFFFF',
+      'Yellow': '#F5B74C',
+      'Pink': '#F2BAC9',
+      'Dark Blue': '#2274A5',
     }
     
     return colorMapping[colorName] || '#F5B74C'
   }
 
-  // Color mapping for styling dropdown text
-  const getColorStyle = (colorName: string): { color: string } => {
-    const colorMapping: { [key: string]: string } = {
-      'Black': '#333333',        // squarage-black
-      'Blue': '#01BAD5',         // squarage-blue
-      'Green': '#4A9B4E',        // squarage-green
-      'Orange': '#F7901E',       // squarage-orange
-      'Red': '#F04E23',          // squarage-red
-      'White': '#333333',        // Keep black for visibility
-      'Yellow': '#F5B74C',       // squarage-yellow
-      'Pink': '#F2BAC9',         // squarage-pink
-      'Dark Blue': '#2274A5',    // squarage-dark-blue
+  // Handle scroll for sticky cart
+  useEffect(() => {
+    const handleScroll = () => {
+      if (addToCartRef.current) {
+        const rect = addToCartRef.current.getBoundingClientRect()
+        setShowStickyCart(rect.bottom < 0)
+      }
     }
-    
-    return { color: colorMapping[colorName] || '#333333' }
-  }
 
-
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Set the correct default variant index on component mount
   useEffect(() => {
     const defaultIndex = getDefaultVariantIndex()
     setSelectedVariantIndex(defaultIndex)
     
-    // Also update the selected image to match the default variant
     const defaultColorOption = colorOptions.find(opt => opt.originalIndex === defaultIndex)
-    if (defaultColorOption?.image) {
-      const imageIndex = product.images?.findIndex((img: any) => img.id === defaultColorOption.image?.id)
-      if (imageIndex !== -1) {
-        setSelectedImageIndex(imageIndex)
-      }
+    if (defaultColorOption) {
+      setSelectedColor(defaultColorOption.name)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.id]) // Only run when product changes
+  }, [product.id])
 
   // Preload all color variant images for instant switching
   useEffect(() => {
     if (!product.images || product.images.length === 0) return
 
     const preloadAllVariants = async () => {
-      console.log(`🎨 Preloading ${product.images.length} images for ${product.title}`)
-      
-      // Check what's already cached
       const uncachedImages = product.images
         .map(img => img.src)
         .filter(src => !isImageCached(src))
       
       if (uncachedImages.length === 0) {
-        console.log('✅ All product images already cached')
         setImagesPreloaded(true)
         return
       }
       
-      console.log(`📦 Loading ${uncachedImages.length} uncached images...`)
-      
-      // Preload all product images
       const results = await preloadImages(uncachedImages, {
         priority: 'high',
         maxConcurrent: window.innerWidth < 768 ? 2 : 4
       })
       
-      const successCount = results.filter(r => r.success).length
-      console.log(`✅ Loaded ${successCount}/${uncachedImages.length} images for instant color switching`)
       setImagesPreloaded(true)
     }
     
     preloadAllVariants()
   }, [product])
 
+  // Handle add to cart
+  const handleAddToCart = async () => {
+    if (!selectedVariant || isAddingToCart) return
+    
+    setIsAddingToCart(true)
+    try {
+      await addToCart(selectedVariant.id)
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+    } finally {
+      setIsAddingToCart(false)
+    }
+  }
+
+  // Get collection info
+  const collection = product.collections?.[0] || { handle: 'tiled', title: 'Tiled Collection' }
+
   return (
     <main className="min-h-screen bg-cream">
+      {/* Sticky Add to Cart Bar */}
+      <StickyAddToCart
+        product={{
+          ...product,
+          images: currentVariantImages.length > 0 ? currentVariantImages : product.images
+        }}
+        selectedVariant={selectedVariant}
+        onAddToCart={handleAddToCart}
+        variantLabel="Color"
+        isVisible={showStickyCart}
+      />
 
       {/* Product Content */}
       <div className="pt-24 md:pt-32 pb-24">
-        <div className="w-full">
-          <div className="flex flex-col lg:flex-row">
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:gap-12">
             
-            {/* Mobile Layout - Adaptive height with fixed bottom button */}
-            <div className="lg:hidden fixed inset-0 pt-24 flex flex-col">
-              {/* Scrollable Content Area */}
-              <div className="flex-1 overflow-y-auto px-6 pb-4">
-                {/* Image and Color Swatches */}
-                <div className="flex flex-col">
-                  {/* Main Image */}
-                  <div className="relative w-full">
-                    {product.images && product.images.length > 0 ? (
-                      <FastProductImage
-                        src={product.images[selectedImageIndex]?.src || product.images[0].src}
-                        alt={product.images[selectedImageIndex]?.altText || product.title}
-                        width={600}
-                        height={600}
-                        className="w-full h-auto"
-                      />
-                    ) : (
-                      <div className="w-full h-96 flex items-center justify-center bg-gray-100">
-                        <span className="text-gray-400 font-neue-haas text-lg">No Image Available</span>
-                      </div>
-                    )}
+            {/* Mobile Layout */}
+            <div className="lg:hidden px-6">
+              {/* Title and Collection */}
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold font-neue-haas text-squarage-black">
+                  {product.title}
+                </h1>
+                <Link 
+                  href={`/collections/${collection.handle}`}
+                  className="text-base font-neue-haas text-gray-600 hover:text-squarage-orange transition-colors"
+                >
+                  Part of the {collection.title} →
+                </Link>
+              </div>
+
+              {/* Main Image - Shows only current variant image */}
+              <div className="relative w-full mb-4">
+                {currentVariantImages && currentVariantImages.length > 0 ? (
+                  <FastProductImage
+                    src={currentVariantImages[0].src}
+                    alt={currentVariantImages[0].altText || product.title}
+                    width={600}
+                    height={600}
+                    className="w-full h-auto"
+                  />
+                ) : (
+                  <div className="w-full h-96 flex items-center justify-center bg-gray-100">
+                    <span className="text-gray-400 font-neue-haas text-lg">No Image Available</span>
                   </div>
+                )}
+              </div>
 
-                  {/* Color Swatches */}
-                  {colorOptions.length > 1 && (
-                    <div className="flex flex-wrap gap-2 mt-2 justify-center">
-                      {colorOptions.map((option, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleColorSelect(index)}
-                          onTouchStart={() => {
-                            // Prefetch variant image on touch for instant switching
-                            if (option.image?.src && !isImageCached(option.image.src)) {
-                              prefetchOnTouch([option.image.src], { priority: 'high' })
-                            }
-                          }}
-                          className={`w-8 h-8 border-2 transition-all duration-200 hover:scale-110 ${
-                            selectedVariantIndex === option.originalIndex 
-                              ? 'border-squarage-black' 
-                              : 'border-gray-300'
-                          }`}
-                          style={{ backgroundColor: getSwatchColor(option.name) }}
-                          aria-label={`Select ${option.name} color`}
-                          title={option.name}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Product Details */}
-                <div className="mt-4">
-                  {/* Title */}
-                  <div className="mb-2">
-                    <h1 className="text-4xl font-bold font-neue-haas text-squarage-black mb-2 text-center">
-                      {product.title}
-                    </h1>
-                    {product.description && (
-                      <p className="text-base font-neue-haas text-squarage-black leading-relaxed mt-2 text-center">
-                        {product.description}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-squarage-black mb-2"></div>
-
-                  {/* Color Section */}
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Color</span>
-                    <span 
-                      className="text-lg font-neue-haas font-medium"
-                      style={getColorStyle(colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || '')}
+              {/* Thumbnail Images - Only show if multiple images for this variant */}
+              {currentVariantImages && currentVariantImages.length > 1 && (
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                  {currentVariantImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {}}
+                      className="flex-shrink-0 w-16 h-16 border-2 transition-all border-gray-200"
                     >
-                      {colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || ''}
-                    </span>
-                  </div>
+                      <Image
+                        src={image.src}
+                        alt={image.altText || `View ${index + 1}`}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
 
-                  {/* Divider */}
-                  <div className="h-px bg-squarage-black"></div>
+              {/* Price and Description */}
+              <div className="mb-6">
+                <p className="text-2xl font-bold font-neue-haas text-squarage-black mb-2">
+                  {selectedVariant && formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
+                </p>
+                {product.description && (
+                  <p className="text-base font-neue-haas text-squarage-black leading-relaxed">
+                    {product.description}
+                  </p>
+                )}
+              </div>
 
-                  {/* Price Section */}
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Price</span>
-                    {selectedVariant && (
-                      <span className="text-lg font-neue-haas text-squarage-black">
-                        {formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-squarage-black"></div>
-
-                  {/* Dimensions Section */}
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Dimensions</span>
-                    <span className="text-lg font-neue-haas text-squarage-black">{getSize()}</span>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-squarage-black"></div>
+              {/* Color Variant Selector */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium font-neue-haas text-squarage-black mb-3">
+                  Color
+                </h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {colorOptions.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleColorSelect(index)}
+                      className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${
+                        selectedVariantIndex === option.originalIndex 
+                          ? 'border-squarage-orange bg-orange-50' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-4 h-4 border border-gray-300"
+                          style={{ backgroundColor: getSwatchColor(option.name) }}
+                        />
+                        <span>{option.name}</span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Fixed Add to Cart Button */}
-              <div className="px-6 pb-6 pt-4 bg-cream border-t border-gray-200">
+              {/* Shipping Estimator */}
+              <div className="mb-6">
+                <ShippingEstimator 
+                  price={parseFloat(selectedVariant?.price.amount || '0')}
+                  productTitle={product.title}
+                />
+              </div>
+
+              {/* Add to Cart Button */}
+              <div ref={addToCartRef} className="mb-8">
                 <button
-                  onClick={async () => {
-                    if (!selectedVariant || isAddingToCart) return
-                    
-                    setIsAddingToCart(true)
-                    try {
-                      await addToCart(selectedVariant.id)
-                      console.log('Successfully added to cart:', {
-                        productId: product.id,
-                        variantId: selectedVariant.id,
-                        title: product.title,
-                        color: colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name
-                      })
-                    } catch (error) {
-                      console.error('Error adding to cart:', error)
-                    } finally {
-                      setIsAddingToCart(false)
-                    }
-                  }}
+                  onClick={handleAddToCart}
                   disabled={!selectedVariant || isAddingToCart}
-                  className="w-full bg-squarage-orange font-bold font-neue-haas text-2xl py-3 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full bg-squarage-orange font-bold font-neue-haas text-xl py-4 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
+                
+                {/* Payment disclaimer - small text with icons */}
+                <div className="mt-3 flex items-center justify-center gap-3 text-xs text-gray-500 font-neue-haas">
+                  <div className="flex items-center gap-1">
+                    <CreditCardIcon className="w-3.5 h-3.5" />
+                    <span>Secure checkout powered by Shopify</span>
+                  </div>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <CheckBadgeIcon className="w-3.5 h-3.5" />
+                    <span>SSL encrypted</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Details Accordion */}
+              <div className="mb-8">
+                <ProductDetailsAccordion 
+                  productType="tiled"
+                  metafields={product.metafields}
+                />
+              </div>
+
+              {/* Trust Badges */}
+              <div className="mb-8">
+                <ProductTrustBadges />
+              </div>
+
+              {/* FAQ Section */}
+              <div className="mb-8">
+                <ProductFAQ productType="tiled" />
               </div>
             </div>
 
-            {/* Desktop Layout - Original */}
-            <div className="hidden lg:flex lg:flex-row w-full">
-              {/* Image Gallery - Left on Desktop */}
-              <div className="w-1/3 px-6">
-                <div className="flex flex-col">
-                  {/* Main Image */}
-                  <div className="relative">
-                    {product.images && product.images.length > 0 ? (
+            {/* Desktop Layout */}
+            <div className="hidden lg:block w-full px-6">
+              <div className="flex flex-row">
+              {/* Image Gallery - Left */}
+              <div className="w-1/2 pr-8">
+                <div className="sticky top-32">
+                  {/* Main Image - Shows only current variant image */}
+                  <div className="relative mb-4">
+                    {currentVariantImages && currentVariantImages.length > 0 ? (
                       <FastProductImage
-                        src={product.images[selectedImageIndex]?.src || product.images[0].src}
-                        alt={product.images[selectedImageIndex]?.altText || product.title}
+                        src={currentVariantImages[0].src}
+                        alt={currentVariantImages[0].altText || product.title}
                         width={600}
                         height={600}
                         className="w-full h-auto object-contain"
@@ -496,110 +484,136 @@ export default function ProductPage({ product }: ProductPageProps) {
                     )}
                   </div>
 
-                  {/* Color Swatches */}
-                  {colorOptions.length > 1 && (
-                    <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                      {colorOptions.map((option, index) => (
+                  {/* Thumbnail Images - Only show if multiple images for this variant */}
+                  {currentVariantImages && currentVariantImages.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto">
+                      {currentVariantImages.map((image, index) => (
                         <button
                           key={index}
-                          onClick={() => handleColorSelect(index)}
-                          className={`w-10 h-10 border-2 transition-all duration-200 hover:scale-110 ${
-                            selectedVariantIndex === option.originalIndex 
-                              ? 'border-squarage-black' 
-                              : 'border-gray-300'
-                          }`}
-                          style={{ backgroundColor: getSwatchColor(option.name) }}
-                          aria-label={`Select ${option.name} color`}
-                          title={option.name}
-                        />
+                          onClick={() => {}}
+                          className="flex-shrink-0 w-20 h-20 border-2 transition-all border-gray-200 hover:border-gray-400"
+                        >
+                          <Image
+                            src={image.src}
+                            alt={image.altText || `View ${index + 1}`}
+                            width={80}
+                            height={80}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
                       ))}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Product Details - Right on Desktop */}
-              <div className="w-2/3 px-6">
-                <div className="space-y-0">
-                  {/* Title */}
-                  <div className="mb-8">
-                    <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold font-neue-haas text-squarage-black mb-4 text-left">
-                      {product.title}
-                    </h1>
-                    {product.description && (
-                      <p className="text-2xl lg:text-4xl font-neue-haas text-squarage-black leading-relaxed mt-6 text-left">
-                        {product.description}
-                      </p>
-                    )}
-                  </div>
+              {/* Product Details - Right */}
+              <div className="w-1/2 pl-8">
+                {/* Title and Collection */}
+                <div className="mb-8">
+                  <h1 className="text-5xl font-bold font-neue-haas text-squarage-black mb-2">
+                    {product.title}
+                  </h1>
+                  <Link 
+                    href={`/collections/${collection.handle}`}
+                    className="text-lg font-neue-haas text-gray-600 hover:text-squarage-orange transition-colors inline-flex items-center"
+                  >
+                    Part of the {collection.title} →
+                  </Link>
+                </div>
 
-                  {/* Divider */}
-                  <div className="h-px bg-squarage-black mb-6"></div>
+                {/* Price */}
+                <div className="mb-6">
+                  <p className="text-3xl font-bold font-neue-haas text-squarage-black">
+                    {selectedVariant && formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
+                  </p>
+                </div>
 
-                  {/* Color Section */}
-                  <div className="flex justify-between items-center py-4">
-                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Color</span>
-                    <span 
-                      className="text-2xl lg:text-4xl font-neue-haas font-medium"
-                      style={getColorStyle(colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || '')}
-                    >
-                      {colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name || ''}
-                    </span>
-                  </div>
+                {/* Description */}
+                {product.description && (
+                  <p className="text-lg font-neue-haas text-squarage-black leading-relaxed mb-8">
+                    {product.description}
+                  </p>
+                )}
 
-                  {/* Divider */}
-                  <div className="h-px bg-squarage-black"></div>
-
-                  {/* Price Section */}
-                  <div className="flex justify-between items-center py-4">
-                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Price</span>
-                    {selectedVariant && (
-                      <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black">
-                        {formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-squarage-black"></div>
-
-                  {/* Dimensions Section */}
-                  <div className="flex justify-between items-center py-4">
-                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Dimensions</span>
-                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black">{getSize()}</span>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-squarage-black mb-12"></div>
-
-                  {/* Add to Cart */}
-                  <div className="pt-8">
-                    <button
-                      onClick={async () => {
-                        if (!selectedVariant || isAddingToCart) return
-                        
-                        setIsAddingToCart(true)
-                        try {
-                          await addToCart(selectedVariant.id)
-                          console.log('Successfully added to cart:', {
-                            productId: product.id,
-                            variantId: selectedVariant.id,
-                            title: product.title,
-                            color: colorOptions.find(opt => opt.originalIndex === selectedVariantIndex)?.name
-                          })
-                        } catch (error) {
-                          console.error('Error adding to cart:', error)
-                        } finally {
-                          setIsAddingToCart(false)
-                        }
-                      }}
-                      disabled={!selectedVariant || isAddingToCart}
-                      className="w-full bg-squarage-orange font-bold font-neue-haas text-4xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    >
-                      {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-                    </button>
+                {/* Color Variant Selector */}
+                <div className="mb-8">
+                  <h3 className="text-xl font-medium font-neue-haas text-squarage-black mb-4">
+                    Select Color
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {colorOptions.map((option, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleColorSelect(index)}
+                        className={`px-4 py-3 border-2 font-medium font-neue-haas transition-all ${
+                          selectedVariantIndex === option.originalIndex 
+                            ? 'border-squarage-orange bg-orange-50' 
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-5 h-5 border border-gray-300"
+                            style={{ backgroundColor: getSwatchColor(option.name) }}
+                          />
+                          <span>{option.name}</span>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
+
+                {/* Shipping Estimator */}
+                <div className="mb-8">
+                  <ShippingEstimator 
+                    price={parseFloat(selectedVariant?.price.amount || '0')}
+                    productTitle={product.title}
+                  />
+                </div>
+
+                {/* Add to Cart Button */}
+                <div ref={addToCartRef} className="mb-8">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!selectedVariant || isAddingToCart}
+                    className="w-full bg-squarage-orange font-bold font-neue-haas text-2xl py-4 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                  </button>
+
+                  {/* Payment disclaimer - small text with icons */}
+                  <div className="mt-3 flex items-center justify-center gap-3 text-xs text-gray-500 font-neue-haas">
+                    <div className="flex items-center gap-1">
+                      <CreditCardIcon className="w-3.5 h-3.5" />
+                      <span>Secure checkout powered by Shopify</span>
+                    </div>
+                    <span>•</span>
+                    <div className="flex items-center gap-1">
+                      <CheckBadgeIcon className="w-3.5 h-3.5" />
+                      <span>SSL encrypted</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Product Details Accordion */}
+                <div className="mb-8">
+                  <ProductDetailsAccordion 
+                    productType="tiled"
+                    metafields={product.metafields}
+                  />
+                </div>
+              </div>
+            </div>
+
+              {/* Trust Badges - Below the two-column layout */}
+              <div className="mt-12 mb-12">
+                <ProductTrustBadges />
+              </div>
+
+              {/* FAQ Section - Below trust badges */}
+              <div>
+                <ProductFAQ productType="tiled" />
               </div>
             </div>
           </div>

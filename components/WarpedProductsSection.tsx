@@ -35,21 +35,12 @@ export default function WarpedProductsSection() {
   }, [])
 
   return (
-    <section className="pt-2 lg:pt-4 pb-20 px-6 bg-cream">
+    <section className="pt-20 lg:pt-32 pb-20 px-6 bg-cream">
       <div>
         {/* Mobile-only preloader - won't affect desktop */}
         <MobileCollectionPreloader products={products} />
-        
-        {/* Section Header */}
-        <div className="flex items-center mb-4 lg:mb-8" style={{ minHeight: '80px' }}>
-          <h2 
-            className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black"
-          >
-            Our Warped Collection
-          </h2>
-        </div>
 
-        {/* Products Grid */}
+        {/* Products Grid - no title */}
         <ProductGrid 
           products={products}
           loading={loading}

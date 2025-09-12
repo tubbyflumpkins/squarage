@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.1.1",
     "@next/third-parties": "^15.4.6",
     "@types/nodemailer": "^6.4.17",

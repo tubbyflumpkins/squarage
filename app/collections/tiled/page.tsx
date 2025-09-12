@@ -21,11 +21,11 @@ export default function CarroPage() {
       {/* Hero Section */}
       <CarroHeroSection />
       
-      {/* Content Section */}
-      <CarroContentSection />
-      
       {/* Products Section */}
       <CarroProductsSection />
+      
+      {/* Content Section */}
+      <CarroContentSection />
     </main>
   )
 }

@@ -15,7 +15,7 @@ export default function CarroHeroSection() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
   return (
-    <section className="relative h-[42vh] md:h-[70vh] w-full overflow-visible bg-cream">
+    <section className="relative h-[58vh] md:h-[86vh] w-full overflow-visible bg-cream">
       {/* Hero Background Image */}
       <div className="absolute inset-0 z-0">
         <div 
@@ -31,7 +31,7 @@ export default function CarroHeroSection() {
       {/* Green Blob Overlay with Text */}
       <div 
         className="absolute bottom-0 right-0 w-full z-50 flex items-end justify-end px-6 md:px-12"
-        style={{ transform: 'translateY(calc(50% - 2vw)) translateX(-3vw) scale(clamp(1, 1.2, 1.4))' }}
+        style={{ transform: 'translateY(calc(50% - 2vw - 96px)) translateX(-3vw) scale(clamp(1, 1.2, 1.4))' }}
       >
         <div 
           className="bg-squarage-green max-w-xl mr-[6%]"
