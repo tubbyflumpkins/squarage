@@ -111,7 +111,7 @@ export default function ProductDetailsAccordion({
               environmentally sound, and socially beneficial.
             </p>
             <p className="text-sm font-neue-haas text-gray-600">
-              We're committed to minimizing waste and using eco-friendly finishes and materials whenever possible.
+              We&apos;re committed to minimizing waste and using eco-friendly finishes and materials whenever possible.
             </p>
           </div>
         </div>
