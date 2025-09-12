@@ -24,11 +24,11 @@ export default function CartIcon({ onClick }: CartIconProps) {
     return (
       <button
         onClick={onClick}
-        className="fixed top-6 right-16 sm:right-18 md:right-20 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white group z-[9999] md:hover:scale-110 transition-all duration-300 drop-shadow-lg"
+        className="fixed top-6 right-16 sm:right-18 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white group z-[9999] transition-all duration-300 drop-shadow-lg md:hidden"
         aria-label="Shopping cart"
         style={{ isolation: 'isolate' }}
       >
-        <BagIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-squarage-red" />
+        <BagIcon className="w-4 h-4 sm:w-5 sm:h-5 text-squarage-red" />
         
         {/* Cart count badge */}
         {state.totalQuantity > 0 && (
@@ -43,11 +43,11 @@ export default function CartIcon({ onClick }: CartIconProps) {
   return (
     <button
       onClick={onClick}
-      className="fixed top-6 right-16 sm:right-18 md:right-20 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-squarage-green group z-[9999] md:hover:scale-110 transition-all duration-300 drop-shadow-lg"
+      className="fixed top-6 right-16 sm:right-18 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-squarage-green group z-[9999] transition-all duration-300 drop-shadow-lg md:hidden"
       aria-label="Shopping cart"
       style={{ isolation: 'isolate' }}
     >
-      <BagIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
+      <BagIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
       
       {/* Cart count badge */}
       {state.totalQuantity > 0 && (

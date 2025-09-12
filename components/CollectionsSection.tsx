@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+// Removed arrow imports - using custom SVGs
 
 const collections = [
   {
@@ -31,7 +32,16 @@ export default function CollectionsSection() {
   const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
   
   // Fixed delays to prevent hydration mismatch - memoized to prevent re-renders
-  const randomDelays = useMemo(() => [0.1, 0.3, 0.6, 0.2, 0.5, 0.4, 0.7, 0.0, 0.8, 0.35, 0.15], [])
+  // Updated for "MADE IN LOS ANGELES" (18 characters including spaces)
+  const randomDelays = useMemo(() => [
+    0.1, 0.3, 0.6, 0.2, // MADE
+    0.0, // space
+    0.5, 0.4, // IN
+    0.0, // space
+    0.7, 0.15, 0.25, // LOS
+    0.0, // space
+    0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95 // ANGELES
+  ], [])
 
   const handleLetterHover = (index: number) => {
     // Only start animation if not already animating and initial animation is done
@@ -79,21 +89,26 @@ export default function CollectionsSection() {
         <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center">
-              <div className="flex justify-center items-center w-full">
-                <div className="tracking-[0.3em]">
-                  {'COLLECTIONS'.split('').map((letter, index) => (
+              <div className="flex justify-center items-center w-full whitespace-nowrap">
+                <div className="tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.25em] lg:tracking-[0.3em]">
+                  {'MADE IN LOS ANGELES'.split('').map((letter, index) => (
                     <span
                       key={index}
-                      className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-neue-haas font-black leading-none relative cursor-pointer inline-block ${
-                        (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
+                      className={`text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-neue-haas font-black leading-none relative inline-block ${
+                        letter !== ' ' ? 'cursor-pointer' : ''
+                      } ${
+                        letter !== ' ' && (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
                       }`}
                       style={{
-                        animationDelay: hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`
+                        animationDelay: letter !== ' ' && hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`,
+                        marginRight: letter === ' ' ? '0.15em' : '0'
                       }}
-                      onMouseEnter={() => handleLetterHover(index)}
-                      onAnimationEnd={() => handleAnimationEnd(index, !initialAnimationCompleted)}
+                      onMouseEnter={() => letter !== ' ' && handleLetterHover(index)}
+                      onAnimationEnd={() => letter !== ' ' && handleAnimationEnd(index, !initialAnimationCompleted)}
                     >
-                      <span className="text-white">{letter}</span>
+                      <span className="text-white">
+                        {letter === ' ' ? '\u00A0' : letter}
+                      </span>
                     </span>
                   ))}
                 </div>

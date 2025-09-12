@@ -21,14 +21,70 @@ const InstagramIcon = ({ className }: { className: string }) => (
   </svg>
 )
 
+const BagIcon = ({ className }: { className: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+  </svg>
+)
+
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const { toggleCart, closeCart, state } = useCart()
   const pathname = usePathname()
   
   // Use special logo on custom-projects and contact pages
   const useSpecialLogo = pathname === '/custom-projects' || pathname === '/contact'
   const logoSrc = useSpecialLogo ? '/images/logo_main_white_transparent_small.png' : '/images/logo_main_small.png'
+  
+  // Check if we're on specific pages
+  const isTiledPage = pathname === '/collections/tiled'
+  const isWarpedPage = pathname === '/collections/warped'
+  const isContactPage = pathname === '/contact'
+  const isHomePage = pathname === '/'
+  
+  
+  // Handle scroll for desktop nav background
+  useEffect(() => {
+    const handleScroll = (element?: Element) => {
+      // Check multiple scroll sources
+      const windowScroll = window.scrollY || window.pageYOffset
+      const docScroll = document.documentElement.scrollTop
+      const bodyScroll = document.body.scrollTop
+      const elementScroll = element ? element.scrollTop : 0
+      
+      const scrollY = Math.max(windowScroll, docScroll, bodyScroll, elementScroll)
+      const scrolled = scrollY > 0
+      
+      // Only update if scroll state actually changes
+      if (scrolled !== isScrolled) {
+        setIsScrolled(scrolled)
+      }
+    }
+    
+    // Check initial scroll position
+    handleScroll()
+    
+    // Add listeners to window/document
+    const windowScrollHandler = () => handleScroll()
+    window.addEventListener('scroll', windowScrollHandler, false)
+    document.addEventListener('scroll', windowScrollHandler, false)
+    
+    // Listen to body scroll specifically (this is what actually scrolls on Warped page)
+    const bodyScrollHandler = () => handleScroll(document.body)
+    document.body.addEventListener('scroll', bodyScrollHandler, false)
+    
+    // Listen to html scroll
+    const htmlScrollHandler = () => handleScroll(document.documentElement)
+    document.documentElement.addEventListener('scroll', htmlScrollHandler, false)
+    
+    return () => {
+      window.removeEventListener('scroll', windowScrollHandler)
+      document.removeEventListener('scroll', windowScrollHandler)
+      document.body.removeEventListener('scroll', bodyScrollHandler)
+      document.documentElement.removeEventListener('scroll', htmlScrollHandler)
+    }
+  }, [pathname, isWarpedPage, isTiledPage, isHomePage, isScrolled])
   
   // Handle back button/swipe to close menus
   useEffect(() => {
@@ -86,59 +142,173 @@ export default function Navigation() {
   // Menu item shared classes
   const menuItemClass = "block text-4xl md:text-5xl font-bold font-neue-haas text-white hover:text-squarage-red hover:scale-105 transition-all duration-300"
 
+  // Build header styles and classes
+  let headerStyle: React.CSSProperties = {}
+  let headerClasses = 'hidden md:block fixed top-0 left-0 right-0 z-[9998]'
+
+  // Apply page-specific styling
+  if (isWarpedPage || isTiledPage || isHomePage) {
+    // For Warped, Tiled, and Home pages, use inline styles for background transition (no shadow)
+    headerStyle = {
+      backgroundColor: isScrolled ? '#fffaf4' : 'transparent',
+      transition: 'background-color 0.3s ease'
+    }
+  } else if (isContactPage) {
+    // Contact page has red background
+    headerClasses += ' bg-squarage-red'
+  } else {
+    // All other pages have cream background (no shadow)
+    headerClasses += ' bg-cream'
+  }
+
+
   return (
     <>
-      {/* Floating Logo - Independent Element */}
-      <Link 
-        href="/" 
-        className="fixed top-6 left-6 z-[9999] hover:scale-105 transition-transform duration-300"
-        style={{ isolation: 'isolate' }}
-        onClick={(e) => {
-          // If any menu is open, close it and prevent navigation
-          if (isMenuOpen || state.isOpen) {
-            e.preventDefault()
-            if (isMenuOpen) {
-              setIsMenuOpen(false)
-            }
-            if (state.isOpen) {
-              closeCart()
-            }
-          }
-          // If no menus are open, allow normal navigation to home
-        }}
+      {/* Desktop Navigation Bar */}
+      <div 
+        className={headerClasses}
+        style={headerStyle}
       >
-        <Image
-          src={logoSrc}
-          alt="Squarage Studio"
-          width={254}
-          height={61}
-          className="w-auto h-[26px] sm:h-[34px] md:h-[42px] lg:h-[50px] drop-shadow-lg"
-          priority
-        />
-      </Link>
+        <div className="flex items-center px-6 py-6">
+          {/* Logo */}
+          <Link 
+            href="/" 
+            className="hover:scale-105 transition-transform duration-300 flex-shrink-0 mr-12"
+            onClick={(e) => {
+              if (state.isOpen) {
+                e.preventDefault()
+                closeCart()
+              }
+            }}
+          >
+            <Image
+              src={logoSrc}
+              alt="Squarage Studio"
+              width={254}
+              height={61}
+              className="w-auto h-[42px] lg:h-[50px]"
+              priority
+            />
+          </Link>
+          
+          {/* Desktop Menu Items - aligned left after logo */}
+          <nav className="flex items-center gap-4 lg:gap-6 flex-1">
+            <Link
+              href="/products"
+              className={`font-neue-haas font-medium text-xl lg:text-2xl ${
+                isContactPage ? 'text-white hover:text-squarage-orange' : 'text-squarage-green hover:text-squarage-orange'
+              } transition-colors duration-200`}
+            >
+              Catalog
+            </Link>
+            <Link
+              href="/collections/warped"
+              className={`font-neue-haas font-medium text-xl lg:text-2xl ${
+                isContactPage ? 'text-white hover:text-squarage-orange' : 'text-squarage-green hover:text-squarage-orange'
+              } transition-colors duration-200`}
+            >
+              Warped
+            </Link>
+            <Link
+              href="/collections/tiled"
+              className={`font-neue-haas font-medium text-xl lg:text-2xl ${
+                isContactPage ? 'text-white hover:text-squarage-orange' : 'text-squarage-green hover:text-squarage-orange'
+              } transition-colors duration-200`}
+            >
+              Tiled
+            </Link>
+            <Link
+              href="/custom-projects"
+              className={`font-neue-haas font-medium text-xl lg:text-2xl ${
+                isContactPage ? 'text-white hover:text-squarage-orange' : 'text-squarage-green hover:text-squarage-orange'
+              } transition-colors duration-200`}
+            >
+              Custom
+            </Link>
+            <Link
+              href="/contact"
+              className={`font-neue-haas font-medium text-xl lg:text-2xl ${
+                isContactPage ? 'text-white hover:text-squarage-orange' : 'text-squarage-green hover:text-squarage-orange'
+              } transition-colors duration-200`}
+            >
+              Contact
+            </Link>
+          </nav>
+          
+          {/* Cart Button - Desktop (not using CartIcon component) */}
+          <button
+            onClick={handleCartToggle}
+            className={`flex items-center justify-center w-12 h-12 ${
+              isContactPage ? 'bg-white' : 'bg-squarage-green'
+            } hover:scale-110 transition-all duration-300 relative flex-shrink-0`}
+            aria-label="Shopping cart"
+          >
+            <BagIcon className={`w-6 h-6 ${isContactPage ? 'text-squarage-red' : 'text-white'}`} />
+            
+            {/* Cart count badge */}
+            {state.totalQuantity > 0 && (
+              <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-squarage-orange text-white text-xs font-bold rounded-full">
+                {state.totalQuantity > 9 ? '9+' : state.totalQuantity}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
 
-      {/* Cart Icon */}
-      <CartIcon onClick={handleCartToggle} />
+      {/* Mobile Navigation */}
+      <div className="md:hidden">
+        {/* Floating Logo - Mobile */}
+        <Link 
+          href="/" 
+          className="fixed top-6 left-6 z-[9999] hover:scale-105 transition-transform duration-300"
+          style={{ isolation: 'isolate' }}
+          onClick={(e) => {
+            if (isMenuOpen || state.isOpen) {
+              e.preventDefault()
+              if (isMenuOpen) {
+                setIsMenuOpen(false)
+              }
+              if (state.isOpen) {
+                closeCart()
+              }
+            }
+          }}
+        >
+          <Image
+            src={logoSrc}
+            alt="Squarage Studio"
+            width={254}
+            height={61}
+            className="w-auto h-[26px] sm:h-[34px] drop-shadow-lg"
+            priority
+          />
+        </Link>
 
-      {/* Floating Menu Button - Independent Element */}
-      <button
-        onClick={handleMenuToggle}
-        className={`fixed top-6 right-6 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 space-y-1 group z-[9999] md:hover:scale-110 transition-all duration-300 drop-shadow-lg ${
-          useSpecialLogo ? 'bg-white' : 'bg-squarage-green'
-        }`}
-        aria-label="Toggle menu"
-        style={{ isolation: 'isolate' }}
-      >
-        <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 transition-all duration-300 md:group-hover:w-7 md:group-hover:-translate-y-0.5 ${
-          useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
-        }`} />
-        <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 transition-all duration-300 md:group-hover:w-7 ${
-          useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
-        }`} />
-        <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 md:h-1 md:w-6 transition-all duration-300 md:group-hover:w-7 md:group-hover:translate-y-0.5 ${
-          useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
-        }`} />
-      </button>
+        {/* Cart Icon - Mobile */}
+        <div className="md:hidden">
+          <CartIcon onClick={handleCartToggle} />
+        </div>
+
+        {/* Floating Menu Button - Mobile Only */}
+        <button
+          onClick={handleMenuToggle}
+          className={`fixed top-6 right-6 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 space-y-1 group z-[9999] transition-all duration-300 drop-shadow-lg ${
+            useSpecialLogo ? 'bg-white' : 'bg-squarage-green'
+          }`}
+          aria-label="Toggle menu"
+          style={{ isolation: 'isolate' }}
+        >
+          <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 transition-all duration-300 ${
+            useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+          }`} />
+          <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 transition-all duration-300 ${
+            useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+          }`} />
+          <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 transition-all duration-300 ${
+            useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+          }`} />
+        </button>
+      </div>
 
       {/* Click Outside to Close Overlay - Remaining Space */}
       {isMenuOpen && (
@@ -182,7 +352,25 @@ export default function Navigation() {
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}
                 >
-                  All Products
+                  Catalog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/collections/warped"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={menuItemClass}
+                >
+                  Warped
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/collections/tiled"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={menuItemClass}
+                >
+                  Tiled
                 </Link>
               </li>
               <li>
@@ -191,7 +379,7 @@ export default function Navigation() {
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}
                 >
-                  Custom Projects
+                  Custom
                 </Link>
               </li>
               <li>

@@ -1,12 +1,19 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
 import { useCart } from '@/context/CartContext'
 import FastProductImage from '@/components/FastProductImage'
+import ProductFAQ from '@/components/ProductFAQ'
+import ShippingEstimator from '@/components/ShippingEstimator'
+import StickyAddToCart from '@/components/StickyAddToCart'
+import ProductDetailsAccordion from '@/components/ProductDetailsAccordion'
+import ProductTrustBadges from '@/components/ProductTrustBadges'
+import { CreditCardIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -65,46 +72,32 @@ interface SerializedProduct {
     value: string
     type: string
   }>
+  collections?: Array<{
+    handle: string
+    title: string
+  }>
 }
 
 interface WarpedProductPageProps {
   product: SerializedProduct
 }
 
-// Color variants for warped collection
-const WARPED_COLORS = ['Birch', 'Oak', 'Walnut']
-
-// Shopify image loader for optimized CDN delivery with format conversion
-const shopifyLoader = ({ src, width }: { src: string; width: number }) => {
-  try {
-    const url = new URL(src)
-    // Set width for responsive sizing
-    url.searchParams.set('width', width.toString())
-    // Request WebP format for better compression
-    url.searchParams.set('format', 'webp')
-    // Set quality for balance of size and visual quality
-    url.searchParams.set('quality', '85')
-    return url.toString()
-  } catch {
-    // Fallback for non-URL strings
-    const separator = src.includes('?') ? '&' : '?'
-    return `${src}${separator}width=${width}&format=webp&quality=85`
-  }
-}
+// Wood finish variants for warped collection
+const WARPED_FINISHES = ['Birch', 'Oak', 'Walnut']
 
 export default function WarpedProductPage({ product }: WarpedProductPageProps) {
   const [mainSwiper, setMainSwiper] = useState<SwiperType | null>(null)
-  const [selectedColor, setSelectedColor] = useState<string>('Birch')
+  const [selectedFinish, setSelectedFinish] = useState<string>('Birch')
   const [activeIndex, setActiveIndex] = useState(0)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [imagesPreloaded, setImagesPreloaded] = useState(false)
-  const [preloadStatus, setPreloadStatus] = useState<Record<string, boolean>>({})
+  const [showStickyCart, setShowStickyCart] = useState(false)
+  const addToCartRef = useRef<HTMLDivElement>(null)
   
   // Use cart context
   const { addToCart } = useCart()
 
-  // Group images by color variant
-  const imagesByColor = useMemo(() => {
+  // Group images by finish variant
+  const imagesByFinish = useMemo(() => {
     const grouped: Record<string, Array<typeof product.images[0]>> = {
       'Birch': [],
       'Oak': [],
@@ -124,8 +117,8 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     })
 
     // Sort images by number
-    Object.keys(grouped).forEach(color => {
-      grouped[color].sort((a, b) => {
+    Object.keys(grouped).forEach(finish => {
+      grouped[finish].sort((a, b) => {
         const aMatch = (a.altText || a.src).match(/_(\d+)/);
         const bMatch = (b.altText || b.src).match(/_(\d+)/);
         const aNum = aMatch ? parseInt(aMatch[1]) : 999;
@@ -134,31 +127,31 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
       })
     })
 
-    // Ensure we have exactly 5 images per color
+    // Ensure we have exactly 5 images per finish
     const fallbackImage = product.images[0]
-    WARPED_COLORS.forEach(color => {
-      if (grouped[color].length === 0 && fallbackImage) {
+    WARPED_FINISHES.forEach(finish => {
+      if (grouped[finish].length === 0 && fallbackImage) {
         for (let i = 0; i < 5; i++) {
-          grouped[color].push(product.images[i] || fallbackImage)
+          grouped[finish].push(product.images[i] || fallbackImage)
         }
       }
-      while (grouped[color].length < 5 && grouped[color].length > 0) {
-        grouped[color].push(grouped[color][grouped[color].length - 1])
+      while (grouped[finish].length < 5 && grouped[finish].length > 0) {
+        grouped[finish].push(grouped[finish][grouped[finish].length - 1])
       }
     })
 
     return grouped
   }, [product])
 
-  // Get the selected variant based on color
+  // Get the selected variant based on finish
   const selectedVariant = useMemo(() => {
     return product.variants.find(variant => 
-      variant.title.toLowerCase() === selectedColor.toLowerCase() ||
+      variant.title.toLowerCase() === selectedFinish.toLowerCase() ||
       variant.selectedOptions?.some(opt => 
-        opt.value.toLowerCase() === selectedColor.toLowerCase()
+        opt.value.toLowerCase() === selectedFinish.toLowerCase()
       )
     ) || product.variants[0]
-  }, [selectedColor, product.variants])
+  }, [selectedFinish, product.variants])
 
   // Format price
   const formatPrice = (price: string, currencyCode: string) => {
@@ -183,64 +176,36 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     return size || 'Custom sizing available'
   }
 
-  // Get color style for UI elements
-  const getColorStyle = (colorName: string) => {
+  // Get color style for finish buttons
+  const getFinishColor = (finishName: string) => {
     const colorMapping: Record<string, string> = {
       'Birch': '#E8D5B7',
       'Oak': '#B08D57',
       'Walnut': '#5D4E37'
     }
-    return { backgroundColor: colorMapping[colorName] || '#999' }
+    return colorMapping[finishName] || '#999'
   }
 
-  // Simple check if images are already cached by universal preloader
+  // Handle scroll for sticky cart
   useEffect(() => {
-    const checkCacheStatus = () => {
-      const isMobile = window.innerWidth < 1024
-      console.log(`🎨 Warped product: Checking cache status (${isMobile ? 'mobile' : 'desktop'})`)
-      
-      // Check if images are already cached by UniversalPreloader
-      let cachedCount = 0
-      let totalCount = 0
-      
-      WARPED_COLORS.forEach(color => {
-        const colorImages = imagesByColor[color]
-        if (colorImages && colorImages.length > 0) {
-          colorImages.forEach(img => {
-            if (img.src) {
-              totalCount++
-              const cacheKey = `${img.src}_${isMobile ? 400 : 600}`
-              if (window.__imageCache?.has(cacheKey)) {
-                const cached = window.__imageCache.get(cacheKey)
-                if (cached?.complete && cached?.naturalWidth > 0) {
-                  cachedCount++
-                }
-              }
-            }
-          })
-        }
-      })
-      
-      if (cachedCount > 0) {
-        console.log(`⚡ ${cachedCount}/${totalCount} images already cached by UniversalPreloader`)
-        setImagesPreloaded(true)
-      } else {
-        console.log(`📦 Images will be loaded on demand`)
+    const handleScroll = () => {
+      if (addToCartRef.current) {
+        const rect = addToCartRef.current.getBoundingClientRect()
+        setShowStickyCart(rect.bottom < 0)
       }
     }
-    
-    // Check cache status after a small delay
-    const timer = setTimeout(checkCacheStatus, 100)
-    return () => clearTimeout(timer)
-  }, [imagesByColor])
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
   
-  // Reset active index when color changes
+  // Reset active index when finish changes
   useEffect(() => {
     setActiveIndex(0)
     if (mainSwiper) {
       mainSwiper.slideTo(0)
     }
-  }, [selectedColor, mainSwiper])
+  }, [selectedFinish, mainSwiper])
 
   // Handle thumbnail click
   const handleThumbnailClick = (index: number) => {
@@ -249,42 +214,197 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
       setActiveIndex(index)
     }
   }
-  
-  // Simple color hover handler - images should already be cached
-  const handleColorHover = useCallback((color: string) => {
-    // Images should already be preloaded by UniversalPreloader
-    console.log(`🎨 Hover on ${color} - images should be cached`)
-  }, [])
+
+  // Handle add to cart
+  const handleAddToCart = async () => {
+    if (!selectedVariant || isAddingToCart) return
+    
+    setIsAddingToCart(true)
+    try {
+      await addToCart(selectedVariant.id)
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+    } finally {
+      setIsAddingToCart(false)
+    }
+  }
+
+  // Get collection info
+  const collection = product.collections?.[0] || { handle: 'warped', title: 'Warped Collection' }
 
   return (
     <main className="min-h-screen bg-cream">
-      <div className="lg:pt-32 lg:pb-24 lg:px-6">
-        <div className="w-full">
+      {/* Sticky Add to Cart Bar */}
+      <StickyAddToCart
+        product={product}
+        selectedVariant={selectedVariant}
+        onAddToCart={handleAddToCart}
+        variantLabel="Finish"
+        isVisible={showStickyCart}
+      />
+
+      <div className="pt-24 md:pt-32 pb-24">
+        <div className="w-full max-w-7xl mx-auto">
           {/* Mobile Layout */}
-            <div className="lg:hidden fixed inset-0 flex flex-col">
-              <div className="flex-1 overflow-y-auto px-6 pb-4 pt-20">
-                {/* Mobile Carousel - Dynamic aspect ratio to match images */}
-                <div className="relative" style={{ 
-                  aspectRatio: imagesByColor[selectedColor][0] ? 
-                    `${imagesByColor[selectedColor][0].width} / ${imagesByColor[selectedColor][0].height}` : 
-                    '1 / 1' 
-                }}>
+          <div className="lg:hidden px-6">
+            {/* Title and Collection */}
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold font-neue-haas text-squarage-black">
+                {product.title}
+              </h1>
+              <Link 
+                href={`/collections/${collection.handle}`}
+                className="text-base font-neue-haas text-gray-600 hover:text-squarage-orange transition-colors"
+              >
+                Part of the {collection.title} →
+              </Link>
+            </div>
+
+            {/* Mobile Carousel */}
+            <div className="relative mb-4" style={{ 
+              aspectRatio: imagesByFinish[selectedFinish][0] ? 
+                `${imagesByFinish[selectedFinish][0].width} / ${imagesByFinish[selectedFinish][0].height}` : 
+                '1 / 1' 
+            }}>
+              <Swiper
+                spaceBetween={0}
+                navigation={true}
+                modules={[Navigation]}
+                className="warped-swiper-mobile h-full"
+              >
+                {imagesByFinish[selectedFinish].map((image, index) => (
+                  <SwiperSlide key={index}>
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      <FastProductImage
+                        src={image.src}
+                        alt={image.altText || `${product.title} - ${selectedFinish} - View ${index + 1}`}
+                        width={600}
+                        height={600}
+                        className="w-full h-full object-contain"
+                        fillContainer={true}
+                      />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+
+            {/* Price and Description */}
+            <div className="mb-6">
+              <p className="text-2xl font-bold font-neue-haas text-squarage-black mb-2">
+                {selectedVariant && formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
+              </p>
+              {product.description && (
+                <p className="text-base font-neue-haas text-squarage-black leading-relaxed">
+                  {product.description}
+                </p>
+              )}
+            </div>
+
+            {/* Finish Variant Selector */}
+            <div className="mb-6">
+              <h3 className="text-lg font-medium font-neue-haas text-squarage-black mb-3">
+                Wood Finish
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                {WARPED_FINISHES.map(finish => (
+                  <button
+                    key={finish}
+                    onClick={() => setSelectedFinish(finish)}
+                    className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${
+                      selectedFinish === finish 
+                        ? 'border-squarage-orange bg-orange-50' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-4 h-4 border border-gray-300 rounded-full"
+                        style={{ backgroundColor: getFinishColor(finish) }}
+                      />
+                      <span>{finish}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Shipping Estimator */}
+            <div className="mb-6">
+              <ShippingEstimator 
+                price={parseFloat(selectedVariant?.price.amount || '0')}
+                productTitle={product.title}
+              />
+            </div>
+
+            {/* Add to Cart Button */}
+            <div ref={addToCartRef} className="mb-8">
+              <button
+                onClick={handleAddToCart}
+                disabled={!selectedVariant || isAddingToCart}
+                className="w-full bg-squarage-orange font-bold font-neue-haas text-xl py-4 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              </button>
+              
+              {/* Payment disclaimer - small text with icons */}
+              <div className="mt-3 flex items-center justify-center gap-3 text-xs text-gray-500 font-neue-haas">
+                <div className="flex items-center gap-1">
+                  <CreditCardIcon className="w-3.5 h-3.5" />
+                  <span>Secure checkout powered by Shopify</span>
+                </div>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  <CheckBadgeIcon className="w-3.5 h-3.5" />
+                  <span>SSL encrypted</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Product Details Accordion */}
+            <div className="mb-8">
+              <ProductDetailsAccordion 
+                productType="warped"
+                metafields={product.metafields}
+              />
+            </div>
+
+            {/* Trust Badges */}
+            <div className="mb-8">
+              <ProductTrustBadges />
+            </div>
+
+            {/* FAQ Section */}
+            <div className="mb-8">
+              <ProductFAQ productType="warped" />
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden lg:block px-6">
+            <div className="flex flex-row">
+            {/* Image Gallery - Left */}
+            <div className="w-1/2 pr-8">
+              <div className="sticky top-32">
+                {/* Main Swiper */}
+                <div className="mb-4">
                   <Swiper
+                    onSwiper={setMainSwiper}
                     spaceBetween={0}
                     navigation={true}
                     modules={[Navigation]}
-                    className="warped-swiper-mobile h-full"
+                    onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+                    className="warped-swiper"
                   >
-                    {imagesByColor[selectedColor].map((image, index) => (
+                    {imagesByFinish[selectedFinish].map((image, index) => (
                       <SwiperSlide key={index}>
-                        <div className="relative w-full h-full flex items-center justify-center">
+                        <div className="relative w-full h-[600px] flex items-center justify-center bg-cream">
                           <FastProductImage
                             src={image.src}
-                            alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
+                            alt={image.altText || `${product.title} - ${selectedFinish} - View ${index + 1}`}
                             width={600}
                             height={600}
                             className="w-full h-full object-contain"
-                            fillContainer={true}
                           />
                         </div>
                       </SwiperSlide>
@@ -292,310 +412,155 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   </Swiper>
                 </div>
 
-                {/* Color Swatches */}
-                <div className="flex flex-wrap gap-2 mt-2 justify-center">
-                  {WARPED_COLORS.map(color => (
+                {/* Thumbnail Navigation */}
+                <div className="flex gap-2 justify-center">
+                  {imagesByFinish[selectedFinish].map((image, index) => (
                     <button
-                      key={color}
-                      onTouchStart={() => handleColorHover(color)}  // Prefetch on touch for mobile
-                      onMouseEnter={() => handleColorHover(color)}
-                      onClick={() => {
-                        const startTime = performance.now()
-                        const prevColor = selectedColor
-                        setSelectedColor(color)
-                        
-                        // Simple performance tracking
-                        const switchTime = performance.now() - startTime
-                        console.log(`⚡ Color switch from ${prevColor} to ${color} in ${switchTime.toFixed(2)}ms`)
-                      }}
-                      className={`w-8 h-8 border-2 transition-all duration-200 hover:scale-110 ${
-                        selectedColor === color 
-                          ? 'border-squarage-black' 
-                          : 'border-gray-300'
+                      key={index}
+                      onClick={() => handleThumbnailClick(index)}
+                      className={`w-20 h-20 border-2 transition-all ${
+                        activeIndex === index 
+                          ? 'border-squarage-orange' 
+                          : 'border-gray-200 hover:border-gray-400'
                       }`}
-                      style={getColorStyle(color)}
-                      aria-label={`Select ${color} finish`}
-                      title={color}
-                    />
+                    >
+                      <Image
+                        src={image.src}
+                        alt={image.altText || `Thumbnail ${index + 1}`}
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
                   ))}
                 </div>
+              </div>
+            </div>
 
-                {/* Product Details */}
-                <div className="mt-4">
-                  <div className="mb-2">
-                    <h1 className="text-4xl font-bold font-neue-haas text-squarage-black mb-2 text-center">
-                      {product.title}
-                    </h1>
-                    {product.description && (
-                      <p className="text-base font-neue-haas text-squarage-black leading-relaxed mt-2 text-center">
-                        {product.description}
-                      </p>
-                    )}
-                  </div>
+            {/* Product Details - Right */}
+            <div className="w-1/2 pl-8">
+              {/* Title and Collection */}
+              <div className="mb-8">
+                <h1 className="text-5xl font-bold font-neue-haas text-squarage-black mb-2">
+                  {product.title}
+                </h1>
+                <Link 
+                  href={`/collections/${collection.handle}`}
+                  className="text-lg font-neue-haas text-gray-600 hover:text-squarage-orange transition-colors inline-flex items-center"
+                >
+                  Part of the {collection.title} →
+                </Link>
+              </div>
 
-                  <div className="h-px bg-squarage-black mb-2"></div>
+              {/* Price */}
+              <div className="mb-6">
+                <p className="text-3xl font-bold font-neue-haas text-squarage-black">
+                  {selectedVariant && formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
+                </p>
+              </div>
 
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Finish</span>
-                    <span className="text-lg font-neue-haas font-medium text-squarage-black">
-                      {selectedColor}
-                    </span>
-                  </div>
+              {/* Description */}
+              {product.description && (
+                <p className="text-lg font-neue-haas text-squarage-black leading-relaxed mb-8">
+                  {product.description}
+                </p>
+              )}
 
-                  <div className="h-px bg-squarage-black"></div>
-
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Price</span>
-                    {selectedVariant && (
-                      <span className="text-lg font-neue-haas text-squarage-black">
-                        {formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="h-px bg-squarage-black"></div>
-
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-lg font-neue-haas text-squarage-black font-medium">Dimensions</span>
-                    <span className="text-lg font-neue-haas text-squarage-black">{getSize()}</span>
-                  </div>
-
-                  <div className="h-px bg-squarage-black"></div>
+              {/* Finish Variant Selector */}
+              <div className="mb-8">
+                <h3 className="text-xl font-medium font-neue-haas text-squarage-black mb-4">
+                  Select Wood Finish
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {WARPED_FINISHES.map(finish => (
+                    <button
+                      key={finish}
+                      onClick={() => setSelectedFinish(finish)}
+                      className={`px-4 py-3 border-2 font-medium font-neue-haas transition-all ${
+                        selectedFinish === finish 
+                          ? 'border-squarage-orange bg-orange-50' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-5 h-5 border border-gray-300 rounded-full"
+                          style={{ backgroundColor: getFinishColor(finish) }}
+                        />
+                        <span>{finish}</span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Fixed Add to Cart Button */}
-              <div className="px-6 pb-6 pt-4 bg-cream border-t border-gray-200">
+              {/* Shipping Estimator */}
+              <div className="mb-8">
+                <ShippingEstimator 
+                  price={parseFloat(selectedVariant?.price.amount || '0')}
+                  productTitle={product.title}
+                />
+              </div>
+
+              {/* Add to Cart Button */}
+              <div ref={addToCartRef} className="mb-8">
                 <button
-                  onClick={async () => {
-                    if (!selectedVariant || isAddingToCart) return
-                    
-                    setIsAddingToCart(true)
-                    try {
-                      await addToCart(selectedVariant.id)
-                    } catch (error) {
-                      console.error('Error adding to cart:', error)
-                    } finally {
-                      setIsAddingToCart(false)
-                    }
-                  }}
+                  onClick={handleAddToCart}
                   disabled={!selectedVariant || isAddingToCart}
-                  className="w-full bg-squarage-orange font-bold font-neue-haas text-2xl py-3 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="w-full bg-squarage-orange font-bold font-neue-haas text-2xl py-4 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {isAddingToCart ? 'Adding...' : 'Add to Cart'}
                 </button>
-              </div>
-            </div>
 
-            {/* Desktop Layout - Fixed margins, expanding description */}
-            <div className="hidden lg:flex flex-row gap-6">
-                {/* Image Gallery - Fixed width */}
-                <div className="flex flex-col w-[600px] flex-shrink-0">
-                  {/* Container for thumbnails and main image */}
-                  <div className="flex flex-row gap-6 w-full">
-                    {/* Vertical Thumbnails */}
-                    <div className="flex flex-col gap-2 flex-shrink-0">
-                      {imagesByColor[selectedColor].map((image, index) => (
-                        <button
-                          key={`thumb-${selectedColor}-${index}`}
-                          onClick={() => handleThumbnailClick(index)}
-                          className={`w-14 h-14 bg-gray-50 border-2 transition-all flex-shrink-0 ${
-                            activeIndex === index
-                              ? 'border-squarage-black opacity-100'
-                              : 'border-gray-300 opacity-60 hover:opacity-100'
-                          }`}
-                        >
-                          <FastProductImage
-                            src={image.src}
-                            alt={`Thumbnail ${index + 1}`}
-                            width={56}
-                            height={56}
-                            className="w-full h-full object-contain"
-                          />
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Main Image Carousel */}
-                    <div className="flex-1 relative max-h-[600px] overflow-hidden transition-all duration-200">
-                      <Swiper
-                        spaceBetween={10}
-                        navigation={true}
-                        onSwiper={setMainSwiper}
-                        onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
-                        modules={[Navigation]}
-                        className="warped-swiper-main h-full"
-                      >
-                        {imagesByColor[selectedColor].map((image, index) => (
-                          <SwiperSlide key={index}>
-                            <div className="w-full h-[600px] relative">
-                              <FastProductImage
-                                src={image.src}
-                                alt={image.altText || `${product.title} - ${selectedColor} - View ${index + 1}`}
-                                width={600}
-                                height={600}
-                                className="object-contain w-full h-full"
-                                fillContainer={true}
-                              />
-                            </div>
-                          </SwiperSlide>
-                        ))}
-                      </Swiper>
-                    </div>
+                {/* Payment disclaimer - small text with icons */}
+                <div className="mt-3 flex items-center justify-center gap-3 text-xs text-gray-500 font-neue-haas">
+                  <div className="flex items-center gap-1">
+                    <CreditCardIcon className="w-3.5 h-3.5" />
+                    <span>Secure checkout powered by Shopify</span>
                   </div>
-
-                  {/* Color Swatches */}
-                  <div className="flex flex-wrap gap-2 mt-4 justify-center w-full">
-                    {WARPED_COLORS.map(color => (
-                      <button
-                        key={color}
-                        onMouseEnter={() => handleColorHover(color)}
-                        onClick={() => {
-                          const startTime = performance.now()
-                          const prevColor = selectedColor
-                          setSelectedColor(color)
-                          
-                          // Track performance
-                          const switchTime = performance.now() - startTime
-                          const isMobile = window.innerWidth < 1024
-                          const isCached = imagesByColor[color].every(img => {
-                            const cacheKey = `${img.src}_${isMobile ? 400 : 600}`
-                            return window.__imageCache?.has(cacheKey) || false
-                          })
-                          
-                          if (isCached) {
-                            console.log(`⚡ INSTANT color switch from ${prevColor} to ${color} in ${switchTime.toFixed(2)}ms (cached)`)
-                            performance.mark(`warped-color-switch-cached-${color}`)
-                          } else {
-                            console.log(`📡 Network load for ${color} in ${switchTime.toFixed(2)}ms`)
-                            performance.mark(`warped-color-switch-network-${color}`)
-                          }
-                        }}
-                        className={`w-10 h-10 border-2 transition-all duration-200 hover:scale-110 ${
-                          selectedColor === color 
-                            ? 'border-squarage-black' 
-                            : 'border-gray-300'
-                        }`}
-                        style={getColorStyle(color)}
-                        aria-label={`Select ${color} finish`}
-                        title={color}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Product Details - Expandable width */}
-                <div className="flex-1">
-                  <div className="space-y-0">
-                  <div className="mb-8">
-                    <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold font-neue-haas text-squarage-black mb-4 text-left">
-                      {product.title}
-                    </h1>
-                    {product.description && (
-                      <p className="text-2xl lg:text-4xl font-neue-haas text-squarage-black leading-relaxed mt-6 text-left">
-                        {product.description}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="h-px bg-squarage-black mb-6"></div>
-
-                  <div className="flex justify-between items-center py-4">
-                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Finish</span>
-                    <span className="text-2xl lg:text-4xl font-neue-haas font-medium text-squarage-black">
-                      {selectedColor}
-                    </span>
-                  </div>
-
-                  <div className="h-px bg-squarage-black"></div>
-
-                  <div className="flex justify-between items-center py-4">
-                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Price</span>
-                    {selectedVariant && (
-                      <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black">
-                        {formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="h-px bg-squarage-black"></div>
-
-                  <div className="flex justify-between items-center py-4">
-                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black font-medium">Dimensions</span>
-                    <span className="text-2xl lg:text-4xl font-neue-haas text-squarage-black">{getSize()}</span>
-                  </div>
-
-                  <div className="h-px bg-squarage-black mb-12"></div>
-
-                  <div className="pt-8">
-                    <button
-                      onClick={async () => {
-                        if (!selectedVariant || isAddingToCart) return
-                        
-                        setIsAddingToCart(true)
-                        try {
-                          await addToCart(selectedVariant.id)
-                        } catch (error) {
-                          console.error('Error adding to cart:', error)
-                        } finally {
-                          setIsAddingToCart(false)
-                        }
-                      }}
-                      disabled={!selectedVariant || isAddingToCart}
-                      className="w-full bg-squarage-orange font-bold font-neue-haas text-4xl py-4 px-8 text-white hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    >
-                      {isAddingToCart ? 'Adding...' : 'Add to Cart'}
-                    </button>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <CheckBadgeIcon className="w-3.5 h-3.5" />
+                    <span>SSL encrypted</span>
                   </div>
                 </div>
               </div>
+
+              {/* Product Details Accordion */}
+              <div className="mb-8">
+                <ProductDetailsAccordion 
+                  productType="warped"
+                  metafields={product.metafields}
+                />
+              </div>
             </div>
+          </div>
+
+            {/* Trust Badges - Below the two-column layout */}
+            <div className="mt-12 mb-12">
+              <ProductTrustBadges />
+            </div>
+
+            {/* FAQ Section - Below trust badges */}
+            <div>
+              <ProductFAQ productType="warped" />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Custom Swiper Styles */}
       <style jsx global>{`
-        .warped-swiper-main {
-          width: 100%;
-          height: auto;
-        }
-        
-        .warped-swiper-main .swiper-slide {
-          background: #f9fafb;
-        }
-        
-        .warped-swiper-main .swiper-button-next,
-        .warped-swiper-main .swiper-button-prev {
+        .warped-swiper .swiper-button-prev,
+        .warped-swiper .swiper-button-next,
+        .warped-swiper-mobile .swiper-button-prev,
+        .warped-swiper-mobile .swiper-button-next {
           color: #333;
-          background: rgba(255, 255, 255, 0.9);
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
         }
         
-        .warped-swiper-main .swiper-button-next:after,
-        .warped-swiper-main .swiper-button-prev:after {
-          font-size: 16px;
-          font-weight: 600;
-        }
-        
-        .warped-swiper-main .swiper-button-next:hover,
-        .warped-swiper-main .swiper-button-prev:hover {
-          background: rgba(255, 255, 255, 1);
-        }
-        
-        .warped-swiper-mobile .swiper-button-next,
-        .warped-swiper-mobile .swiper-button-prev {
-          color: #333;
-          width: 30px;
-          height: 30px;
-        }
-        
-        .warped-swiper-mobile .swiper-button-next:after,
-        .warped-swiper-mobile .swiper-button-prev:after {
+        .warped-swiper .swiper-button-prev:after,
+        .warped-swiper .swiper-button-next:after,
+        .warped-swiper-mobile .swiper-button-prev:after,
+        .warped-swiper-mobile .swiper-button-next:after {
           font-size: 20px;
         }
       `}</style>

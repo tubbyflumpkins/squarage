@@ -5,7 +5,7 @@ import { shopifyApi, Product } from '@/lib/shopify'
 import ProductGrid from '@/components/ProductGrid'
 
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc'
-type CollectionOption = 'all' | 'tiled' | 'warped' | 'chairs' | 'objects'
+type CollectionOption = 'all' | 'tiled' | 'warped'
 
 const sortOptions = {
   'featured': { icon: 'featured', label: 'Featured' },
@@ -40,7 +40,7 @@ export default function ProductsPage() {
         
         // Fetch products by collection
         const collections: Record<string, Product[]> = {}
-        const collectionNames = ['tiled', 'warped', 'chairs', 'objects']
+        const collectionNames = ['tiled', 'warped']
         
         for (const collectionName of collectionNames) {
           try {
@@ -124,33 +124,101 @@ export default function ProductsPage() {
           </h1>
           
           {/* Search and Filter Bar */}
-          <div className="flex flex-col gap-4 md:gap-6 mb-8">
-            {/* Search Bar */}
-            <div className="w-full relative">
-              <svg 
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 w-5 h-5 text-squarage-black"
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg placeholder-gray-500 focus:outline-none focus:border-squarage-green transition-colors"
-              />
+          <div className="mb-8">
+            {/* Mobile: Stack search on top, filters below */}
+            <div className="flex flex-col gap-4 md:hidden">
+              {/* Search Bar */}
+              <div className="w-full relative">
+                <svg 
+                  className="absolute left-0 top-1/2 transform -translate-y-1/2 w-5 h-5 text-squarage-black"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg placeholder-gray-500 focus:outline-none focus:border-squarage-green transition-colors"
+                />
+              </div>
+              
+              {/* Collection and Sort */}
+              <div className="flex gap-4">
+                {/* Collection Dropdown */}
+                <select
+                  value={selectedCollection}
+                  onChange={(e) => setSelectedCollection(e.target.value as CollectionOption)}
+                  className="flex-1 px-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg focus:outline-none focus:border-squarage-green transition-colors cursor-pointer appearance-none"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                    backgroundPosition: 'right 0 center',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: '1.2em 1.2em',
+                    paddingRight: '2rem'
+                  }}
+                >
+                  <option value="all">All Collections</option>
+                  <option value="tiled">Tiled</option>
+                  <option value="warped">Warped</option>
+                </select>
+                
+                {/* Sort Dropdown */}
+                <div className="relative inline-block">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 px-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg focus:outline-none focus:border-squarage-green transition-colors cursor-pointer"
+                  >
+                    <span>Sort by</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 20 20">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 8l4 4 4-4"/>
+                    </svg>
+                  </button>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    style={{ width: 'auto', minWidth: '200px' }}
+                  >
+                    {Object.entries(sortOptions).map(([value, { label }]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
-            
-            {/* Collection and Sort - Same line on mobile */}
-            <div className="flex gap-4 md:gap-6">
+
+            {/* Desktop: All on one line */}
+            <div className="hidden md:flex md:gap-6 md:items-center">
+              {/* Search Bar */}
+              <div className="flex-1 relative">
+                <svg 
+                  className="absolute left-0 top-1/2 transform -translate-y-1/2 w-5 h-5 text-squarage-black"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg placeholder-gray-500 focus:outline-none focus:border-squarage-green transition-colors"
+                />
+              </div>
+              
               {/* Collection Dropdown */}
               <select
                 value={selectedCollection}
                 onChange={(e) => setSelectedCollection(e.target.value as CollectionOption)}
-                className="flex-1 md:flex-none px-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg focus:outline-none focus:border-squarage-green transition-colors cursor-pointer appearance-none"
+                className="px-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg focus:outline-none focus:border-squarage-green transition-colors cursor-pointer appearance-none"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                   backgroundPosition: 'right 0 center',
@@ -162,34 +230,32 @@ export default function ProductsPage() {
                 <option value="all">All Collections</option>
                 <option value="tiled">Tiled</option>
                 <option value="warped">Warped</option>
-                <option value="chairs">Chairs</option>
-                <option value="objects">Objects</option>
               </select>
               
               {/* Sort Dropdown */}
               <div className="relative inline-block">
-              <button
-                type="button"
-                className="flex items-center gap-2 px-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg focus:outline-none focus:border-squarage-green transition-colors cursor-pointer"
-              >
-                <span>Sort by</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 20 20">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 8l4 4 4-4"/>
-                </svg>
-              </button>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                style={{ width: 'auto', minWidth: '200px' }}
-              >
-                {Object.entries(sortOptions).map(([value, { label }]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 px-2 py-2 bg-transparent border-b border-black font-neue-haas font-medium text-lg focus:outline-none focus:border-squarage-green transition-colors cursor-pointer"
+                >
+                  <span>Sort by</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 20 20">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 8l4 4 4-4"/>
+                  </svg>
+                </button>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  style={{ width: 'auto', minWidth: '200px' }}
+                >
+                  {Object.entries(sortOptions).map(([value, { label }]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
           

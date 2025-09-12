@@ -21,11 +21,11 @@ export default function WarpedPage() {
       {/* Hero Section */}
       <WarpedHeroSection />
       
-      {/* Content Section */}
-      <WarpedContentSection />
-      
-      {/* Products Section */}
+      {/* Products Section - moved up */}
       <WarpedProductsSection />
+      
+      {/* Content Section - moved down */}
+      <WarpedContentSection />
     </main>
   )
 }
