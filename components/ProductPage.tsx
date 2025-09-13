@@ -79,6 +79,7 @@ interface ProductPageProps {
 export default function ProductPage({ product }: ProductPageProps) {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
   const [selectedColor, setSelectedColor] = useState<string>('')
+  const [selectedSize, setSelectedSize] = useState<string>('')
   const [imagesPreloaded, setImagesPreloaded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [showStickyCart, setShowStickyCart] = useState(false)
@@ -137,6 +138,10 @@ export default function ProductPage({ product }: ProductPageProps) {
     return aIndex - bIndex
   })
 
+  // Check if product has size options
+  const sizeOption = product.options?.find(opt => opt.name.toLowerCase() === 'size')
+  const availableSizes = sizeOption?.values || []
+
   // Group images by color - each color typically has one image for Tiled collection
   const imagesByColor = useMemo(() => {
     const grouped: Record<string, Array<typeof product.images[0]>> = {}
@@ -191,10 +196,39 @@ export default function ProductPage({ product }: ProductPageProps) {
   const handleColorSelect = (colorOptionIndex: number) => {
     const colorOption = colorOptions[colorOptionIndex]
     const colorName = colorOption?.name || `variant-${colorOptionIndex}`
-    const originalVariantIndex = colorOption?.originalIndex || 0
     
-    setSelectedVariantIndex(originalVariantIndex)
     setSelectedColor(colorName)
+    
+    // If there are sizes, find the variant that matches both color and size
+    if (availableSizes.length > 0 && selectedSize) {
+      const matchingVariant = product.variants?.findIndex(v => 
+        v.selectedOptions?.some(opt => opt.name === 'Color' && opt.value === colorName) &&
+        v.selectedOptions?.some(opt => opt.name === 'Size' && opt.value === selectedSize)
+      )
+      if (matchingVariant !== undefined && matchingVariant >= 0) {
+        setSelectedVariantIndex(matchingVariant)
+      }
+    } else {
+      // No sizes, just use the color variant
+      const originalVariantIndex = colorOption?.originalIndex || 0
+      setSelectedVariantIndex(originalVariantIndex)
+    }
+  }
+
+  // Handle size selection
+  const handleSizeSelect = (size: string) => {
+    setSelectedSize(size)
+    
+    // Find the variant that matches both color and size
+    if (selectedColor) {
+      const matchingVariant = product.variants?.findIndex(v => 
+        v.selectedOptions?.some(opt => opt.name === 'Color' && opt.value === selectedColor) &&
+        v.selectedOptions?.some(opt => opt.name === 'Size' && opt.value === size)
+      )
+      if (matchingVariant !== undefined && matchingVariant >= 0) {
+        setSelectedVariantIndex(matchingVariant)
+      }
+    }
   }
 
   // Get metafield value by key
@@ -231,6 +265,30 @@ export default function ProductPage({ product }: ProductPageProps) {
     return colorMapping[colorName] || '#F5B74C'
   }
 
+  // Get selection styles for color buttons
+  const getColorSelectionStyles = (colorName: string, isSelected: boolean): string => {
+    if (!isSelected) {
+      return 'border-gray-300 hover:border-gray-400'
+    }
+    
+    // Use green for black and white, otherwise use the color itself
+    if (colorName === 'Black' || colorName === 'White') {
+      return 'border-squarage-green bg-green-50'
+    }
+    
+    const colorStyles: { [key: string]: string } = {
+      'Blue': 'border-[#01BAD5] bg-blue-50',
+      'Green': 'border-[#4A9B4E] bg-green-50',
+      'Orange': 'border-[#F7901E] bg-orange-50',
+      'Red': 'border-[#F04E23] bg-red-50',
+      'Yellow': 'border-[#F5B74C] bg-yellow-50',
+      'Pink': 'border-[#F2BAC9] bg-pink-50',
+      'Dark Blue': 'border-[#2274A5] bg-blue-100',
+    }
+    
+    return colorStyles[colorName] || 'border-squarage-green bg-green-50'
+  }
+
   // Handle scroll for sticky cart
   useEffect(() => {
     const handleScroll = () => {
@@ -252,6 +310,22 @@ export default function ProductPage({ product }: ProductPageProps) {
     const defaultColorOption = colorOptions.find(opt => opt.originalIndex === defaultIndex)
     if (defaultColorOption) {
       setSelectedColor(defaultColorOption.name)
+    }
+    
+    // If there are size options, set the first size as default
+    if (availableSizes.length > 0) {
+      setSelectedSize(availableSizes[0])
+      
+      // Find the variant that matches both color and size
+      if (defaultColorOption) {
+        const matchingVariant = product.variants?.findIndex(v => 
+          v.selectedOptions?.some(opt => opt.name === 'Color' && opt.value === defaultColorOption.name) &&
+          v.selectedOptions?.some(opt => opt.name === 'Size' && opt.value === availableSizes[0])
+        )
+        if (matchingVariant !== undefined && matchingVariant >= 0) {
+          setSelectedVariantIndex(matchingVariant)
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id])
@@ -385,30 +459,58 @@ export default function ProductPage({ product }: ProductPageProps) {
               {/* Color Variant Selector */}
               <div className="mb-6">
                 <h3 className="text-lg font-medium font-neue-haas text-squarage-black mb-3">
-                  Color
+                  Select Color
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
                   {colorOptions.map((option, index) => (
                     <button
                       key={index}
                       onClick={() => handleColorSelect(index)}
-                      className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${
-                        selectedVariantIndex === option.originalIndex 
-                          ? 'border-squarage-green bg-green-50' 
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                      className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${getColorSelectionStyles(option.name, selectedColor === option.name)}`}
                     >
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-4 h-4 border border-gray-300"
-                          style={{ backgroundColor: getSwatchColor(option.name) }}
+                        <Image 
+                          src={`/images/colors/${option.name.toLowerCase()}.png`}
+                          alt={option.name}
+                          width={32}
+                          height={32}
+                          className="flex-shrink-0"
+                          style={{ 
+                            width: '32px', 
+                            height: '32px',
+                            margin: '-8px'
+                          }}
                         />
-                        <span>{option.name}</span>
+                        <span className="ml-2">{option.name}</span>
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
+
+              {/* Size Selector - Only show if product has sizes */}
+              {availableSizes.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium font-neue-haas text-squarage-black mb-3">
+                    Size
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {availableSizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => handleSizeSelect(size)}
+                        className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${
+                          selectedSize === size
+                            ? 'border-squarage-green bg-green-50' 
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        <span>{size}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Shipping Estimator */}
               <div className="mb-6">
@@ -546,23 +648,51 @@ export default function ProductPage({ product }: ProductPageProps) {
                       <button
                         key={index}
                         onClick={() => handleColorSelect(index)}
-                        className={`px-4 py-3 border-2 font-medium font-neue-haas transition-all ${
-                          selectedVariantIndex === option.originalIndex 
-                            ? 'border-squarage-green bg-green-50' 
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
+                        className={`px-4 py-3 border-2 font-medium font-neue-haas transition-all ${getColorSelectionStyles(option.name, selectedColor === option.name)}`}
                       >
                         <div className="flex items-center gap-2">
-                          <div 
-                            className="w-5 h-5 border border-gray-300"
-                            style={{ backgroundColor: getSwatchColor(option.name) }}
+                          <Image 
+                            src={`/images/colors/${option.name.toLowerCase()}.png`}
+                            alt={option.name}
+                            width={40}
+                            height={40}
+                            className="flex-shrink-0"
+                            style={{ 
+                              width: '40px', 
+                              height: '40px',
+                              margin: '-10px'
+                            }}
                           />
-                          <span>{option.name}</span>
+                          <span className="ml-2">{option.name}</span>
                         </div>
                       </button>
                     ))}
                   </div>
                 </div>
+
+                {/* Size Selector - Only show if product has sizes */}
+                {availableSizes.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-medium font-neue-haas text-squarage-black mb-4">
+                      Select Size
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {availableSizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => handleSizeSelect(size)}
+                          className={`px-4 py-3 border-2 font-medium font-neue-haas transition-all ${
+                            selectedSize === size
+                              ? 'border-squarage-green bg-green-50' 
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <span>{size}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Shipping Estimator */}
                 <div className="mb-8">

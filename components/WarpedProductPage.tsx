@@ -88,6 +88,7 @@ const WARPED_FINISHES = ['Birch', 'Oak', 'Walnut']
 export default function WarpedProductPage({ product }: WarpedProductPageProps) {
   const [mainSwiper, setMainSwiper] = useState<SwiperType | null>(null)
   const [selectedFinish, setSelectedFinish] = useState<string>('Birch')
+  const [selectedSize, setSelectedSize] = useState<string>('')
   const [activeIndex, setActiveIndex] = useState(0)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [showStickyCart, setShowStickyCart] = useState(false)
@@ -95,6 +96,17 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
   
   // Use cart context
   const { addToCart } = useCart()
+  
+  // Check if product has size options
+  const sizeOption = product.options?.find(opt => opt.name.toLowerCase() === 'size')
+  const availableSizes = sizeOption?.values || []
+  
+  // Initialize default size on mount
+  useEffect(() => {
+    if (availableSizes.length > 0 && !selectedSize) {
+      setSelectedSize(availableSizes[0])
+    }
+  }, [availableSizes, selectedSize])
 
   // Group images by finish variant
   const imagesByFinish = useMemo(() => {
@@ -143,15 +155,28 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     return grouped
   }, [product])
 
-  // Get the selected variant based on finish
+  // Get the selected variant based on finish and size
   const selectedVariant = useMemo(() => {
-    return product.variants.find(variant => 
-      variant.title.toLowerCase() === selectedFinish.toLowerCase() ||
-      variant.selectedOptions?.some(opt => 
-        opt.value.toLowerCase() === selectedFinish.toLowerCase()
-      )
-    ) || product.variants[0]
-  }, [selectedFinish, product.variants])
+    if (availableSizes.length > 0 && selectedSize) {
+      // Find variant matching both finish and size
+      return product.variants.find(variant => 
+        variant.selectedOptions?.some(opt => 
+          (opt.name === 'Finish' || opt.name === 'Color') && opt.value === selectedFinish
+        ) &&
+        variant.selectedOptions?.some(opt => 
+          opt.name === 'Size' && opt.value === selectedSize
+        )
+      ) || product.variants[0]
+    } else {
+      // No sizes, just match finish
+      return product.variants.find(variant => 
+        variant.title.toLowerCase() === selectedFinish.toLowerCase() ||
+        variant.selectedOptions?.some(opt => 
+          opt.value.toLowerCase() === selectedFinish.toLowerCase()
+        )
+      ) || product.variants[0]
+    }
+  }, [selectedFinish, selectedSize, product.variants, availableSizes])
 
   // Format price
   const formatPrice = (price: string, currencyCode: string) => {
@@ -329,6 +354,30 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
               </div>
             </div>
 
+            {/* Size Selector - Only show if product has sizes */}
+            {availableSizes.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-medium font-neue-haas text-squarage-black mb-3">
+                  Size
+                </h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {availableSizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${
+                        selectedSize === size
+                          ? 'border-squarage-green bg-green-50' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <span>{size}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Shipping Estimator */}
             <div className="mb-6">
               <ShippingEstimator 
@@ -493,6 +542,30 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   ))}
                 </div>
               </div>
+
+              {/* Size Selector - Only show if product has sizes */}
+              {availableSizes.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-medium font-neue-haas text-squarage-black mb-4">
+                    Select Size
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {availableSizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-4 py-3 border-2 font-medium font-neue-haas transition-all ${
+                          selectedSize === size
+                            ? 'border-squarage-green bg-green-50' 
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        <span>{size}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Shipping Estimator */}
               <div className="mb-8">
