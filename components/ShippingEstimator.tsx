@@ -121,53 +121,58 @@ export default function ShippingEstimator({ price, productTitle }: ShippingEstim
   }
 
   return (
-    <div className="w-full space-y-2">
-      {/* Title and Input Row */}
-      <div className="flex items-center gap-3">
-        <TruckIcon className="w-4 h-4 text-gray-600 flex-shrink-0" />
+    <div className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3">
+      {/* Combined Header and Input Row */}
+      <div className="flex items-center gap-2 mb-2">
+        <TruckIcon className="w-4 h-4 text-gray-600" />
+        <span className="text-xs font-medium font-neue-haas text-gray-700">
+          Delivery
+        </span>
         <input
           type="text"
           value={zipCode}
           onChange={handleZipChange}
           onKeyPress={handleKeyPress}
           placeholder="ZIP code"
-          className="w-24 px-2 py-1 border border-gray-300 bg-cream font-neue-haas text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-squarage-orange focus:border-transparent"
+          className="w-20 px-2 py-1 border border-gray-300 rounded bg-white font-neue-haas text-xs placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-squarage-orange focus:border-transparent"
           maxLength={5}
           aria-label="ZIP code for shipping"
         />
         <button
           onClick={() => calculateShipping()}
           disabled={isCalculating || zipCode.length < 5}
-          className="px-3 py-1 bg-squarage-black text-cream font-neue-haas text-sm font-medium hover:bg-squarage-orange transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="px-3 py-1 bg-squarage-black text-white rounded font-neue-haas text-xs font-medium hover:bg-squarage-orange transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           {isCalculating ? '...' : 'Check'}
         </button>
-        
+
         {/* Inline Status */}
         {shippingStatus && !error && (
-          <div className="flex items-center gap-1.5 flex-1">
+          <div className="flex items-center gap-1 flex-1">
             {shippingStatus.available ? (
-              <CheckCircleIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <CheckCircleIcon className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
             ) : (
-              <XCircleIcon className="w-4 h-4 text-red-600 flex-shrink-0" />
+              <XCircleIcon className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
             )}
-            <span className="text-sm font-neue-haas text-squarage-black">
+            <span className={`text-xs font-neue-haas ${
+              shippingStatus.available ? 'text-green-700' : 'text-red-700'
+            }`}>
               {shippingStatus.message}
-              {!shippingStatus.available && (
-                <> • <Link href="/contact" className="text-squarage-orange hover:underline">Contact us</Link></>
-              )}
+              {shippingStatus.isLocal && ' (LA)'}
             </span>
           </div>
         )}
         
         {error && (
-          <span className="text-sm text-red-600 font-neue-haas">{error}</span>
+          <span className="text-xs text-red-600 font-neue-haas">{error}</span>
         )}
       </div>
 
-      {/* Bottom text - compact */}
-      <div className="text-xs font-neue-haas text-gray-500">
-        Made to order • Ships in 2-3 weeks • Final shipping at checkout
+      {/* Info Text */}
+      <div className="flex flex-wrap gap-x-2 text-xs font-neue-haas text-gray-500">
+        <span>Made to order</span>
+        <span>•</span>
+        <span>Ships in 2-3 weeks</span>
       </div>
     </div>
   )

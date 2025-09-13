@@ -24,7 +24,7 @@ export default function CartIcon({ onClick }: CartIconProps) {
     return (
       <button
         onClick={onClick}
-        className="fixed top-6 right-16 sm:right-18 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white group z-[9999] transition-all duration-300 drop-shadow-lg md:hidden"
+        className="fixed top-6 right-16 sm:right-18 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white group z-[10005] transition-all duration-300 drop-shadow-lg md:hidden"
         aria-label="Shopping cart"
         style={{ isolation: 'isolate' }}
       >
@@ -43,7 +43,7 @@ export default function CartIcon({ onClick }: CartIconProps) {
   return (
     <button
       onClick={onClick}
-      className="fixed top-6 right-16 sm:right-18 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-squarage-green group z-[9999] transition-all duration-300 drop-shadow-lg md:hidden"
+      className="fixed top-6 right-16 sm:right-18 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-squarage-green group z-[10005] transition-all duration-300 drop-shadow-lg md:hidden"
       aria-label="Shopping cart"
       style={{ isolation: 'isolate' }}
     >

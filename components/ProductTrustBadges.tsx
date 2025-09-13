@@ -32,7 +32,7 @@ export default function ProductTrustBadges() {
         {badges.map((badge, index) => (
           <div key={index} className="flex gap-4">
             <div className="flex-shrink-0">
-              <badge.icon className="w-8 h-8 text-squarage-orange" />
+              <badge.icon className="w-8 h-8 text-squarage-green" />
             </div>
             <div className="flex-1">
               <h3 className="text-base font-bold font-neue-haas text-squarage-black mb-1">
@@ -51,7 +51,7 @@ export default function ProductTrustBadges() {
         {badges.map((badge, index) => (
           <div key={index} className="flex gap-4">
             <div className="flex-shrink-0">
-              <badge.icon className="w-8 h-8 text-squarage-orange" />
+              <badge.icon className="w-8 h-8 text-squarage-green" />
             </div>
             <div className="flex-1">
               <h3 className="text-base font-bold font-neue-haas text-squarage-black mb-1">
