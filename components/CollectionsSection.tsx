@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-// Removed arrow imports - using custom SVGs
 
 const collections = [
   {
@@ -31,8 +30,6 @@ export default function CollectionsSection() {
   const [initialAnimationStarted, setInitialAnimationStarted] = useState(false)
   const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
   
-  // Fixed delays to prevent hydration mismatch - memoized to prevent re-renders
-  // Updated for "MADE IN LOS ANGELES" (18 characters including spaces)
   const randomDelays = useMemo(() => [
     0.1, 0.3, 0.6, 0.2, // MADE
     0.0, // space
@@ -44,7 +41,6 @@ export default function CollectionsSection() {
   ], [])
 
   const handleLetterHover = (index: number) => {
-    // Only start animation if not already animating and initial animation is done
     if (!hoverAnimatingLetters.has(index) && initialAnimationCompleted) {
       setHoverAnimatingLetters(prev => new Set(prev).add(index))
     }
@@ -52,13 +48,11 @@ export default function CollectionsSection() {
 
   const handleAnimationEnd = (index: number, isInitial: boolean = false) => {
     if (isInitial) {
-      // Check if all initial animations are complete
       const maxDelay = Math.max(...randomDelays)
       setTimeout(() => {
         setInitialAnimationCompleted(true)
-      }, maxDelay * 1000 + 1000) // Add buffer for animation duration
+      }, maxDelay * 1000 + 1000)
     } else {
-      // Remove letter from hover animating set when hover animation completes
       setHoverAnimatingLetters(prev => {
         const newSet = new Set(prev)
         newSet.delete(index)
@@ -66,13 +60,10 @@ export default function CollectionsSection() {
       })
     }
   }
-
-  // Removed old preloading logic - now handled by NavigationAwarePreloader
   
   useEffect(() => {
     const timer = setTimeout(() => {
       setInitialAnimationStarted(true)
-      // Set completion after estimated time for all animations to finish
       const maxDelay = Math.max(...randomDelays)
       setTimeout(() => {
         setInitialAnimationCompleted(true)
@@ -86,8 +77,8 @@ export default function CollectionsSection() {
     <>
       {/* Green animated header section */}
       <section className="bg-squarage-green">
-        <div className="pt-4 pb-4 px-4 sm:pt-6 sm:pb-6 sm:px-6">
-          <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-center min-h-[60px] sm:min-h-[80px] px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto w-full">
             <div className="text-center">
               <div className="flex justify-center items-center w-full whitespace-nowrap">
                 <div className="tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.25em] lg:tracking-[0.3em]">
@@ -118,48 +109,101 @@ export default function CollectionsSection() {
         </div>
       </section>
 
-      {/* Collections - Full width alternating layout */}
-      <div className="space-y-0 overflow-x-hidden">
+      {/* Collections Section */}
+      <div className="bg-white">
         {collections.map((collection, index) => (
           <Link
             key={collection.id}
             href={collection.href}
             className="group block"
-            onMouseEnter={() => {
-              // Collection images are preloaded by NavigationAwarePreloader
-            }}
           >
-            <div className={`grid grid-cols-1 md:flex ${index % 2 === 0 ? '' : 'md:flex-row-reverse'} items-stretch w-full`}>
-              {/* Image Section - 70% height aspect ratio on mobile, fixed height on desktop */}
-              <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
-                <Image
-                  src={collection.image}
-                  alt={collection.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-              
-              {/* Content Section - 25% viewport height on mobile */}
-              <div className={`${index === 1 ? 'bg-squarage-yellow md:bg-squarage-green' : collection.bgColor} h-[25vh] md:h-auto md:aspect-auto p-4 sm:p-10 md:p-16 lg:p-20 md:w-1/2 flex items-center w-full`}>
-                <div className="w-full max-w-xl mx-auto text-center md:text-left">
-                  <h3 className="text-3xl sm:text-5xl md:text-6xl font-neue-haas font-black mb-1 md:mb-2 text-white">
-                    {collection.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 md:mb-6 text-white opacity-90">
-                    {collection.subtitle}
-                  </p>
-                  <p className="text-sm sm:text-base md:text-lg mb-4 md:mb-8 leading-snug md:leading-relaxed text-white">
-                    {collection.description}
-                  </p>
-                  <div className="flex justify-center md:justify-start">
-                    <div className={`inline-block font-bold font-neue-haas text-lg sm:text-xl md:text-2xl py-2 px-4 md:py-3 md:px-6 border-2 hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 text-white ${
-                      index === 1 
-                        ? 'bg-squarage-green border-squarage-green md:bg-squarage-yellow md:border-squarage-yellow' 
-                        : 'bg-squarage-green border-squarage-green'
-                    }`}>
-                      View Collection
+            <div className="relative">
+              <div className="w-full">
+                <div className={`grid grid-cols-1 md:flex ${index % 2 === 0 ? '' : 'md:flex-row-reverse'} items-stretch`}>
+                  {/* Image - same on desktop, modified mobile */}
+                  <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
+                    <Image
+                      src={collection.image}
+                      alt={collection.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    
+                    {/* Title Blob - Mobile Only */}
+                    {index === 0 ? (
+                      // Warped Blob - aligned right
+                      <div className="absolute bottom-0 right-0 z-50 md:hidden"
+                        style={{ 
+                          transform: 'translateY(30%) scale(0.9)'
+                        }}
+                      >
+                        <div className="relative">
+                          {/* Blob background - compressed vertically */}
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              backgroundColor: '#4A9B4E',
+                              borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%',
+                              transform: 'scaleY(0.875)'
+                            }}
+                          />
+                          {/* Text content - normal scale */}
+                          <div className="relative z-10" style={{ padding: '0.9rem 2.2rem' }}>
+                            <h1 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
+                              Warped
+                            </h1>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // Tiled Blob - aligned left
+                      <div className="absolute bottom-0 left-0 z-50 md:hidden"
+                        style={{ 
+                          transform: 'translateY(35%) scale(0.9)'
+                        }}
+                      >
+                        <div className="relative">
+                          {/* Blob background - compressed vertically */}
+                          <div 
+                            className="bg-squarage-green absolute inset-0"
+                            style={{
+                              borderRadius: '35% 65% 55% 45% / 60% 40% 65% 35%',
+                              transform: 'scaleY(0.75)'
+                            }}
+                          />
+                          {/* Text content - normal scale */}
+                          <div className="relative z-10" style={{ padding: '0.9rem 2.5rem' }}>
+                            <h1 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
+                              Tiled
+                            </h1>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Text Side - Mobile: Empty yellow banner, Desktop: Full content */}
+                  <div className={`bg-squarage-yellow md:${collection.bgColor} flex items-center justify-center py-3 px-4 md:p-12 lg:p-16 md:w-1/2`}>
+                    <div className="w-full text-center">
+                      {/* Desktop only */}
+                      <div className="hidden md:block md:mb-6">
+                        <h3 className="md:text-[4rem] lg:text-[5rem] xl:text-[6rem] font-neue-haas font-black leading-none text-white">
+                          {collection.title.split('').map((char, i) => (
+                            <span key={i} className="inline-block md:hover:scale-110 transition-transform duration-300">
+                              {char}
+                            </span>
+                          ))}
+                        </h3>
+                      </div>
+                      
+                      {/* Discover Collection button - desktop only */}
+                      <div className="hidden md:block">
+                        <div className="inline-flex items-center space-x-4 text-white font-bold text-lg hover:opacity-80 transition-opacity duration-300">
+                          <span>Discover Collection</span>
+                          <div className="w-12 h-[2px] bg-current transform origin-left group-hover:scale-x-150 transition-transform duration-500" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -171,3 +215,4 @@ export default function CollectionsSection() {
     </>
   )
 }
+
