@@ -210,7 +210,7 @@ export default function CustomProjectsPage() {
           </h2>
           
           <p className="text-xl md:text-2xl font-neue-haas text-squarage-black mb-8 opacity-90 leading-tight md:leading-normal">
-            Let's collaborate to create something extraordinary for your space.
+            Let&apos;s collaborate to create something extraordinary for your space.
           </p>
           
           <div className="flex justify-center">
