@@ -173,8 +173,6 @@ export default function ShippingEstimator({ price, productTitle }: ShippingEstim
         <span>Made to order</span>
         <span>•</span>
         <span>Ships in 2-3 weeks</span>
-        <span>•</span>
-        <span>Free over $500</span>
       </div>
     </div>
   )
