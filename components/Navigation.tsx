@@ -33,8 +33,8 @@ export default function Navigation() {
   const { toggleCart, closeCart, state } = useCart()
   const pathname = usePathname()
   
-  // Use special logo on custom-projects and contact pages
-  const useSpecialLogo = pathname === '/custom-projects' || pathname === '/contact'
+  // Use white logo only on contact page
+  const useSpecialLogo = pathname === '/contact'
   const logoSrc = useSpecialLogo ? '/images/logo_main_white_transparent_small.png' : '/images/logo_main_small.png'
   
   // Check if we're on specific pages
@@ -144,7 +144,7 @@ export default function Navigation() {
 
   // Build header styles and classes
   let headerStyle: React.CSSProperties = {}
-  let headerClasses = 'hidden md:block fixed top-0 left-0 right-0 z-[9998]'
+  let headerClasses = 'hidden md:block fixed top-0 left-0 right-0 z-[9990]'
 
   // Apply page-specific styling
   if (isWarpedPage || isTiledPage || isHomePage) {
@@ -234,24 +234,6 @@ export default function Navigation() {
               Contact
             </Link>
           </nav>
-          
-          {/* Cart Button - Desktop (not using CartIcon component) */}
-          <button
-            onClick={handleCartToggle}
-            className={`flex items-center justify-center w-12 h-12 ${
-              isContactPage ? 'bg-white' : 'bg-squarage-green'
-            } hover:scale-110 transition-all duration-300 relative flex-shrink-0`}
-            aria-label="Shopping cart"
-          >
-            <BagIcon className={`w-6 h-6 ${isContactPage ? 'text-squarage-red' : 'text-white'}`} />
-            
-            {/* Cart count badge */}
-            {state.totalQuantity > 0 && (
-              <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-squarage-orange text-white text-xs font-bold rounded-full">
-                {state.totalQuantity > 9 ? '9+' : state.totalQuantity}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 
@@ -260,7 +242,7 @@ export default function Navigation() {
         {/* Floating Logo - Mobile */}
         <Link 
           href="/" 
-          className="fixed top-6 left-6 z-[9999] hover:scale-105 transition-transform duration-300"
+          className="fixed top-6 left-6 z-[10005] hover:scale-105 transition-transform duration-300"
           style={{ isolation: 'isolate' }}
           onClick={(e) => {
             if (isMenuOpen || state.isOpen) {
@@ -292,7 +274,7 @@ export default function Navigation() {
         {/* Floating Menu Button - Mobile Only */}
         <button
           onClick={handleMenuToggle}
-          className={`fixed top-6 right-6 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 space-y-1 group z-[9999] transition-all duration-300 drop-shadow-lg ${
+          className={`fixed top-6 right-6 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 space-y-1 group z-[10005] transition-all duration-300 drop-shadow-lg ${
             useSpecialLogo ? 'bg-white' : 'bg-squarage-green'
           }`}
           aria-label="Toggle menu"
@@ -313,7 +295,7 @@ export default function Navigation() {
       {/* Click Outside to Close Overlay - Remaining Space */}
       {isMenuOpen && (
         <div 
-          className="fixed top-0 left-0 h-full z-[9990] bg-transparent"
+          className="fixed top-0 left-0 h-full z-[9980] bg-transparent"
           style={{ width: 'calc(100% - min(480px, 100vw))' }}
           onClick={() => setIsMenuOpen(false)}
         />
@@ -321,7 +303,7 @@ export default function Navigation() {
 
       {/* Fixed-Width Menu Sliding In */}
       <div
-        className={`fixed top-0 h-full z-[9995] bg-squarage-green transition-transform duration-300 ease-out drop-shadow-2xl ${
+        className={`fixed top-0 h-full z-[9985] bg-squarage-green transition-transform duration-300 ease-out drop-shadow-2xl ${
           isMenuOpen 
             ? 'translate-x-0' 
             : 'translate-x-full'
@@ -418,6 +400,24 @@ export default function Navigation() {
           </nav>
         </div>
       </div>
+
+      {/* Floating Desktop Cart Button - Separate from header, always on top */}
+      <button
+        onClick={handleCartToggle}
+        className={`hidden md:flex fixed top-6 right-6 items-center justify-center w-12 h-12 ${
+          isContactPage ? 'bg-white' : 'bg-squarage-green'
+        } hover:scale-110 transition-all duration-300 z-[10003] drop-shadow-lg`}
+        aria-label="Shopping cart"
+      >
+        <BagIcon className={`w-6 h-6 ${isContactPage ? 'text-squarage-red' : 'text-white'}`} />
+        
+        {/* Cart count badge */}
+        {state.totalQuantity > 0 && (
+          <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-squarage-orange text-white text-xs font-bold rounded-full">
+            {state.totalQuantity > 9 ? '9+' : state.totalQuantity}
+          </span>
+        )}
+      </button>
     </>
   )
 }

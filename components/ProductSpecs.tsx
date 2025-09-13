@@ -105,7 +105,7 @@ export default function ProductSpecs({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {specs.map((spec, index) => (
           <div key={index} className="flex items-start gap-3 p-4 bg-cream border border-gray-200">
-            <spec.icon className="w-5 h-5 text-squarage-orange mt-0.5 flex-shrink-0" />
+            <spec.icon className="w-5 h-5 text-squarage-green mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium font-neue-haas text-gray-600 mb-1">
                 {spec.label}
@@ -129,7 +129,7 @@ export default function ProductSpecs({
       </div>
 
       {/* Max Load Capacity */}
-      <div className="mt-4 p-4 bg-orange-50 border border-squarage-orange">
+      <div className="mt-4 p-4 bg-green-50 border border-squarage-green">
         <p className="text-sm font-neue-haas text-squarage-black">
           <span className="font-medium">Maximum Load Capacity:</span> {productMaxLoad}
         </p>

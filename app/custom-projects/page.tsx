@@ -75,8 +75,8 @@ export default function CustomProjectsPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Header Section */}
-      <section className="bg-squarage-red pt-24 md:pt-32 pb-4 px-6">
+      {/* Header Section - Green background with white text */}
+      <section className="bg-squarage-green pt-24 md:pt-32 pb-4 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             {/* Mobile: Two-line layout */}
@@ -151,13 +151,17 @@ export default function CustomProjectsPage() {
         </div>
       </section>
 
-      {/* Process Steps */}
+      {/* Process Steps - Alternating backgrounds */}
       <section>
         {processSteps.map((step, index) => {
-          const backgrounds = ['bg-squarage-yellow', 'bg-squarage-dark-blue', 'bg-squarage-orange', 'bg-squarage-red']
-          const textColors = ['text-cream', 'text-cream', 'text-cream', 'text-cream']
+          // Alternate between cream (with black text) and green (with white text)
+          const isGreen = index % 2 === 1
+          const bgColor = isGreen ? 'bg-squarage-green' : 'bg-cream'
+          const textColor = isGreen ? 'text-white' : 'text-squarage-black'
+          const numberColor = isGreen ? 'text-white' : 'text-squarage-green'
+          
           return (
-            <div key={index} className={`${backgrounds[index]} py-4 md:py-12`}>
+            <div key={index} className={`${bgColor} py-4 md:py-12`}>
               <div className={`grid grid-cols-1 lg:grid-cols-2 gap-0 items-center ${
                 index % 2 === 1 ? 'lg:flex-row-reverse' : ''
               }`}>
@@ -166,15 +170,15 @@ export default function CustomProjectsPage() {
                 <div className={`px-6 lg:px-12 py-2 pb-6 md:py-8 ${index % 2 === 1 ? 'lg:order-2' : 'lg:order-1'}`}>
                   <div className="max-w-2xl mx-auto lg:mx-0">
                     <div className="flex items-center mb-6">
-                      <span className="text-7xl md:text-8xl font-black font-neue-haas text-squarage-white mr-6">
+                      <span className={`text-7xl md:text-8xl font-black font-neue-haas ${numberColor} mr-6`}>
                         {step.step}
                       </span>
-                      <h2 className={`text-2xl md:text-4xl lg:text-5xl font-bold font-neue-haas ${textColors[index]} leading-tight md:leading-normal`}>
+                      <h2 className={`text-2xl md:text-4xl lg:text-5xl font-bold font-neue-haas ${textColor} leading-tight md:leading-normal`}>
                         {step.title}
                       </h2>
                     </div>
                     
-                    <p className={`text-2xl md:text-3xl font-medium font-neue-haas ${textColors[index]} leading-tight md:leading-relaxed`}>
+                    <p className={`text-2xl md:text-3xl font-medium font-neue-haas ${textColor} leading-tight md:leading-relaxed`}>
                       {step.description}
                     </p>
                   </div>
@@ -198,21 +202,21 @@ export default function CustomProjectsPage() {
         })}
       </section>
 
-      {/* Call to Action */}
-      <section className="py-20 bg-squarage-green">
+      {/* Call to Action - Cream background with black text */}
+      <section className="py-20 bg-cream">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold font-neue-haas text-white mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold font-neue-haas text-squarage-black mb-4">
             Ready to Start Your Custom Project?
           </h2>
           
-          <p className="text-xl md:text-2xl font-neue-haas text-white mb-8 opacity-90 leading-tight md:leading-normal">
-            Let&apos;s collaborate to create something extraordinary for your space.
+          <p className="text-xl md:text-2xl font-neue-haas text-squarage-black mb-8 opacity-90 leading-tight md:leading-normal">
+            Let's collaborate to create something extraordinary for your space.
           </p>
           
           <div className="flex justify-center">
             <Link
               href="/contact"
-              className="inline-block px-8 sm:px-12 py-3 sm:py-4 sm:w-56 bg-white text-squarage-green font-bold font-neue-haas text-base sm:text-lg hover:bg-squarage-blue hover:text-white transition-all duration-300 transform hover:scale-105 text-center"
+              className="inline-block bg-squarage-yellow font-bold font-neue-haas text-lg sm:text-3xl md:text-4xl py-2 px-5 md:py-4 md:px-8 border-2 border-squarage-yellow hover:bg-squarage-green hover:border-squarage-green hover:scale-105 transition-all duration-300 text-white"
             >
               Get Started
             </Link>
