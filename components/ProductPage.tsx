@@ -394,7 +394,7 @@ export default function ProductPage({ product }: ProductPageProps) {
                       onClick={() => handleColorSelect(index)}
                       className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${
                         selectedVariantIndex === option.originalIndex 
-                          ? 'border-squarage-orange bg-orange-50' 
+                          ? 'border-squarage-green bg-green-50' 
                           : 'border-gray-300 hover:border-gray-400'
                       }`}
                     >
@@ -548,7 +548,7 @@ export default function ProductPage({ product }: ProductPageProps) {
                         onClick={() => handleColorSelect(index)}
                         className={`px-4 py-3 border-2 font-medium font-neue-haas transition-all ${
                           selectedVariantIndex === option.originalIndex 
-                            ? 'border-squarage-orange bg-orange-50' 
+                            ? 'border-squarage-green bg-green-50' 
                             : 'border-gray-300 hover:border-gray-400'
                         }`}
                       >

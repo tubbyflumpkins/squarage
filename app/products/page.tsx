@@ -107,7 +107,30 @@ export default function ProductsPage() {
         break
       case 'featured':
       default:
-        // Keep original order (featured/default)
+        // Custom featured order - alternate between collections
+        if (selectedCollection === 'all' && !searchQuery) {
+          // Get products from each collection (already in Shopify's order)
+          const tiledProducts = collectionProducts['tiled'] || []
+          const warpedProducts = collectionProducts['warped'] || []
+          
+          // Interleave products from both collections
+          const interleavedProducts: Product[] = []
+          const maxLength = Math.max(tiledProducts.length, warpedProducts.length)
+          
+          for (let i = 0; i < maxLength; i++) {
+            // Add product from Tiled collection (if exists)
+            if (i < tiledProducts.length) {
+              interleavedProducts.push(tiledProducts[i])
+            }
+            // Add product from Warped collection (if exists)
+            if (i < warpedProducts.length) {
+              interleavedProducts.push(warpedProducts[i])
+            }
+          }
+          
+          // Replace the filtered array with our interleaved order
+          filtered = interleavedProducts
+        }
         break
     }
 
@@ -120,7 +143,7 @@ export default function ProductsPage() {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black mb-8">
-            All Products
+            Full Catalog
           </h1>
           
           {/* Search and Filter Bar */}

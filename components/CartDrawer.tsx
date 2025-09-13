@@ -15,14 +15,14 @@ export default function CartDrawer() {
       {/* Click Outside to Close Overlay */}
       {state.isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-[9990]"
+          className="fixed inset-0 bg-black bg-opacity-50 z-[10000]"
           onClick={closeCart}
         />
       )}
       
       {/* Cart Drawer */}
       <div
-        className={`fixed top-0 h-full z-[9995] bg-squarage-green transition-transform duration-300 ease-out drop-shadow-2xl ${
+        className={`fixed top-0 h-full z-[10001] bg-squarage-green transition-transform duration-300 ease-out drop-shadow-2xl ${
           state.isOpen 
             ? 'translate-x-0' 
             : 'translate-x-full'
