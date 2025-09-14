@@ -151,7 +151,7 @@ All products have professional photography stored in `/public/images/products/[p
 - **Tagline**: "Functional Art & Design"
 - **Location**: "Made in Los Angeles"
 - **Focus**: Custom furniture, quality craftsmanship, local production
-- **Contact**: squaragestudio@gmail.com, @squaragestudio
+- **Contact**: hello@squarage.com, @squaragestudio
 
 ## Migration Context
 
@@ -180,7 +180,7 @@ All products have professional photography stored in `/public/images/products/[p
 ## External Integrations
 
 - **Analytics**: Google Analytics (to be configured)
-- **Email**: Direct mailto links to squaragestudio@gmail.com
+- **Email**: Direct mailto links to hello@squarage.com
 - **Social**: Instagram integration (@squaragestudio)
 - **Shopify**: E-commerce backend for inventory and checkout
 

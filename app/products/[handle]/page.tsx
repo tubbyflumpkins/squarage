@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       title,
       description,
       alternates: {
-        canonical: `https://squaragestudio.com/products/${handle}`,
+        canonical: `https://squarage.com/products/${handle}`,
       },
       openGraph: {
         title,
@@ -140,14 +140,14 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
     currency: 'USD',
     availability: serializedProduct.availableForSale ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     brand: 'Squarage Studio',
-    url: `https://squaragestudio.com/products/${handle}`,
+    url: `https://squarage.com/products/${handle}`,
     sku: serializedProduct.variants[0]?.id,
   })
 
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', url: 'https://squaragestudio.com' },
-    { name: 'Products', url: 'https://squaragestudio.com/products' },
-    { name: serializedProduct.title, url: `https://squaragestudio.com/products/${handle}` },
+    { name: 'Home', url: 'https://squarage.com' },
+    { name: 'Products', url: 'https://squarage.com/products' },
+    { name: serializedProduct.title, url: `https://squarage.com/products/${handle}` },
   ])
 
   return (

@@ -19,10 +19,10 @@ export const organizationSchema = {
   '@type': 'Organization',
   name: 'Squarage Studio',
   alternateName: 'Squarage',
-  url: 'https://squaragestudio.com',
-  logo: 'https://squaragestudio.com/images/logo_main.png',
+  url: 'https://squarage.com',
+  logo: 'https://squarage.com/images/logo_main.png',
   description: 'Functional Art & Design - LA-based design studio creating custom furniture and design pieces.',
-  email: 'squaragestudio@gmail.com',
+  email: 'hello@squarage.com',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Los Angeles',
@@ -42,15 +42,15 @@ export const organizationSchema = {
 export const localBusinessSchema = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  '@id': 'https://squaragestudio.com/#business',
+  '@id': 'https://squarage.com/#business',
   name: 'Squarage Studio',
   description: 'Custom furniture design studio in Los Angeles creating handcrafted tables, shelves, chairs, and functional art pieces.',
-  url: 'https://squaragestudio.com',
+  url: 'https://squarage.com',
   telephone: '',
-  email: 'squaragestudio@gmail.com',
+  email: 'hello@squarage.com',
   image: [
-    'https://squaragestudio.com/images/hero-main.jpg',
-    'https://squaragestudio.com/images/collection-tables.jpg',
+    'https://squarage.com/images/hero-main.jpg',
+    'https://squarage.com/images/collection-tables.jpg',
   ],
   address: {
     '@type': 'PostalAddress',
@@ -76,18 +76,18 @@ export const localBusinessSchema = {
 export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  '@id': 'https://squaragestudio.com/#website',
-  url: 'https://squaragestudio.com',
+  '@id': 'https://squarage.com/#website',
+  url: 'https://squarage.com',
   name: 'Squarage Studio',
   description: 'Functional Art & Design - LA-based design studio',
   publisher: {
-    '@id': 'https://squaragestudio.com/#organization',
+    '@id': 'https://squarage.com/#organization',
   },
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://squaragestudio.com/products?search={search_term_string}',
+      urlTemplate: 'https://squarage.com/products?search={search_term_string}',
     },
     'query-input': 'required name=search_term_string',
   },

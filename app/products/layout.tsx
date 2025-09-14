@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Shop Custom Furniture',
   description: 'Shop handcrafted tables, shelves, chairs, and design objects from Squarage Studio. Each piece is made to order in Los Angeles with premium materials and attention to detail.',
   alternates: {
-    canonical: 'https://squaragestudio.com/products',
+    canonical: 'https://squarage.com/products',
   },
   openGraph: {
     title: 'Shop Custom Furniture | Squarage Studio',

@@ -87,7 +87,7 @@ export default function Footer() {
               <div className="flex gap-6 justify-center">
                 {/* Email Icon */}
                 <a 
-                  href="mailto:squaragestudio@gmail.com"
+                  href="mailto:hello@squarage.com"
                   className="hover:text-squarage-yellow hover:scale-125 transition-all duration-300"
                   aria-label="Email us"
                 >

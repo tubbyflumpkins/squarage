@@ -32,7 +32,7 @@ Help us design a custom piece to fit your space.
 - Locally produced
 - SQUARAGE™
 - Los Angeles
-- Contact: squaragestudio@gmail.com
+- Contact: hello@squarage.com
 - Instagram: @Squaragestudio
 
 ## Call-to-Action Text
@@ -46,7 +46,7 @@ Help us design a custom piece to fit your space.
 - Description: "Functional Art & Design"
 
 ## Contact Information
-- Email: squaragestudio@gmail.com
+- Email: hello@squarage.com
 - Instagram: @squaragestudio
 
 ## Business Taglines

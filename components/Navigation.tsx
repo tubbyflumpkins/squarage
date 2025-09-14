@@ -379,7 +379,7 @@ export default function Navigation() {
             <div className="mt-8 flex gap-8">
               {/* Email Icon */}
               <a 
-                href="mailto:squaragestudio@gmail.com"
+                href="mailto:hello@squarage.com"
                 className="hover:text-squarage-red hover:scale-125 transition-all duration-300"
                 aria-label="Email us"
               >
