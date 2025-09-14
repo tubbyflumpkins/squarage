@@ -21,7 +21,7 @@ const collections = [
     description: 'Vibrant tiled surfaces that bring energy, texture, and a playful sense of style to your space.',
     image: '/images/collection-tiled.jpg',
     href: '/collections/tiled',
-    bgColor: 'bg-squarage-green',
+    bgColor: 'bg-squarage-yellow',
   },
 ]
 

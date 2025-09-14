@@ -73,6 +73,11 @@ export default function Footer() {
                     Contact
                   </Link>
                 </li>
+                <li>
+                  <Link href="/customer-service" className="text-lg md:text-xl opacity-90 hover:opacity-100 transition-opacity">
+                    Customer Service
+                  </Link>
+                </li>
               </ul>
             </div>
 

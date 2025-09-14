@@ -1,9 +1,11 @@
 'use client'
 
+import Link from 'next/link'
 import { 
   CubeIcon,
   ShieldCheckIcon,
-  SparklesIcon
+  SparklesIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline'
 
 export default function ProductTrustBadges() {
@@ -11,12 +13,16 @@ export default function ProductTrustBadges() {
     {
       icon: CubeIcon,
       title: 'Easy Returns',
-      description: 'Not satisfied? Return items within 30 days'
+      description: 'Not satisfied? Return items within 30 days',
+      link: '/customer-service?doc=return-policy',
+      linkText: 'Return Policy'
     },
     {
       icon: ShieldCheckIcon,
       title: 'Warranty',
-      description: '2-year warranty on craftsmanship and materials'
+      description: '1-year warranty on craftsmanship and materials',
+      link: '/customer-service?doc=warranty-policy',
+      linkText: 'Warranty Details'
     },
     {
       icon: SparklesIcon,
@@ -41,6 +47,15 @@ export default function ProductTrustBadges() {
               <p className="text-sm font-neue-haas text-gray-600">
                 {badge.description}
               </p>
+              {badge.link && (
+                <Link 
+                  href={badge.link}
+                  className="inline-flex items-center gap-0.5 mt-1 text-xs font-neue-haas text-gray-500 hover:text-squarage-orange transition-colors group"
+                >
+                  <span>{badge.linkText}</span>
+                  <ChevronRightIcon className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              )}
             </div>
           </div>
         ))}
@@ -60,6 +75,15 @@ export default function ProductTrustBadges() {
               <p className="text-sm font-neue-haas text-gray-600">
                 {badge.description}
               </p>
+              {badge.link && (
+                <Link 
+                  href={badge.link}
+                  className="inline-flex items-center gap-0.5 mt-1 text-xs font-neue-haas text-gray-500 hover:text-squarage-orange transition-colors group"
+                >
+                  <span>{badge.linkText}</span>
+                  <ChevronRightIcon className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              )}
             </div>
           </div>
         ))}
