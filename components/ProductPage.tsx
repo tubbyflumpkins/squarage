@@ -102,41 +102,67 @@ export default function ProductPage({ product }: ProductPageProps) {
   }
 
   // Get color options from variants (all available since made to order)
-  const unsortedColorOptions = product.variants?.map((variant: any, index) => {
-    let variantImage = variant.image
+  const unsortedColorOptions = useMemo(() => {
+    // Check if product has separate color option
+    const colorOption = product.options?.find(opt => opt.name === 'Color')
     
-    if (!variantImage) {
-      variantImage = product.images?.find((img: any) => 
-        img.altText?.toLowerCase().includes(variant.title.toLowerCase())
-      )
+    if (colorOption) {
+      // Product has explicit color options, use those
+      return colorOption.values.map((color: string) => {
+        // Find a variant with this color (preferably without size or with first size)
+        const variant = product.variants?.find(v => 
+          v.selectedOptions?.some(opt => opt.name === 'Color' && opt.value === color)
+        )
+        const variantIndex = variant ? product.variants?.indexOf(variant) : -1
+        
+        return {
+          name: color,
+          originalIndex: variantIndex >= 0 ? variantIndex : 0,
+          available: true,
+          image: variant?.image || null
+        }
+      })
+    } else {
+      // No explicit color options, fall back to variant titles (original behavior)
+      return product.variants?.map((variant: any, index) => {
+        let variantImage = variant.image
+        
+        if (!variantImage) {
+          variantImage = product.images?.find((img: any) => 
+            img.altText?.toLowerCase().includes(variant.title.toLowerCase())
+          )
+        }
+        
+        if (!variantImage) {
+          variantImage = product.images?.find((img: any) => 
+            img.src?.toLowerCase().includes(variant.title.toLowerCase())
+          )
+        }
+        
+        return {
+          name: variant.title,
+          originalIndex: index,
+          available: true,
+          image: variantImage
+        }
+      }) || []
     }
-    
-    if (!variantImage) {
-      variantImage = product.images?.find((img: any) => 
-        img.src?.toLowerCase().includes(variant.title.toLowerCase())
-      )
-    }
-    
-    return {
-      name: variant.title,
-      originalIndex: index,
-      available: true,
-      image: variantImage
-    }
-  }) || []
+  }, [product.variants, product.options, product.images])
 
   // Sort colors in the specified order
-  const colorOrder = ['Blue', 'Green', 'Yellow', 'Orange', 'Red', 'Black', 'White']
-  const colorOptions = unsortedColorOptions.sort((a, b) => {
-    const aIndex = colorOrder.indexOf(a.name)
-    const bIndex = colorOrder.indexOf(b.name)
-    
-    if (aIndex === -1 && bIndex === -1) return 0
-    if (aIndex === -1) return 1
-    if (bIndex === -1) return -1
-    
-    return aIndex - bIndex
-  })
+  const colorOptions = useMemo(() => {
+    const colorOrder = ['Blue', 'Green', 'Yellow', 'Orange', 'Red', 'Black', 'White']
+    return [...unsortedColorOptions].sort((a, b) => {
+      const aIndex = colorOrder.indexOf(a.name)
+      const bIndex = colorOrder.indexOf(b.name)
+      
+      if (aIndex === -1 && bIndex === -1) return 0
+      if (aIndex === -1) return 1
+      if (bIndex === -1) return -1
+      
+      return aIndex - bIndex
+    })
+  }, [unsortedColorOptions])
 
   // Check if product has size options
   const sizeOption = product.options?.find(opt => opt.name.toLowerCase() === 'size')
@@ -184,13 +210,29 @@ export default function ProductPage({ product }: ProductPageProps) {
     return defaultColorOption?.originalIndex ?? 0
   }, [product.images, colorOptions])
 
-  // Get current variant images based on selected color
+  // Get current variant images based on selected color and size
   const currentVariantImages = useMemo(() => {
+    // If we have both color and size selected, try to find the specific variant's image
+    if (selectedColor && selectedSize && availableSizes.length > 0) {
+      const matchingVariant = product.variants?.find(v => 
+        v.selectedOptions?.some(opt => opt.name === 'Color' && opt.value === selectedColor) &&
+        v.selectedOptions?.some(opt => opt.name === 'Size' && opt.value === selectedSize)
+      )
+      
+      // If the matching variant has an image, use it
+      if (matchingVariant?.image) {
+        console.log(`Found size-specific image for ${selectedColor} - ${selectedSize}`)
+        return [matchingVariant.image]
+      }
+    }
+    
+    // Fall back to color-based images if no size-specific image
     if (!selectedColor || !imagesByColor[selectedColor]) {
       return product.images || []
     }
+    console.log(`Using color-based image for ${selectedColor}`)
     return imagesByColor[selectedColor]
-  }, [selectedColor, imagesByColor, product.images])
+  }, [selectedColor, selectedSize, imagesByColor, product.images, product.variants, availableSizes])
 
   // Handle color selection
   const handleColorSelect = (colorOptionIndex: number) => {

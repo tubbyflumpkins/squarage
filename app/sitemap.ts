@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { shopifyApi } from '@/lib/shopify'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://squaragestudio.com'
+  const baseUrl = 'https://squarage.com'
   
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
