@@ -107,29 +107,13 @@ export default function ProductsPage() {
         break
       case 'featured':
       default:
-        // Custom featured order - alternate between collections
+        // Simple order - Warped collection first, then Tiled collection
         if (selectedCollection === 'all' && !searchQuery) {
-          // Get products from each collection (already in Shopify's order)
-          const tiledProducts = collectionProducts['tiled'] || []
           const warpedProducts = collectionProducts['warped'] || []
+          const tiledProducts = collectionProducts['tiled'] || []
           
-          // Interleave products from both collections
-          const interleavedProducts: Product[] = []
-          const maxLength = Math.max(tiledProducts.length, warpedProducts.length)
-          
-          for (let i = 0; i < maxLength; i++) {
-            // Add product from Tiled collection (if exists)
-            if (i < tiledProducts.length) {
-              interleavedProducts.push(tiledProducts[i])
-            }
-            // Add product from Warped collection (if exists)
-            if (i < warpedProducts.length) {
-              interleavedProducts.push(warpedProducts[i])
-            }
-          }
-          
-          // Replace the filtered array with our interleaved order
-          filtered = interleavedProducts
+          // Show all Warped products first, then all Tiled products
+          filtered = [...warpedProducts, ...tiledProducts]
         }
         break
     }
@@ -138,14 +122,10 @@ export default function ProductsPage() {
   }, [allProducts, collectionProducts, searchQuery, sortBy, selectedCollection])
 
   return (
-    <main className="min-h-screen bg-cream pt-24 md:pt-32 pb-20">
+    <main className="min-h-screen bg-cream pt-20 md:pt-24 pb-20">
       <div className="px-6">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-6xl font-bold font-neue-haas text-squarage-black mb-8">
-            Full Catalog
-          </h1>
-          
+        <div className="mb-4">
           {/* Search and Filter Bar */}
           <div className="mb-8">
             {/* Mobile: Stack search on top, filters below */}
