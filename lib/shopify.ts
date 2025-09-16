@@ -167,7 +167,12 @@ export const shopifyApi = {
               vendor
               tags
               metafields(identifiers: [
-                { namespace: "custom", key: "size" }
+                { namespace: "custom", key: "size" },
+                { namespace: "custom", key: "multisize" },
+                { namespace: "custom", key: "multi_size" },
+                { namespace: "product", key: "size" },
+                { namespace: "product", key: "multisize" },
+                { namespace: "product", key: "multi_size" }
               ]) {
                 id
                 namespace

@@ -43,6 +43,68 @@ export default function ProductDetailsAccordion({
   }
 
   const productDimensions = dimensions || getMetafieldValue('custom', 'size') || 'Custom sizing available'
+  
+  // Function to parse simple markdown-like formatting
+  const formatText = (text: string): React.ReactNode => {
+    // Split by lines first to preserve line breaks
+    const lines = text.split('\n')
+    
+    return lines.map((line, lineIndex) => {
+      // Process each line for formatting
+      let processedLine: React.ReactNode[] = []
+      let currentText = line
+      let keyCounter = 0
+      
+      // Helper function to preserve spaces
+      const preserveSpaces = (text: string) => {
+        // Replace multiple spaces with non-breaking spaces
+        return text.replace(/ {2,}/g, (match) => '\u00A0'.repeat(match.length))
+      }
+      
+      // Replace **text** with bold
+      const boldParts = currentText.split(/\*\*(.*?)\*\*/g)
+      for (let i = 0; i < boldParts.length; i++) {
+        if (i % 2 === 0) {
+          // Regular text, now check for underline
+          const underlineParts = boldParts[i].split(/__(.*?)__/g)
+          for (let j = 0; j < underlineParts.length; j++) {
+            if (j % 2 === 0) {
+              // Regular text
+              if (underlineParts[j]) {
+                processedLine.push(
+                  <span key={`text-${lineIndex}-${keyCounter++}`}>
+                    {preserveSpaces(underlineParts[j])}
+                  </span>
+                )
+              }
+            } else {
+              // Underlined text
+              processedLine.push(
+                <span key={`underline-${lineIndex}-${keyCounter++}`} className="underline">
+                  {preserveSpaces(underlineParts[j])}
+                </span>
+              )
+            }
+          }
+        } else {
+          // Bold text
+          processedLine.push(
+            <span key={`bold-${lineIndex}-${keyCounter++}`} className="font-bold">
+              {preserveSpaces(boldParts[i])}
+            </span>
+          )
+        }
+      }
+      
+      // Add line break after each line except the last
+      return (
+        <span key={`line-${lineIndex}`}>
+          {processedLine.length > 0 ? processedLine : preserveSpaces(line)}
+          {lineIndex < lines.length - 1 && <br />}
+        </span>
+      )
+    })
+  }
 
   const accordionItems: AccordionItem[] = [
     {
@@ -50,9 +112,9 @@ export default function ProductDetailsAccordion({
       title: 'Dimensions',
       content: (
         <div className="space-y-2">
-          <p className="text-base font-neue-haas text-squarage-black">
-            {productDimensions}
-          </p>
+          <div className="text-base font-neue-haas text-squarage-black">
+            {formatText(productDimensions)}
+          </div>
           <p className="text-sm font-neue-haas text-gray-600">
             Custom sizes available upon request. Contact us for details.
           </p>

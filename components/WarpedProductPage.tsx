@@ -108,52 +108,96 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     }
   }, [availableSizes, selectedSize])
 
-  // Group images by finish variant
-  const imagesByFinish = useMemo(() => {
-    const grouped: Record<string, Array<typeof product.images[0]>> = {
-      'Birch': [],
-      'Oak': [],
-      'Walnut': []
-    }
-
+  // Get filtered images based on finish and size selection
+  const filteredImages = useMemo(() => {
+    const sortedImages: Array<typeof product.images[0]> = []
+    const genericImages: Array<typeof product.images[0]> = []
+    const addedImageIds = new Set<string>()
+    
+    // Process each image and categorize it
     product.images.forEach(image => {
       const imageText = (image.altText || image.src || '').toLowerCase()
       
-      if (imageText.includes('birch')) {
-        grouped['Birch'].push(image)
-      } else if (imageText.includes('oak')) {
-        grouped['Oak'].push(image)
-      } else if (imageText.includes('walnut')) {
-        grouped['Walnut'].push(image)
-      }
-    })
-
-    // Sort images by number
-    Object.keys(grouped).forEach(finish => {
-      grouped[finish].sort((a, b) => {
-        const aMatch = (a.altText || a.src).match(/_(\d+)/);
-        const bMatch = (b.altText || b.src).match(/_(\d+)/);
-        const aNum = aMatch ? parseInt(aMatch[1]) : 999;
-        const bNum = bMatch ? parseInt(bMatch[1]) : 999;
-        return aNum - bNum;
-      })
-    })
-
-    // Ensure we have exactly 5 images per finish
-    const fallbackImage = product.images[0]
-    WARPED_FINISHES.forEach(finish => {
-      if (grouped[finish].length === 0 && fallbackImage) {
-        for (let i = 0; i < 5; i++) {
-          grouped[finish].push(product.images[i] || fallbackImage)
+      // Check if image has finish (color) specification
+      const hasFinish = WARPED_FINISHES.some(finish => 
+        imageText.includes(finish.toLowerCase())
+      )
+      
+      // Check if image has size specification
+      const hasSize = availableSizes.some(size => 
+        size && imageText.includes(size.toLowerCase())
+      )
+      
+      // If product has sizes (like shoe rack)
+      if (availableSizes.length > 0 && selectedSize) {
+        if (hasFinish && hasSize) {
+          // This image has BOTH color and size - only show if exact match
+          const matchesSelectedFinish = imageText.includes(selectedFinish.toLowerCase())
+          const matchesSelectedSize = imageText.includes(selectedSize.toLowerCase())
+          
+          if (matchesSelectedFinish && matchesSelectedSize) {
+            // This is a sorted image that matches current selection
+            sortedImages.push(image)
+          }
+          // Images with color+size that don't match are excluded
+        } else if (!hasFinish && !hasSize) {
+          // Generic image with no color or size - goes to the end
+          genericImages.push(image)
+        }
+        // Images with only color OR only size are excluded
+      } else {
+        // Product doesn't have sizes (normal warped products)
+        if (hasFinish) {
+          // Has finish - only show if it matches selected finish
+          if (imageText.includes(selectedFinish.toLowerCase())) {
+            // This is a sorted image that matches current selection
+            sortedImages.push(image)
+          }
+          // Images with color that don't match are excluded
+        } else {
+          // No finish or size - generic image, goes to the end
+          genericImages.push(image)
         }
       }
-      while (grouped[finish].length < 5 && grouped[finish].length > 0) {
-        grouped[finish].push(grouped[finish][grouped[finish].length - 1])
+    })
+    
+    // Build final image array: ALL sorted images first, THEN all generic images
+    const finalImages: Array<typeof product.images[0]> = []
+    
+    // Add all sorted images first (avoiding duplicates)
+    sortedImages.forEach(image => {
+      if (!addedImageIds.has(image.id)) {
+        finalImages.push(image)
+        addedImageIds.add(image.id)
       }
     })
-
-    return grouped
-  }, [product])
+    
+    // Then add all generic images at the end (avoiding duplicates)
+    genericImages.forEach(image => {
+      if (!addedImageIds.has(image.id)) {
+        finalImages.push(image)
+        addedImageIds.add(image.id)
+      }
+    })
+    
+    // Fallback: if no images selected, show at least something
+    if (finalImages.length === 0 && product.images.length > 0) {
+      // Try to find any image with the selected finish
+      const fallbackFinishImage = product.images.find(image => {
+        const imageText = (image.altText || image.src || '').toLowerCase()
+        return imageText.includes(selectedFinish.toLowerCase())
+      })
+      
+      if (fallbackFinishImage) {
+        finalImages.push(fallbackFinishImage)
+      } else {
+        // Last resort: show first available image
+        finalImages.push(product.images[0])
+      }
+    }
+    
+    return finalImages
+  }, [product, selectedFinish, selectedSize, availableSizes])
 
   // Get the selected variant based on finish and size
   const selectedVariant = useMemo(() => {
@@ -188,16 +232,37 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     }).format(parseFloat(price))
   }
 
-  // Get metafield value
+  // Get metafield value - check multiple namespaces
   const getMetafieldValue = (namespace: string, key: string): string => {
-    const metafield = product.metafields?.find(
+    // Try the specified namespace first
+    let metafield = product.metafields?.find(
       field => field.namespace === namespace && field.key === key
     )
+    
+    // If not found in 'custom' namespace, try 'product' namespace
+    if (!metafield && namespace === 'custom') {
+      metafield = product.metafields?.find(
+        field => field.namespace === 'product' && field.key === key
+      )
+    }
+    
     return metafield?.value || ''
   }
 
   const getSize = (): string => {
-    const size = getMetafieldValue('custom', 'size')
+    // First try to get the regular size
+    let size = getMetafieldValue('custom', 'size')
+    
+    // If size is empty, try multisize
+    if (!size) {
+      size = getMetafieldValue('custom', 'multisize')
+    }
+    
+    // Also check for multi_size (with underscore)
+    if (!size) {
+      size = getMetafieldValue('custom', 'multi_size')
+    }
+    
     return size || 'Custom sizing available'
   }
 
@@ -224,13 +289,13 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
   
-  // Reset active index when finish changes
+  // Reset active index when finish or size changes
   useEffect(() => {
     setActiveIndex(0)
     if (mainSwiper) {
       mainSwiper.slideTo(0)
     }
-  }, [selectedFinish, mainSwiper])
+  }, [selectedFinish, selectedSize, mainSwiper])
 
   // Handle thumbnail click
   const handleThumbnailClick = (index: number) => {
@@ -287,8 +352,8 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
 
             {/* Mobile Carousel */}
             <div className="relative mb-4" style={{ 
-              aspectRatio: imagesByFinish[selectedFinish][0] ? 
-                `${imagesByFinish[selectedFinish][0].width} / ${imagesByFinish[selectedFinish][0].height}` : 
+              aspectRatio: filteredImages[0] ? 
+                `${filteredImages[0].width} / ${filteredImages[0].height}` : 
                 '1 / 1' 
             }}>
               <Swiper
@@ -297,7 +362,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                 modules={[Navigation]}
                 className="warped-swiper-mobile h-full"
               >
-                {imagesByFinish[selectedFinish].map((image, index) => (
+                {filteredImages.map((image, index) => (
                   <SwiperSlide key={index}>
                     <div className="relative w-full h-full flex items-center justify-center">
                       <FastProductImage
@@ -415,6 +480,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
               <ProductDetailsAccordion 
                 productType="warped"
                 metafields={product.metafields}
+                dimensions={getSize()}
               />
             </div>
 
@@ -445,7 +511,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                     onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
                     className="warped-swiper"
                   >
-                    {imagesByFinish[selectedFinish].map((image, index) => (
+                    {filteredImages.map((image, index) => (
                       <SwiperSlide key={index}>
                         <div className="relative w-full h-[600px] flex items-center justify-center bg-cream">
                           <FastProductImage
@@ -463,7 +529,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
 
                 {/* Thumbnail Navigation */}
                 <div className="flex gap-2 justify-center">
-                  {imagesByFinish[selectedFinish].map((image, index) => (
+                  {filteredImages.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => handleThumbnailClick(index)}
@@ -604,6 +670,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                 <ProductDetailsAccordion 
                   productType="warped"
                   metafields={product.metafields}
+                  dimensions={getSize()}
                 />
               </div>
             </div>
