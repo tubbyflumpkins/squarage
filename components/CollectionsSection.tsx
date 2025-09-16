@@ -184,26 +184,55 @@ export default function CollectionsSection() {
                   </div>
                   
                   {/* Text Side - Mobile: Empty yellow banner, Desktop: Full content */}
-                  <div className={`bg-squarage-yellow md:${collection.bgColor} flex items-center justify-center py-3 px-4 md:p-12 lg:p-16 md:w-1/2`}>
-                    <div className="w-full text-center">
-                      {/* Desktop only */}
-                      <div className="hidden md:block md:mb-6">
-                        <h3 className="md:text-[4rem] lg:text-[5rem] xl:text-[6rem] font-neue-haas font-black leading-none text-white">
-                          {collection.title.split('').map((char, i) => (
-                            <span key={i} className="inline-block md:hover:scale-110 transition-transform duration-300">
-                              {char}
-                            </span>
-                          ))}
-                        </h3>
-                      </div>
-                      
-                      {/* Discover Collection button - desktop only */}
-                      <div className="hidden md:block">
-                        <div className="inline-flex items-center space-x-4 text-white font-bold text-lg hover:opacity-80 transition-opacity duration-300">
-                          <span>Discover Collection</span>
-                          <div className="w-12 h-[2px] bg-current transform origin-left group-hover:scale-x-150 transition-transform duration-500" />
+                  <div className={`bg-squarage-yellow md:${collection.bgColor} relative flex items-center justify-center py-3 px-4 md:p-0 md:w-1/2`}>
+                    {/* Desktop only - Title Blobs from collection pages */}
+                    <div className="hidden md:flex md:items-center md:justify-center md:w-full md:h-full">
+                      {index === 0 ? (
+                        // Warped Blob - Desktop
+                        <div className="relative group/blob">
+                          <div
+                            className="transition-transform duration-300 ease-out group-hover/blob:scale-110"
+                            style={{
+                              backgroundColor: '#4A9B4E',
+                              borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%',
+                              padding: 'clamp(1.2rem, 1.8vw, 1.8rem) clamp(3rem, 4vw, 4rem)'
+                            }}
+                          >
+                            <div className="text-center">
+                              <h1 
+                                className="font-bold font-neue-haas text-squarage-white"
+                                style={{
+                                  fontSize: 'clamp(4rem, 8vw, 8rem)'
+                                }}
+                              >
+                                Warped
+                              </h1>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        // Tiled Blob - Desktop
+                        <div className="relative group/blob">
+                          <div 
+                            className="bg-squarage-green transition-transform duration-300 ease-out group-hover/blob:scale-110"
+                            style={{
+                              borderRadius: '35% 65% 55% 45% / 60% 40% 65% 35%',
+                              padding: 'clamp(0.5rem, 1vw, 0.9rem) clamp(2rem, 3.2vw, 3rem)'
+                            }}
+                          >
+                            <div className="text-center">
+                              <h1 
+                                className="font-bold font-neue-haas text-white"
+                                style={{
+                                  fontSize: 'clamp(4rem, 8vw, 8rem)'
+                                }}
+                              >
+                                Tiled
+                              </h1>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

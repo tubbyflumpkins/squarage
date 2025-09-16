@@ -220,5 +220,30 @@ body {
   will-change: auto;
 }
 
+@keyframes text-wave {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+    text-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+  25% {
+    transform: scale(1.02) translateY(-2px);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    transform: scale(1.05) translateY(-4px);
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  }
+  75% {
+    transform: scale(1.02) translateY(-2px);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+}
+
+.animate-text-wave {
+  animation: text-wave 2s ease-in-out infinite;
+  transform-origin: center bottom;
+  display: inline-block;
+}
+
 
 /* Remove Webflow cursor styles - no custom cursor */
