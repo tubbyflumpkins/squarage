@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 // Simple slideshow without Swiper for now
 const SLIDE_INTERVAL = 4000
@@ -71,6 +72,16 @@ export default function HeroSlideshow() {
           </div>
         ))}
       </div>
+      
+      {/* Clickable overlay - ensure it's on top */}
+      <Link 
+        href="/products" 
+        className="absolute inset-0 z-50 block cursor-pointer"
+        style={{ display: 'block' }}
+        aria-label="View all products"
+      >
+        <span className="sr-only">View all products</span>
+      </Link>
     </section>
   )
 }

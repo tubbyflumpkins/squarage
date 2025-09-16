@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function HeroStatic() {
   return (
@@ -17,6 +18,13 @@ export default function HeroStatic() {
           quality={85}
         />
       </div>
+      
+      {/* Clickable overlay */}
+      <Link 
+        href="/products" 
+        className="absolute inset-0 z-10 block cursor-pointer"
+        aria-label="View all products"
+      />
     </section>
   )
 }
