@@ -42,13 +42,12 @@ export default function CarroHeroSection() {
         >
           <div className="text-center">
             <h1 
-              className="font-bold font-neue-haas relative"
+              className="font-bold font-neue-haas text-white"
               style={{
                 fontSize: 'clamp(4rem, 8vw, 8rem)'
               }}
             >
-              <span className="absolute text-squarage-yellow transform translate-x-1 translate-y-1">Tiled</span>
-              <span className="relative z-10 text-white">Tiled</span>
+              Tiled
             </h1>
           </div>
         </div>
