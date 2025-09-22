@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useCookieConsent } from '@/context/CookieConsentContext'
 
 const EmailIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 20 20">
@@ -18,6 +19,7 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const { openModal } = useCookieConsent()
 
   return (
     <footer className="bg-squarage-green text-white">
@@ -115,9 +117,18 @@ export default function Footer() {
             <p className="text-sm opacity-70">
               © {currentYear} Squarage Studio LLC. All rights reserved.
             </p>
-            <p className="text-sm opacity-70">
-              Made in Los Angeles
-            </p>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={openModal}
+                className="text-sm opacity-70 hover:opacity-100 underline transition-opacity"
+              >
+                Cookie Preferences
+              </button>
+              <span className="text-sm opacity-70">|</span>
+              <p className="text-sm opacity-70">
+                Made in Los Angeles
+              </p>
+            </div>
           </div>
         </div>
       </div>
