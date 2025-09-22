@@ -4,9 +4,7 @@ import LayoutWrapper from '@/components/LayoutWrapper'
 import { ImageCacheProvider } from '@/context/ImageCacheContext'
 import { CartProvider } from '@/context/CartContext'
 import { CookieConsentProvider } from '@/context/CookieConsentContext'
-import ConsentAwareAnalytics from '@/components/ConsentAwareAnalytics'
-import CookieBanner from '@/components/CookieBanner'
-import ManageCookiesModal from '@/components/ManageCookiesModal'
+import CookieConsentWrapper from '@/components/CookieConsentWrapper'
 import StructuredData, { organizationSchema, localBusinessSchema, websiteSchema } from '@/components/StructuredData'
 
 export const metadata: Metadata = {
@@ -92,11 +90,9 @@ export default function RootLayout({
               <LayoutWrapper>
                 {children}
               </LayoutWrapper>
-              <ConsentAwareAnalytics />
-              <CookieBanner />
-              <ManageCookiesModal />
             </CartProvider>
           </ImageCacheProvider>
+          <CookieConsentWrapper />
         </CookieConsentProvider>
       </body>
     </html>
