@@ -36,13 +36,13 @@ export default function ManageCookiesModal() {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-[10000] transition-opacity"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[10000] transition-opacity"
         onClick={closeModal}
       />
       
       {/* Modal */}
       <div
-        className={`fixed top-0 h-full z-[10001] bg-cream transition-transform duration-300 ease-out drop-shadow-2xl ${
+        className={`fixed top-0 h-full z-[10001] bg-white/95 backdrop-blur-md transition-transform duration-300 ease-out shadow-2xl ${
           showModal ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
@@ -54,16 +54,16 @@ export default function ManageCookiesModal() {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b-2 border-squarage-black">
+          <div className="flex items-center justify-between px-6 py-5">
             <h2 className="text-2xl font-bold font-neue-haas text-squarage-black">
               Cookie Preferences
             </h2>
             <button
               onClick={closeModal}
-              className="p-1 hover:bg-squarage-black/5 rounded-full transition-colors"
+              className="p-2 hover:bg-squarage-black/5 rounded-full transition-all duration-200 hover:rotate-90"
               aria-label="Close modal"
             >
-              <XMarkIcon className="w-6 h-6 text-squarage-black" />
+              <XMarkIcon className="w-6 h-6 text-squarage-black/60 hover:text-squarage-black" />
             </button>
           </div>
           
@@ -80,7 +80,7 @@ export default function ManageCookiesModal() {
             {/* Cookie Categories */}
             <div className="space-y-6">
               {cookieCategories.map((category) => (
-                <div key={category.id} className="border-b border-gray-200 pb-6 last:border-0">
+                <div key={category.id} className="bg-cream/50 rounded-2xl p-5 hover:bg-cream/80 transition-colors duration-200">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 pr-4">
                       <h3 className="text-lg font-bold font-neue-haas text-squarage-black mb-2">
@@ -101,17 +101,17 @@ export default function ManageCookiesModal() {
                         className="sr-only peer"
                       />
                       <div className={`
-                        w-14 h-7 rounded-full transition-colors duration-200
+                        w-14 h-7 rounded-full transition-all duration-300
                         ${category.required 
-                          ? 'bg-squarage-black/30' 
-                          : 'bg-gray-300 peer-checked:bg-squarage-orange'
+                          ? 'bg-squarage-black/20' 
+                          : 'bg-gray-200 peer-checked:bg-gradient-to-r peer-checked:from-squarage-orange peer-checked:to-orange'
                         }
-                        peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-squarage-orange/50
+                        peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-squarage-orange/20
                       `}>
                         <div className={`
                           absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full 
-                          transition-transform duration-200 shadow-sm
-                          ${localConsent[category.id as keyof ConsentState] ? 'translate-x-7' : 'translate-x-0'}
+                          transition-all duration-300 shadow-lg
+                          ${localConsent[category.id as keyof ConsentState] ? 'translate-x-7 scale-110' : 'translate-x-0'}
                         `} />
                       </div>
                     </label>
@@ -134,17 +134,17 @@ export default function ManageCookiesModal() {
           </div>
           
           {/* Footer Actions */}
-          <div className="border-t-2 border-squarage-black px-6 py-4">
+          <div className="px-6 py-5 bg-white/50 backdrop-blur-sm">
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={handleSavePreferences}
-                className="flex-1 px-6 py-2.5 bg-white text-squarage-black border-2 border-squarage-black font-medium font-neue-haas text-base hover:bg-cream transition-colors duration-200"
+                className="flex-1 px-6 py-3 bg-white/80 backdrop-blur text-squarage-black font-medium font-neue-haas text-base hover:bg-white transition-all duration-200 rounded-full shadow-sm hover:shadow-md"
               >
                 Save Preferences
               </button>
               <button
                 onClick={handleAcceptAll}
-                className="flex-1 px-6 py-2.5 bg-squarage-orange text-white font-medium font-neue-haas text-base hover:bg-orange transition-colors duration-200"
+                className="flex-1 px-6 py-3 bg-squarage-orange text-white font-medium font-neue-haas text-base hover:bg-orange transition-all duration-200 rounded-full shadow-sm hover:shadow-md hover:scale-105"
               >
                 Accept All
               </button>
