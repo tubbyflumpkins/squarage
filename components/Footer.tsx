@@ -2,7 +2,13 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCookieConsent } from '@/context/CookieConsentContext'
+import dynamic from 'next/dynamic'
+
+// Dynamically import the cookie preferences button to avoid SSR issues
+const CookiePreferencesButton = dynamic(
+  () => import('./CookiePreferencesButton'),
+  { ssr: false }
+)
 
 const EmailIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 20 20">
@@ -19,7 +25,6 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
-  const { openModal } = useCookieConsent()
 
   return (
     <footer className="bg-squarage-green text-white">
@@ -118,12 +123,7 @@ export default function Footer() {
               © {currentYear} Squarage Studio LLC. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <button
-                onClick={openModal}
-                className="text-sm opacity-70 hover:opacity-100 underline transition-opacity"
-              >
-                Cookie Preferences
-              </button>
+              <CookiePreferencesButton />
               <span className="text-sm opacity-70">|</span>
               <p className="text-sm opacity-70">
                 Made in Los Angeles

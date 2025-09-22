@@ -16,7 +16,7 @@ interface CookieConsentContextType {
   closeBanner: () => void
 }
 
-const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined)
+export const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined)
 
 const CONSENT_COOKIE_NAME = 'squarage_cookie_consent'
 const CONSENT_VERSION = '1.0'

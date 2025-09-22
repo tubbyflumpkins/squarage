@@ -1,13 +1,28 @@
 'use client'
 
 import Script from 'next/script'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useHasConsent } from '@/context/CookieConsentContext'
 
 const GA_ID = 'G-ZCYJMQJLE1'
 const CLARITY_ID = 'sy4kv4wk64'
 
 export default function ConsentAwareAnalytics() {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Don't render anything on server or before mounting
+  if (!mounted) {
+    return null
+  }
+
+  return <ConsentAwareAnalyticsContent />
+}
+
+function ConsentAwareAnalyticsContent() {
   const hasAnalyticsConsent = useHasConsent('analytics')
 
   // Initialize Google Consent Mode
