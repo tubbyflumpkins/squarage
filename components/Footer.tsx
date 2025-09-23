@@ -2,6 +2,13 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+// Dynamically import the cookie preferences button to avoid SSR issues
+const CookiePreferencesButton = dynamic(
+  () => import('./CookiePreferencesButton'),
+  { ssr: false }
+)
 
 const EmailIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 20 20">
@@ -115,9 +122,13 @@ export default function Footer() {
             <p className="text-sm opacity-70">
               © {currentYear} Squarage Studio LLC. All rights reserved.
             </p>
-            <p className="text-sm opacity-70">
-              Made in Los Angeles
-            </p>
+            <div className="flex items-center gap-4">
+              <CookiePreferencesButton />
+              <span className="text-sm opacity-70">|</span>
+              <p className="text-sm opacity-70">
+                Made in Los Angeles
+              </p>
+            </div>
           </div>
         </div>
       </div>
