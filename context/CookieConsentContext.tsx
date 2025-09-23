@@ -33,7 +33,6 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     const loadConsent = () => {
       try {
-        // Try localStorage first (more reliable)
         const stored = localStorage.getItem(CONSENT_COOKIE_NAME)
         if (stored) {
           const parsed = JSON.parse(stored)
@@ -49,7 +48,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
             setShowBanner(true)
           }
         } else {
-          // No consent stored, show banner
+          // No stored consent, show banner
           setShowBanner(true)
         }
       } catch (error) {

@@ -153,7 +153,7 @@ export default function ManageCookiesModal() {
             {/* Privacy Link */}
             <div className="mt-4 text-center">
               <a 
-                href="/customer-service#privacy" 
+                href="/customer-service?doc=privacy-policy" 
                 className="text-sm font-neue-haas text-squarage-orange hover:text-orange underline"
                 onClick={() => {
                   closeModal()
