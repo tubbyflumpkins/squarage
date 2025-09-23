@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Consent Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #fffaf4;
+        }
+        h1 { color: #333; }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status { 
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .granted { background: #d4edda; color: #155724; }
+        .denied { background: #f8d7da; color: #721c24; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #ff962d;
+            color: white;
+        }
+        button:hover { background: #f7a24d; }
+        iframe {
+            width: 100%;
+            height: 800px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cookie Consent Testing</h1>
+    
+    <div class="section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Open the site below in the iframe</li>
+            <li>Check if the cookie banner appears at the bottom</li>
+            <li>Test "Accept All" button - should close banner and set cookies</li>
+            <li>Test "Manage Cookies" - should open preferences modal</li>
+            <li>Toggle individual cookie categories and save</li>
+            <li>Check Footer for "Cookie Preferences" link</li>
+            <li>Open Developer Tools and check:
+                <ul>
+                    <li>LocalStorage for 'squarage_cookie_consent'</li>
+                    <li>Network tab to verify GA/Clarity scripts load only after consent</li>
+                    <li>Console for any errors</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>Live Site Test</h2>
+        <button onclick="clearConsent()">Clear All Consent Data</button>
+        <button onclick="checkConsent()">Check Current Consent</button>
+        <div id="consentStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>Site Preview</h2>
+        <iframe src="http://localhost:3000" id="siteFrame"></iframe>
+    </div>
+
+    <script>
+        function clearConsent() {
+            // Clear from iframe context
+            const frame = document.getElementById('siteFrame');
+            frame.contentWindow.localStorage.removeItem('squarage_cookie_consent');
+            
+            // Clear cookies
+            document.cookie = 'squarage_cookie_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/';
+            
+            alert('Consent data cleared. Refresh the iframe to see the banner again.');
+            frame.src = frame.src;
+        }
+
+        function checkConsent() {
+            const frame = document.getElementById('siteFrame');
+            const consent = frame.contentWindow.localStorage.getItem('squarage_cookie_consent');
+            const statusDiv = document.getElementById('consentStatus');
+            
+            if (consent) {
+                const parsed = JSON.parse(consent);
+                statusDiv.innerHTML = `
+                    <h3>Current Consent Status:</h3>
+                    <div class="status ${parsed.consent.necessary ? 'granted' : 'denied'}">
+                        Necessary: ${parsed.consent.necessary ? '✓ Granted' : '✗ Denied'}
+                    </div>
+                    <div class="status ${parsed.consent.functional ? 'granted' : 'denied'}">
+                        Functional: ${parsed.consent.functional ? '✓ Granted' : '✗ Denied'}
+                    </div>
+                    <div class="status ${parsed.consent.analytics ? 'granted' : 'denied'}">
+                        Analytics: ${parsed.consent.analytics ? '✓ Granted' : '✗ Denied'}
+                    </div>
+                    <div class="status ${parsed.consent.marketing ? 'granted' : 'denied'}">
+                        Marketing: ${parsed.consent.marketing ? '✓ Granted' : '✗ Denied'}
+                    </div>
+                    <p><small>Last updated: ${new Date(parsed.timestamp).toLocaleString()}</small></p>
+                `;
+            } else {
+                statusDiv.innerHTML = '<p class="status denied">No consent data found</p>';
+            }
+        }
+    </script>
+</body>
+</html>

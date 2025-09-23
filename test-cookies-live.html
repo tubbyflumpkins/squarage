@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cookie Consent Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h2>Testing Cookie Consent System</h2>
+    <p>Open this page and click the button to launch the site and test the cookie consent:</p>
+    
+    <button onclick="window.open('http://localhost:3000', '_blank')" style="padding: 20px; font-size: 18px; background: #ff962d; color: white; border: none; cursor: pointer;">
+        Open Site in New Tab
+    </button>
+    
+    <h3>Test Checklist:</h3>
+    <ol>
+        <li>✓ Cookie banner appears at the bottom on first visit</li>
+        <li>✓ "Accept All" button closes banner and sets all cookies</li>
+        <li>✓ "Manage Cookies" opens the preferences modal</li>
+        <li>✓ Toggle switches work for each category</li>
+        <li>✓ Footer has "Cookie Preferences" link</li>
+        <li>✓ Google Analytics and Clarity only load after consent</li>
+    </ol>
+    
+    <h3>How to Clear Consent (for retesting):</h3>
+    <p>1. Open Developer Tools (F12)</p>
+    <p>2. Go to Application/Storage tab</p>
+    <p>3. Clear localStorage item: squarage_cookie_consent</p>
+    <p>4. Refresh the page</p>
+</body>
+</html>
