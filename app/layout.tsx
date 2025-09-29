@@ -4,7 +4,9 @@ import LayoutWrapper from '@/components/LayoutWrapper'
 import { ImageCacheProvider } from '@/context/ImageCacheContext'
 import { CartProvider } from '@/context/CartContext'
 import { CookieConsentProvider } from '@/context/CookieConsentContext'
+import { EmailCaptureProvider } from '@/context/EmailCaptureContext'
 import CookieConsentWrapper from '@/components/CookieConsentWrapper'
+import EmailCapturePopup from '@/components/EmailCapturePopup'
 import StructuredData, { organizationSchema, localBusinessSchema, websiteSchema } from '@/components/StructuredData'
 
 export const metadata: Metadata = {
@@ -85,14 +87,17 @@ export default function RootLayout({
       </head>
       <body className="bg-cream font-neue-haas-text">
         <CookieConsentProvider>
-          <ImageCacheProvider>
-            <CartProvider>
-              <LayoutWrapper>
-                {children}
-              </LayoutWrapper>
-            </CartProvider>
-          </ImageCacheProvider>
-          <CookieConsentWrapper />
+          <EmailCaptureProvider>
+            <ImageCacheProvider>
+              <CartProvider>
+                <LayoutWrapper>
+                  {children}
+                </LayoutWrapper>
+              </CartProvider>
+            </ImageCacheProvider>
+            <CookieConsentWrapper />
+            <EmailCapturePopup />
+          </EmailCaptureProvider>
         </CookieConsentProvider>
       </body>
     </html>

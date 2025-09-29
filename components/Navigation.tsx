@@ -27,6 +27,41 @@ const BagIcon = ({ className }: { className: string }) => (
   </svg>
 )
 
+// Test button component for development only
+function EmailTestButton() {
+  const [cleared, setCleared] = useState(false)
+
+  // Only render in development mode
+  if (process.env.NODE_ENV === 'production') {
+    return null
+  }
+
+  const handleReset = () => {
+    localStorage.removeItem('email_popup_dismissed')
+    localStorage.removeItem('email_popup_submitted')
+    localStorage.removeItem('email_popup_last_visit')
+    localStorage.removeItem('email_popup_discount_code')
+    setCleared(true)
+    setTimeout(() => setCleared(false), 2000)
+    // Reload page to trigger popup again
+    setTimeout(() => window.location.reload(), 500)
+  }
+
+  return (
+    <button
+      onClick={handleReset}
+      className={`px-3 py-1.5 rounded-full font-neue-haas text-xs font-medium transition-all duration-200 ${
+        cleared
+          ? 'bg-green-500 text-white'
+          : 'bg-squarage-orange text-white hover:bg-orange'
+      }`}
+      title="Clear email popup localStorage and reload"
+    >
+      {cleared ? '✓' : '🧪 Reset'}
+    </button>
+  )
+}
+
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -233,6 +268,11 @@ export default function Navigation() {
             >
               Contact
             </Link>
+
+            {/* Test Reset Button - Development Only */}
+            <div className="ml-4">
+              <EmailTestButton />
+            </div>
           </nav>
         </div>
       </div>
