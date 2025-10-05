@@ -173,7 +173,7 @@ export default function EmailCapturePopup() {
 
                   {/* Email Note */}
                   <p className="text-xs font-neue-haas text-squarage-black/50">
-                    We've also emailed this code to you
+                    We&apos;ve also emailed this code to you
                   </p>
                 </>
               ) : (
