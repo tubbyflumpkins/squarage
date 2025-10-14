@@ -168,15 +168,33 @@ export default function ProductPage({ product }: ProductPageProps) {
   const sizeOption = product.options?.find(opt => opt.name.toLowerCase() === 'size')
   const availableSizes = sizeOption?.values || []
 
+  // Filter out dimensions images from product images
+  const filteredProductImages = useMemo(() => {
+    return product.images?.filter(img => {
+      const fileName = img.src.toLowerCase()
+      const altText = img.altText?.toLowerCase() || ''
+      return !fileName.includes('dimensions') && !altText.includes('dimensions')
+    }) || []
+  }, [product.images])
+
+  // Find dimensions image (if exists)
+  const dimensionsImage = useMemo(() => {
+    return product.images?.find(img => {
+      const fileName = img.src.toLowerCase()
+      const altText = img.altText?.toLowerCase() || ''
+      return fileName.includes('dimensions') || altText.includes('dimensions')
+    }) || null
+  }, [product.images])
+
   // Group images by color - each color typically has one image for Tiled collection
   const imagesByColor = useMemo(() => {
     const grouped: Record<string, Array<typeof product.images[0]>> = {}
-    
+
     colorOptions.forEach(option => {
       grouped[option.name] = []
       if (option.image) {
-        // Find the actual image object from product.images
-        const actualImage = product.images?.find(img => 
+        // Find the actual image object from filteredProductImages (not all product.images)
+        const actualImage = filteredProductImages?.find(img =>
           img.id === option.image.id || img.src === option.image.src
         )
         if (actualImage) {
@@ -185,8 +203,8 @@ export default function ProductPage({ product }: ProductPageProps) {
       }
     })
 
-    // Fallback: if a color has no images, use the first product image
-    const fallbackImage = product.images?.[0]
+    // Fallback: if a color has no images, use the first filtered product image
+    const fallbackImage = filteredProductImages?.[0]
     Object.keys(grouped).forEach(color => {
       if (grouped[color].length === 0 && fallbackImage) {
         grouped[color].push(fallbackImage)
@@ -194,21 +212,21 @@ export default function ProductPage({ product }: ProductPageProps) {
     })
 
     return grouped
-  }, [product.images, colorOptions])
+  }, [filteredProductImages, colorOptions])
 
   // Find the default variant index that corresponds to the first image
   const getDefaultVariantIndex = useCallback(() => {
-    if (!product.images || product.images.length === 0 || colorOptions.length === 0) {
+    if (!filteredProductImages || filteredProductImages.length === 0 || colorOptions.length === 0) {
       return 0
     }
-    
-    const firstImage = product.images[0]
+
+    const firstImage = filteredProductImages[0]
     const defaultColorOption = colorOptions.find((colorOption) => {
       return colorOption.image?.id === firstImage.id
     })
-    
+
     return defaultColorOption?.originalIndex ?? 0
-  }, [product.images, colorOptions])
+  }, [filteredProductImages, colorOptions])
 
   // Get current variant images based on selected color and size
   const currentVariantImages = useMemo(() => {
@@ -228,11 +246,11 @@ export default function ProductPage({ product }: ProductPageProps) {
     
     // Fall back to color-based images if no size-specific image
     if (!selectedColor || !imagesByColor[selectedColor]) {
-      return product.images || []
+      return filteredProductImages || []
     }
     console.log(`Using color-based image for ${selectedColor}`)
     return imagesByColor[selectedColor]
-  }, [selectedColor, selectedSize, imagesByColor, product.images, product.variants, availableSizes])
+  }, [selectedColor, selectedSize, imagesByColor, filteredProductImages, product.variants, availableSizes])
 
   // Handle color selection
   const handleColorSelect = (colorOptionIndex: number) => {
@@ -374,28 +392,28 @@ export default function ProductPage({ product }: ProductPageProps) {
 
   // Preload all color variant images for instant switching
   useEffect(() => {
-    if (!product.images || product.images.length === 0) return
+    if (!filteredProductImages || filteredProductImages.length === 0) return
 
     const preloadAllVariants = async () => {
-      const uncachedImages = product.images
+      const uncachedImages = filteredProductImages
         .map(img => img.src)
         .filter(src => !isImageCached(src))
-      
+
       if (uncachedImages.length === 0) {
         setImagesPreloaded(true)
         return
       }
-      
+
       const results = await preloadImages(uncachedImages, {
         priority: 'high',
         maxConcurrent: window.innerWidth < 768 ? 2 : 4
       })
-      
+
       setImagesPreloaded(true)
     }
-    
+
     preloadAllVariants()
-  }, [product])
+  }, [filteredProductImages])
 
   // Handle add to cart
   const handleAddToCart = async () => {
@@ -588,9 +606,10 @@ export default function ProductPage({ product }: ProductPageProps) {
 
               {/* Product Details Accordion */}
               <div className="mb-8">
-                <ProductDetailsAccordion 
+                <ProductDetailsAccordion
                   productType="tiled"
                   metafields={product.metafields}
+                  dimensionsImage={dimensionsImage}
                 />
               </div>
 
@@ -770,9 +789,10 @@ export default function ProductPage({ product }: ProductPageProps) {
 
                 {/* Product Details Accordion */}
                 <div className="mb-8">
-                  <ProductDetailsAccordion 
+                  <ProductDetailsAccordion
                     productType="tiled"
                     metafields={product.metafields}
+                    dimensionsImage={dimensionsImage}
                   />
                 </div>
               </div>
