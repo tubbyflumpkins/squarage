@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { PlusIcon, MinusIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 
 interface AccordionItem {
@@ -17,12 +18,20 @@ interface ProductDetailsAccordionProps {
     key: string
     value: string
   }>
+  dimensionsImage?: {
+    id: string
+    src: string
+    altText: string
+    width: number
+    height: number
+  } | null
 }
 
-export default function ProductDetailsAccordion({ 
-  productType, 
+export default function ProductDetailsAccordion({
+  productType,
   dimensions,
-  metafields 
+  metafields,
+  dimensionsImage
 }: ProductDetailsAccordionProps) {
   const [openItems, setOpenItems] = useState<string[]>([])
 
@@ -112,12 +121,38 @@ export default function ProductDetailsAccordion({
       title: 'Dimensions',
       content: (
         <div className="space-y-2">
-          <div className="text-base font-neue-haas text-squarage-black">
-            {formatText(productDimensions)}
-          </div>
-          <p className="text-sm font-neue-haas text-gray-600">
-            Custom sizes available upon request. Contact us for details.
-          </p>
+          {dimensionsImage ? (
+            // Layout with centered image (2/3 width) and text below
+            <div className="flex flex-col gap-4">
+              <div className="w-2/3 mx-auto">
+                <Image
+                  src={dimensionsImage.src}
+                  alt={dimensionsImage.altText || 'Product dimensions'}
+                  width={dimensionsImage.width}
+                  height={dimensionsImage.height}
+                  className="w-full h-auto"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="text-base font-neue-haas text-squarage-black">
+                  {formatText(productDimensions)}
+                </div>
+                <p className="text-sm font-neue-haas text-gray-600">
+                  Custom sizes available upon request. Contact us for details.
+                </p>
+              </div>
+            </div>
+          ) : (
+            // No image - just text (original layout)
+            <>
+              <div className="text-base font-neue-haas text-squarage-black">
+                {formatText(productDimensions)}
+              </div>
+              <p className="text-sm font-neue-haas text-gray-600">
+                Custom sizes available upon request. Contact us for details.
+              </p>
+            </>
+          )}
         </div>
       )
     },
@@ -236,7 +271,7 @@ export default function ProductDetailsAccordion({
             </button>
             <div
               className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                openItems.includes(item.id) ? 'max-h-96' : 'max-h-0'
+                openItems.includes(item.id) ? 'max-h-[1000px]' : 'max-h-0'
               }`}
             >
               <div className="pb-4 px-0">

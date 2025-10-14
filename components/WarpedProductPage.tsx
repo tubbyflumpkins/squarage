@@ -108,15 +108,29 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     }
   }, [availableSizes, selectedSize])
 
+  // Find dimensions image (if exists) - exclude from carousel
+  const dimensionsImage = useMemo(() => {
+    return product.images?.find(img => {
+      const fileName = img.src.toLowerCase()
+      const altText = img.altText?.toLowerCase() || ''
+      return fileName.includes('dimensions') || altText.includes('dimensions')
+    }) || null
+  }, [product.images])
+
   // Get filtered images based on finish and size selection
   const filteredImages = useMemo(() => {
     const sortedImages: Array<typeof product.images[0]> = []
     const genericImages: Array<typeof product.images[0]> = []
     const addedImageIds = new Set<string>()
-    
-    // Process each image and categorize it
+
+    // Process each image and categorize it (excluding dimensions images)
     product.images.forEach(image => {
       const imageText = (image.altText || image.src || '').toLowerCase()
+
+      // Skip dimensions images - they should not appear in the carousel
+      if (imageText.includes('dimensions')) {
+        return
+      }
       
       // Check if image has finish (color) specification
       const hasFinish = WARPED_FINISHES.some(finish => 
@@ -477,10 +491,11 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
 
             {/* Product Details Accordion */}
             <div className="mb-8">
-              <ProductDetailsAccordion 
+              <ProductDetailsAccordion
                 productType="warped"
                 metafields={product.metafields}
                 dimensions={getSize()}
+                dimensionsImage={dimensionsImage}
               />
             </div>
 
@@ -667,10 +682,11 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
 
               {/* Product Details Accordion */}
               <div className="mb-8">
-                <ProductDetailsAccordion 
+                <ProductDetailsAccordion
                   productType="warped"
                   metafields={product.metafields}
                   dimensions={getSize()}
+                  dimensionsImage={dimensionsImage}
                 />
               </div>
             </div>
