@@ -246,4 +246,25 @@ body {
 }
 
 
+/* Shelf Designer — slide-in panel animations */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* Shelf Designer — mobile slider touch targets */
+@media (max-width: 767px) {
+  .compact-slider-track {
+    height: 44px !important;
+    background: linear-gradient(to bottom, transparent calc(50% - 0.5px), #d4d4d4 calc(50% - 0.5px), #d4d4d4 calc(50% + 0.5px), transparent calc(50% + 0.5px)) !important;
+  }
+  .compact-slider-track::-webkit-slider-thumb { width: 28px !important; height: 28px !important; }
+  .compact-slider-track::-moz-range-thumb { width: 28px !important; height: 28px !important; }
+}
+
 /* Remove Webflow cursor styles - no custom cursor */
