@@ -41,7 +41,7 @@ export default function RenderedShelfView({
 }: RenderedShelfViewProps) {
   return (
     <Canvas
-      shadows={{ type: THREE.PCFSoftShadowMap }}
+      shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 35, near: 0.1, far: 2000 }}
       gl={{ antialias: !isMobile, alpha: true }}
       dpr={isMobile ? 1 : undefined}
