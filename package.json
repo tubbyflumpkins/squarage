@@ -24,16 +24,16 @@
     "react-hook-form": "^7.60.0",
     "shopify-buy": "^3.0.7",
     "swiper": "^11.2.10",
-    "three": "^0.170.0",
+    "three": "^0.182.0",
     "zod": "^4.0.5",
-    "zustand": "^4.5.7"
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/shopify-buy": "^3.0.0",
-    "@types/three": "^0.170.0",
+    "@types/three": "^0.182.0",
     "eslint": "^8",
     "eslint-config-next": "15.3.5",
     "postcss": "^8",
