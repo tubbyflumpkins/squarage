@@ -32,7 +32,7 @@ interface EncouragementMessage {
 
 export default function EasterEggGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const requestRef = useRef<number>()
+  const requestRef = useRef<number>(undefined)
   const [score, setScore] = useState(0)
   const [lives, setLives] = useState(3)
   const [gameState, setGameState] = useState<'countdown' | 'playing' | 'gameOver'>('countdown')
