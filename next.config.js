@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei', 'react-reconciler'],
   images: {
     remotePatterns: [
       {

@@ -54,7 +54,7 @@ export default function RenderedShelfView({
       <Suspense fallback={null}>
         {/* Soft environment for subtle reflections — "apartment" is much
             gentler than "studio" which has harsh bright panels */}
-        <Environment preset="apartment" environmentIntensity={0.25} environmentRotation={[0, Math.PI + 0.4, 0]} />
+        <Environment preset="apartment" />
 
         {/* Shelf geometry */}
         {isCorner ? (
