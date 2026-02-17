@@ -949,7 +949,7 @@ export default function DesignerPage() {
                     <CompactSlider label="Length" value={p.length} min={10} max={76} unit={'"'} onChange={(v) => set('length', v)} />
                   )}
                   <CompactSlider label="Height" value={p.height} min={24} max={76} unit={'"'} onChange={(v) => set('height', v)} />
-                  <CompactSlider label="Depth" value={p.depth} min={p.isCorner ? 3 : 4} max={14} unit={'"'} onChange={(v) => set('depth', v)} />
+                  <CompactSlider label="Depth" value={p.depth} min={8} max={14} unit={'"'} onChange={(v) => set('depth', v)} />
                 </>
               ) : (
                 <>
@@ -958,7 +958,7 @@ export default function DesignerPage() {
                     <CompactSlider label="Length" value={Math.round(p.length * 2.54)} min={Math.round(10 * 2.54)} max={Math.round(76 * 2.54)} unit="" onChange={(v) => set('length', Math.round(v / 2.54))} />
                   )}
                   <CompactSlider label="Height" value={Math.round(p.height * 2.54)} min={Math.round(24 * 2.54)} max={Math.round(76 * 2.54)} unit="" onChange={(v) => set('height', Math.round(v / 2.54))} />
-                  <CompactSlider label="Depth" value={Math.round(p.depth * 2.54)} min={Math.round((p.isCorner ? 3 : 4) * 2.54)} max={Math.round(14 * 2.54)} unit="" onChange={(v) => set('depth', Math.round(v / 2.54))} />
+                  <CompactSlider label="Depth" value={Math.round(p.depth * 2.54)} min={Math.round(8 * 2.54)} max={Math.round(14 * 2.54)} unit="" onChange={(v) => set('depth', Math.round(v / 2.54))} />
                 </>
               )}
             </div>
@@ -971,7 +971,7 @@ export default function DesignerPage() {
             <SectionLabel>Layout</SectionLabel>
             <div className="flex flex-col" style={{ marginTop: vs(12), gap: vs(3) }}>
               <CompactSlider label="Shelves" value={p.shelfCount} min={2} max={8} onChange={(v) => set('shelfCount', v)} />
-              <CompactSlider label="Columns" value={p.columnCount} min={2} max={8} onChange={(v) => set('columnCount', v)} />
+              <CompactSlider label="Columns" value={p.columnCount} min={p.isCorner ? 3 : 2} max={8} onChange={(v) => set('columnCount', v)} />
             </div>
           </div>
 
