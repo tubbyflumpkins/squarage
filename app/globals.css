@@ -15,13 +15,13 @@ input[type="range"].compact-slider-track::-webkit-slider-thumb {
 
 @media (max-width: 767px) {
   input[type="range"].compact-slider-track::-webkit-slider-thumb {
-    width: 10px !important;
-    height: 10px !important;
+    width: 12px !important;
+    height: 12px !important;
     border-radius: 50% !important;
   }
   input[type="range"].compact-slider-track::-moz-range-thumb {
-    width: 10px !important;
-    height: 10px !important;
+    width: 12px !important;
+    height: 12px !important;
     border-radius: 50% !important;
   }
 }
