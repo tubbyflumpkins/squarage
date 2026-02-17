@@ -319,7 +319,7 @@ function computeColumnAngle(width: number, length: number): number {
   }
 }
 
-const COST_PER_SQFT = 30; // $/sq ft
+const COST_PER_SQFT = 40; // $/sq ft
 
 function computePrice(
   isCorner: boolean,
