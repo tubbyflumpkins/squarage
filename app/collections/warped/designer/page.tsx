@@ -143,8 +143,8 @@ function CompactSlider({
   const down = useHoldRepeat(decrement);
 
   return (
-    <div className="flex items-center h-[38px] gap-1.5">
-      <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600 w-[78px] shrink-0 select-none">
+    <div className="flex items-center h-[38px] gap-3">
+      <span className="text-[16px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
         {label}
       </span>
       <button
@@ -152,7 +152,7 @@ function CompactSlider({
         onPointerUp={down.stop}
         onPointerLeave={down.stop}
         onPointerCancel={down.stop}
-        className="text-neutral-400 hover:text-neutral-800 transition-colors leading-none select-none shrink-0 p-4 md:p-0 touch-manipulation flex items-center justify-center"
+        className="text-neutral-400 hover:text-squarage-black transition-colors leading-none select-none shrink-0 p-4 md:p-0 touch-manipulation flex items-center justify-center"
       >
         <svg width="7" height="12" viewBox="0 0 7 12"><polygon points="0,6 7,0 7,12" fill="currentColor" /></svg>
       </button>
@@ -174,10 +174,10 @@ function CompactSlider({
           onLostPointerCapture={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
           className="compact-slider-track w-full h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer touch-manipulation
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[13px] [&::-webkit-slider-thumb]:h-[13px]
-            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-neutral-800 [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-squarage-green [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:shadow-[0_0_0_2px_#fffaf4]
             [&::-moz-range-thumb]:w-[13px] [&::-moz-range-thumb]:h-[13px] [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-neutral-800 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
+            [&::-moz-range-thumb]:bg-squarage-green [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
         />
       </div>
       <button
@@ -185,7 +185,7 @@ function CompactSlider({
         onPointerUp={up.stop}
         onPointerLeave={up.stop}
         onPointerCancel={up.stop}
-        className="text-neutral-400 hover:text-neutral-800 transition-colors leading-none select-none shrink-0 p-4 md:p-0 touch-manipulation flex items-center justify-center"
+        className="text-neutral-400 hover:text-squarage-black transition-colors leading-none select-none shrink-0 p-4 md:p-0 touch-manipulation flex items-center justify-center"
       >
         <svg width="7" height="12" viewBox="0 0 7 12"><polygon points="7,6 0,0 0,12" fill="currentColor" /></svg>
       </button>
@@ -200,12 +200,12 @@ function CompactSlider({
             if (e.key === 'Enter') commit();
             if (e.key === 'Escape') setEditing(false);
           }}
-          className="w-[28px] shrink-0 text-[18px] font-mono text-neutral-800 text-left bg-transparent border-b border-neutral-800 outline-none tabular-nums"
+          className="w-[32px] shrink-0 text-[16px] font-medium font-neue-haas text-squarage-black text-left bg-transparent border-b border-squarage-black outline-none tabular-nums"
         />
       ) : (
         <span
           onClick={handleDoubleClick}
-          className="text-[18px] font-mono text-neutral-600 w-[28px] shrink-0 text-left select-none tabular-nums cursor-default"
+          className="text-[16px] font-medium font-neue-haas text-squarage-black w-[32px] shrink-0 text-left select-none tabular-nums cursor-default"
         >
           {step < 1 ? displayValue.toFixed(1) : displayValue}{unit}
         </span>
@@ -235,7 +235,7 @@ function Toggle({
       <div
         role="switch"
         aria-checked={checked}
-        className={`relative w-[36px] h-[18px] ${checked ? 'bg-neutral-800' : 'bg-neutral-300'}`}
+        className={`relative w-[36px] h-[18px] ${checked ? 'bg-squarage-green' : 'bg-neutral-300'}`}
       >
         <span
           className={`absolute top-[1px] w-[16px] h-[16px] bg-white ${
@@ -243,7 +243,7 @@ function Toggle({
           }`}
         />
       </div>
-      <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600">{label}</span>
+      <span className="text-[14px] font-medium tracking-[0.01em] text-squarage-black">{label}</span>
     </div>
   );
 }
@@ -269,7 +269,7 @@ function MiniCheck({
       <div
         className={`w-[18px] h-[18px] border flex items-center justify-center ${
           checked
-            ? 'bg-neutral-800 border-neutral-800'
+            ? 'bg-squarage-green border-squarage-green'
             : 'bg-transparent border-neutral-400'
         }`}
       >
@@ -279,7 +279,7 @@ function MiniCheck({
           </svg>
         )}
       </div>
-      <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600">{label}</span>
+      <span className="text-[15px] font-medium tracking-[0.01em] text-squarage-black">{label}</span>
     </div>
   );
 }
@@ -290,7 +290,7 @@ function MiniCheck({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[18px] font-bold uppercase tracking-[0.12em] text-neutral-800 select-none">
+    <h3 className="text-[24px] font-semibold tracking-[0.01em] text-squarage-black select-none">
       {children}
     </h3>
   );
@@ -728,10 +728,10 @@ export default function DesignerPage() {
             <button
               key={tab}
               onClick={() => setDesignTab(tab)}
-              className={`px-4 py-1 text-[13px] uppercase tracking-[0.08em] border transition-colors ${
+              className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
                 designTab === tab
-                  ? 'bg-neutral-800 text-cream border-neutral-800'
-                  : 'bg-cream text-neutral-600 border-neutral-300 hover:border-neutral-800 hover:text-neutral-800'
+                  ? 'bg-squarage-green text-white border-squarage-green'
+                  : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
               } ${tab === 'preset' ? 'border-r-0' : ''}`}
             >
               {tab}
@@ -741,9 +741,9 @@ export default function DesignerPage() {
 
         <div className="flex-1 overflow-y-auto min-h-0 pb-4">
           {designTab === 'preset' ? (
-            <p className="text-[14px] text-neutral-400 mt-1">Coming soon</p>
+            <p className="text-[14px] font-medium text-neutral-400 mt-1">Coming soon</p>
           ) : designs.length === 0 ? (
-            <p className="text-[14px] text-neutral-400 mt-1">No saved designs yet</p>
+            <p className="text-[14px] font-medium text-neutral-400 mt-1">No saved designs yet</p>
           ) : (
             <div className="grid grid-cols-2 gap-3 mt-3">
               {designs.map((design) => (
@@ -759,19 +759,19 @@ export default function DesignerPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-[13px] text-neutral-400 uppercase">No preview</span>
+                      <span className="text-[13px] font-medium text-neutral-400">No preview</span>
                     </div>
                   )}
 
                   {/* Name overlay */}
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/90 to-transparent px-3 py-1.5">
-                    <span className="text-[13px] text-neutral-600 truncate block">{design.name}</span>
+                    <span className="text-[13px] font-medium text-squarage-black truncate block">{design.name}</span>
                   </div>
 
                   {/* Delete button */}
                   <button
                     onClick={(e) => { e.stopPropagation(); deleteDesign(design.id); }}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 hover:bg-neutral-800 text-neutral-800 hover:text-white flex items-center justify-center transition-all text-[13px]"
+                    className="absolute top-1.5 right-1.5 w-6 h-6 hover:bg-squarage-black text-squarage-black hover:text-white flex items-center justify-center transition-all text-[13px]"
                   >
                     &times;
                   </button>
@@ -787,21 +787,21 @@ export default function DesignerPage() {
   return (
     <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden md:pt-[90px] lg:pt-[98px]">
       {/* Main grid — mobile: flex column, desktop: 3-col grid */}
-      <div className="flex-1 flex flex-col md:grid md:grid-cols-[320px_minmax(0,1fr)_340px] md:grid-rows-[2fr_1fr] min-h-0 border-t border-neutral-800">
+      <div className="flex-1 flex flex-col md:grid md:grid-cols-[320px_minmax(0,1fr)_340px] md:grid-rows-[2fr_1fr] min-h-0 border-t border-squarage-black">
 
         {/* ============================================================= */}
         {/* CENTER COLUMN — TITLE + VIEWER (order-first on mobile) */}
         {/* ============================================================= */}
         <div className="order-first md:order-2 md:row-span-2 flex flex-col min-h-0 h-[45dvh] md:h-auto shrink-0">
           {/* Title bar — centered */}
-          <div className="px-4 md:px-8 py-1.5 md:py-2 flex items-center justify-center shrink-0">
-            <h1 className="text-[20px] md:text-[36px] font-bold uppercase tracking-[0.10em] md:tracking-[0.18em] text-neutral-800">
+          <div className="px-4 md:px-8 py-1 md:py-1 flex items-center justify-center shrink-0">
+            <h1 className="text-[24px] md:text-[42px] font-bold tracking-[0.02em] text-squarage-black">
               Warped Shelf Designer
             </h1>
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-neutral-800" />
+          <div className="h-px bg-squarage-black" />
 
           {/* Visualizer */}
           <div className="relative flex-1 flex items-center justify-center min-h-0 p-1 md:p-5 touch-none">
@@ -809,14 +809,14 @@ export default function DesignerPage() {
             <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10 flex flex-row gap-1.5">
               <button
                 onClick={() => setShowSaveInput(!showSaveInput)}
-                className="px-3 md:px-4 py-1 text-[12px] md:text-[13px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-neutral-800 hover:text-neutral-800 transition-colors"
+                className="px-3 md:px-4 py-1 text-[13px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors font-neue-haas"
               >
                 {showSaveInput ? 'Cancel' : 'Save'}
               </button>
               {/* Load Design button — mobile only */}
               <button
                 onClick={() => setShowDesignsPanel(true)}
-                className="md:hidden px-3 py-1 text-[12px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-neutral-800 hover:text-neutral-800 transition-colors"
+                className="md:hidden px-3 py-1 text-[13px] font-medium tracking-[0.01em] text-squarage-black border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors font-neue-haas"
               >
                 Load
               </button>
@@ -830,11 +830,11 @@ export default function DesignerPage() {
                     onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                     placeholder="Design name..."
                     autoFocus
-                    className="flex-1 text-[16px] px-3 py-1.5 border border-neutral-300 bg-transparent outline-none focus:border-neutral-800 transition-colors placeholder:text-neutral-400"
+                    className="flex-1 text-[15px] font-medium font-neue-haas px-3 py-1.5 border border-neutral-300 bg-transparent outline-none focus:border-squarage-green transition-colors placeholder:text-neutral-400"
                   />
                   <button
                     onClick={handleSave}
-                    className="text-[13px] uppercase tracking-[0.08em] px-3 py-1.5 bg-neutral-800 text-cream hover:bg-neutral-700 transition-colors shrink-0"
+                    className="text-[14px] font-medium font-neue-haas tracking-[0.01em] px-3 py-1.5 bg-squarage-green text-white hover:bg-squarage-green/80 transition-colors shrink-0"
                   >
                     Save
                   </button>
@@ -868,7 +868,7 @@ export default function DesignerPage() {
             </div>
 
             {/* Drag/swipe hint at bottom */}
-            <span className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 text-[12px] md:text-[14px] uppercase tracking-[0.06em] text-neutral-600 select-none pointer-events-none">
+            <span className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 text-[12px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black/50 select-none pointer-events-none">
               <span className="hidden md:inline">Drag to rotate</span>
               <span className="md:hidden">Swipe to rotate</span>
             </span>
@@ -879,7 +879,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* LEFT COLUMN — controls (scrollable on mobile) */}
         {/* ============================================================= */}
-        <div className="order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-neutral-800 flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0">
+        <div className="order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-squarage-black flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0">
 
           {/* Design Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(24), paddingBottom: vs(20), gap: vs(20) }}>
@@ -896,10 +896,10 @@ export default function DesignerPage() {
                       targetSpeedRef.current = type === 'corner' ? -0.0012 : -0.0012;
                       velocityRef.current = 0.0008;
                     }}
-                    className={`px-4 py-1 text-[14px] uppercase tracking-[0.06em] border transition-colors ${
+                    className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
                       (type === 'corner') === p.isCorner
-                        ? 'bg-neutral-800 text-cream border-neutral-800'
-                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-neutral-800 hover:text-neutral-800'
+                        ? 'bg-squarage-green text-white border-squarage-green'
+                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
                     } ${type === 'standard' ? 'border-r-0' : ''}`}
                   >
                     {type}
@@ -910,7 +910,7 @@ export default function DesignerPage() {
 
             {!p.isCorner && (
               <div className="flex items-center justify-between">
-                <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600">Round Edges</span>
+                <span className="text-[16px] font-medium tracking-[0.01em] text-squarage-black">Round Edges</span>
                 <div className="flex gap-4">
                   <MiniCheck checked={p.roundLeft} onChange={(v) => set('roundLeft', v)} label={<><span className="md:hidden">Left</span><span className="hidden md:inline">L</span></>} />
                   <MiniCheck checked={p.roundRight} onChange={(v) => set('roundRight', v)} label={<><span className="md:hidden">Right</span><span className="hidden md:inline">R</span></>} />
@@ -919,7 +919,7 @@ export default function DesignerPage() {
             )}
           </div>
 
-          <div className="h-[1.5px] bg-neutral-800 shrink-0" />
+          <div className="h-[1.5px] bg-squarage-black shrink-0" />
 
           {/* Dimensions Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(20), paddingBottom: vs(16), gap: vs(6) }}>
@@ -930,10 +930,10 @@ export default function DesignerPage() {
                   <button
                     key={u}
                     onClick={() => setDimUnit(u)}
-                    className={`px-4 py-1 text-[13px] uppercase tracking-[0.08em] border transition-colors ${
+                    className={`px-4 py-1 text-[14px] font-medium tracking-[0.01em] border transition-colors ${
                       dimUnit === u
-                        ? 'bg-neutral-800 text-cream border-neutral-800'
-                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-neutral-800 hover:text-neutral-800'
+                        ? 'bg-squarage-green text-white border-squarage-green'
+                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
                     } ${u === 'in' ? 'border-r-0' : ''}`}
                   >
                     {u}
@@ -964,7 +964,7 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <div className="h-[1.5px] bg-neutral-800 shrink-0" />
+          <div className="h-[1.5px] bg-squarage-black shrink-0" />
 
           {/* Layout Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(16), paddingBottom: vs(16), gap: vs(6) }}>
@@ -975,27 +975,28 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <div className="h-[1.5px] bg-neutral-800 shrink-0" />
+          <div className="h-[1.5px] bg-squarage-black shrink-0" />
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(20), paddingBottom: vs(24), gap: vs(16) }}>
             <SectionLabel>Finish</SectionLabel>
-            <div className="flex flex-col" style={{ gap: vs(12) }}>
+            <div className="grid grid-cols-3 md:grid-cols-1 gap-2">
               {WOOD_FINISHES.map((f) => (
-                <div
+                <button
                   key={f.name}
                   onClick={() => setFinish(f.name)}
-                  className={`flex items-center gap-4 px-4 border-2 cursor-pointer ${
+                  className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${
                     finish === f.name
-                      ? 'border-squarage-green'
-                      : 'border-neutral-200 hover:border-neutral-400'
+                      ? 'border-squarage-green bg-green-50'
+                      : 'border-gray-300 hover:border-gray-400'
                   }`}
-                  style={{ paddingTop: vs(12), paddingBottom: vs(12) }}
                 >
-                  <div
-                    className="w-7 h-7 border border-neutral-300"
-                    style={{ backgroundColor: f.color }}
-                  />
-                  <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600">{f.name}</span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 border border-gray-300 rounded-full"
+                      style={{ backgroundColor: f.color }}
+                    />
+                    <span>{f.name}</span>
+                  </div>
+                </button>
               ))}
             </div>
           </div>
@@ -1004,7 +1005,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* RIGHT COLUMN — SAVED DESIGNS (hidden on mobile) */}
         {/* ============================================================= */}
-        <div className="hidden md:flex md:order-3 border-l border-neutral-800 flex-col min-h-0">
+        <div className="hidden md:flex md:order-3 border-l border-squarage-black flex-col min-h-0">
           <div className="px-7 pt-6 pb-4 shrink-0">
             <SectionLabel>Saved Designs</SectionLabel>
           </div>
@@ -1016,17 +1017,17 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* BOTTOM ROW — Estimated Price (hidden on mobile, shown in sticky bar) */}
         {/* ============================================================= */}
-        <div className="hidden md:flex md:order-4 border-l border-t border-neutral-800 px-7 py-6 flex-col justify-between">
+        <div className="hidden md:flex md:order-4 border-l border-t border-squarage-black px-7 py-6 flex-col justify-between">
           <div>
             <SectionLabel>Estimated Price</SectionLabel>
             <div className="mt-4">
-              <span className="text-[42px] font-semibold text-neutral-800 tabular-nums leading-none">
+              <span className="text-[42px] font-bold text-squarage-black tabular-nums leading-none">
                 ${Math.round(price)}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 text-[14px] uppercase tracking-[0.06em] text-neutral-600 mt-5">
+          <div className="flex flex-col gap-2 text-[16px] font-medium tracking-[0.01em] text-squarage-black mt-5">
             {p.isCorner && (
               <div className="flex justify-between">
                 <span>Type</span>
@@ -1051,7 +1052,7 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <button className="mt-5 w-full py-4 bg-neutral-800 text-white text-[16px] uppercase tracking-[0.12em] font-semibold hover:bg-neutral-700 transition-colors">
+          <button className="mt-5 w-full py-4 bg-squarage-orange text-white text-2xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300">
             Get Quote
           </button>
         </div>
@@ -1060,18 +1061,18 @@ export default function DesignerPage() {
       {/* ============================================================= */}
       {/* MOBILE: Sticky bottom price bar */}
       {/* ============================================================= */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-800 bg-cream px-4 pt-3 flex items-center justify-between"
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-3 flex items-center justify-between"
         style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
         <div className="flex flex-col">
-          <span className="text-[28px] font-semibold text-neutral-800 tabular-nums leading-none">
+          <span className="text-[28px] font-bold text-squarage-black tabular-nums leading-none">
             ${Math.round(price)}
           </span>
-          <span className="text-[12px] uppercase tracking-[0.06em] text-neutral-500 mt-1 tabular-nums">
+          <span className="text-[12px] font-medium tracking-[0.01em] text-squarage-black/60 mt-1 tabular-nums">
             {dimStr} &middot; {finish}
           </span>
         </div>
-        <button className="px-6 py-3 bg-neutral-800 text-white text-[14px] uppercase tracking-[0.12em] font-semibold hover:bg-neutral-700 transition-colors shrink-0">
+        <button className="px-6 py-3 bg-squarage-orange text-white text-xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 shrink-0">
           Get Quote
         </button>
       </div>
@@ -1101,7 +1102,7 @@ export default function DesignerPage() {
               <SectionLabel>Saved Designs</SectionLabel>
               <button
                 onClick={closeDesignsPanel}
-                className="w-8 h-8 flex items-center justify-center text-neutral-600 hover:text-neutral-800 text-[20px]"
+                className="w-8 h-8 flex items-center justify-center text-neutral-600 hover:text-squarage-black text-[20px]"
               >
                 &times;
               </button>
