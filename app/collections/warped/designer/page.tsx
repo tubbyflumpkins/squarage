@@ -809,14 +809,14 @@ export default function DesignerPage() {
             <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10 flex flex-row gap-1.5">
               <button
                 onClick={() => setShowSaveInput(!showSaveInput)}
-                className="px-3 md:px-4 py-1 text-[12px] md:text-[13px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-squarage-black hover:text-squarage-black transition-colors"
+                className="px-3 md:px-4 py-1 text-[12px] md:text-[13px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors"
               >
                 {showSaveInput ? 'Cancel' : 'Save'}
               </button>
               {/* Load Design button — mobile only */}
               <button
                 onClick={() => setShowDesignsPanel(true)}
-                className="md:hidden px-3 py-1 text-[12px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-squarage-black hover:text-squarage-black transition-colors"
+                className="md:hidden px-3 py-1 text-[12px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors"
               >
                 Load
               </button>
@@ -834,7 +834,7 @@ export default function DesignerPage() {
                   />
                   <button
                     onClick={handleSave}
-                    className="text-[13px] uppercase tracking-[0.08em] px-3 py-1.5 bg-squarage-black text-cream hover:bg-neutral-700 transition-colors shrink-0"
+                    className="text-[13px] uppercase tracking-[0.08em] px-3 py-1.5 bg-squarage-green text-white hover:bg-squarage-green/80 transition-colors shrink-0"
                   >
                     Save
                   </button>
