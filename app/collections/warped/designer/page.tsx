@@ -978,7 +978,7 @@ export default function DesignerPage() {
           <div className="h-[1.5px] bg-squarage-black shrink-0" />
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(20), paddingBottom: vs(24), gap: vs(16) }}>
             <SectionLabel>Finish</SectionLabel>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 md:grid-cols-1 gap-2">
               {WOOD_FINISHES.map((f) => (
                 <button
                   key={f.name}
