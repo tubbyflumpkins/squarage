@@ -144,7 +144,7 @@ function CompactSlider({
 
   return (
     <div className="flex items-center h-[38px] gap-3">
-      <span className="text-[15px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
+      <span className="text-[16px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
         {label}
       </span>
       <button
@@ -200,12 +200,12 @@ function CompactSlider({
             if (e.key === 'Enter') commit();
             if (e.key === 'Escape') setEditing(false);
           }}
-          className="w-[32px] shrink-0 text-[15px] font-medium font-neue-haas text-squarage-black text-left bg-transparent border-b border-squarage-black outline-none tabular-nums"
+          className="w-[32px] shrink-0 text-[16px] font-medium font-neue-haas text-squarage-black text-left bg-transparent border-b border-squarage-black outline-none tabular-nums"
         />
       ) : (
         <span
           onClick={handleDoubleClick}
-          className="text-[15px] font-medium font-neue-haas text-squarage-black w-[32px] shrink-0 text-left select-none tabular-nums cursor-default"
+          className="text-[16px] font-medium font-neue-haas text-squarage-black w-[32px] shrink-0 text-left select-none tabular-nums cursor-default"
         >
           {step < 1 ? displayValue.toFixed(1) : displayValue}{unit}
         </span>
@@ -279,7 +279,7 @@ function MiniCheck({
           </svg>
         )}
       </div>
-      <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600">{label}</span>
+      <span className="text-[15px] font-medium tracking-[0.01em] text-squarage-black">{label}</span>
     </div>
   );
 }
@@ -290,7 +290,7 @@ function MiniCheck({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[20px] font-semibold tracking-[0.01em] text-squarage-black select-none">
+    <h3 className="text-[22px] font-semibold tracking-[0.01em] text-squarage-black select-none">
       {children}
     </h3>
   );
@@ -728,7 +728,7 @@ export default function DesignerPage() {
             <button
               key={tab}
               onClick={() => setDesignTab(tab)}
-              className={`px-4 py-1 text-[13px] font-medium uppercase tracking-[0.04em] border transition-colors ${
+              className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
                 designTab === tab
                   ? 'bg-squarage-green text-white border-squarage-green'
                   : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
@@ -896,7 +896,7 @@ export default function DesignerPage() {
                       targetSpeedRef.current = type === 'corner' ? -0.0012 : -0.0012;
                       velocityRef.current = 0.0008;
                     }}
-                    className={`px-4 py-1 text-[13px] font-medium uppercase tracking-[0.04em] border transition-colors ${
+                    className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
                       (type === 'corner') === p.isCorner
                         ? 'bg-squarage-green text-white border-squarage-green'
                         : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
@@ -910,7 +910,7 @@ export default function DesignerPage() {
 
             {!p.isCorner && (
               <div className="flex items-center justify-between">
-                <span className="text-[15px] font-medium tracking-[0.01em] text-squarage-black">Round Edges</span>
+                <span className="text-[16px] font-medium tracking-[0.01em] text-squarage-black">Round Edges</span>
                 <div className="flex gap-4">
                   <MiniCheck checked={p.roundLeft} onChange={(v) => set('roundLeft', v)} label={<><span className="md:hidden">Left</span><span className="hidden md:inline">L</span></>} />
                   <MiniCheck checked={p.roundRight} onChange={(v) => set('roundRight', v)} label={<><span className="md:hidden">Right</span><span className="hidden md:inline">R</span></>} />
@@ -930,7 +930,7 @@ export default function DesignerPage() {
                   <button
                     key={u}
                     onClick={() => setDimUnit(u)}
-                    className={`px-4 py-1 text-[13px] font-medium uppercase tracking-[0.04em] border transition-colors ${
+                    className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
                       dimUnit === u
                         ? 'bg-squarage-green text-white border-squarage-green'
                         : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
@@ -1027,7 +1027,7 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 text-[15px] font-medium tracking-[0.01em] text-squarage-black mt-5">
+          <div className="flex flex-col gap-2 text-[16px] font-medium tracking-[0.01em] text-squarage-black mt-5">
             {p.isCorner && (
               <div className="flex justify-between">
                 <span>Type</span>
