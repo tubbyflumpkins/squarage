@@ -290,7 +290,7 @@ function MiniCheck({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[22px] font-semibold tracking-[0.01em] text-squarage-black select-none">
+    <h3 className="text-[24px] font-semibold tracking-[0.01em] text-squarage-black select-none">
       {children}
     </h3>
   );
@@ -794,8 +794,8 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         <div className="order-first md:order-2 md:row-span-2 flex flex-col min-h-0 h-[45dvh] md:h-auto shrink-0">
           {/* Title bar — centered */}
-          <div className="px-4 md:px-8 py-1.5 md:py-2 flex items-center justify-center shrink-0">
-            <h1 className="text-[20px] md:text-[36px] font-bold tracking-[0.02em] text-squarage-black">
+          <div className="px-4 md:px-8 py-1 md:py-1 flex items-center justify-center shrink-0">
+            <h1 className="text-[24px] md:text-[42px] font-bold tracking-[0.02em] text-squarage-black">
               Warped Shelf Designer
             </h1>
           </div>
@@ -930,7 +930,7 @@ export default function DesignerPage() {
                   <button
                     key={u}
                     onClick={() => setDimUnit(u)}
-                    className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
+                    className={`px-4 py-1 text-[14px] font-medium tracking-[0.01em] border transition-colors ${
                       dimUnit === u
                         ? 'bg-squarage-green text-white border-squarage-green'
                         : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
