@@ -144,7 +144,7 @@ function CompactSlider({
 
   return (
     <div className="flex items-center h-[38px] gap-1.5">
-      <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600 w-[78px] shrink-0 select-none">
+      <span className="text-[14px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
         {label}
       </span>
       <button
@@ -205,7 +205,7 @@ function CompactSlider({
       ) : (
         <span
           onClick={handleDoubleClick}
-          className="text-[18px] font-mono text-neutral-600 w-[28px] shrink-0 text-left select-none tabular-nums cursor-default"
+          className="text-[18px] font-mono font-medium text-squarage-black w-[28px] shrink-0 text-left select-none tabular-nums cursor-default"
         >
           {step < 1 ? displayValue.toFixed(1) : displayValue}{unit}
         </span>
@@ -235,7 +235,7 @@ function Toggle({
       <div
         role="switch"
         aria-checked={checked}
-        className={`relative w-[36px] h-[18px] ${checked ? 'bg-squarage-black' : 'bg-neutral-300'}`}
+        className={`relative w-[36px] h-[18px] ${checked ? 'bg-squarage-green' : 'bg-neutral-300'}`}
       >
         <span
           className={`absolute top-[1px] w-[16px] h-[16px] bg-white ${
@@ -243,7 +243,7 @@ function Toggle({
           }`}
         />
       </div>
-      <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600">{label}</span>
+      <span className="text-[14px] font-medium tracking-[0.01em] text-squarage-black">{label}</span>
     </div>
   );
 }
@@ -290,7 +290,7 @@ function MiniCheck({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[18px] font-bold uppercase tracking-[0.12em] text-squarage-black select-none">
+    <h3 className="text-[18px] font-semibold tracking-[0.01em] text-squarage-black select-none">
       {children}
     </h3>
   );
@@ -728,7 +728,7 @@ export default function DesignerPage() {
             <button
               key={tab}
               onClick={() => setDesignTab(tab)}
-              className={`px-4 py-1 text-[13px] uppercase tracking-[0.08em] border transition-colors ${
+              className={`px-4 py-1 text-[13px] font-medium uppercase tracking-[0.04em] border transition-colors ${
                 designTab === tab
                   ? 'bg-squarage-green text-white border-squarage-green'
                   : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
@@ -741,9 +741,9 @@ export default function DesignerPage() {
 
         <div className="flex-1 overflow-y-auto min-h-0 pb-4">
           {designTab === 'preset' ? (
-            <p className="text-[14px] text-neutral-400 mt-1">Coming soon</p>
+            <p className="text-[14px] font-medium text-neutral-400 mt-1">Coming soon</p>
           ) : designs.length === 0 ? (
-            <p className="text-[14px] text-neutral-400 mt-1">No saved designs yet</p>
+            <p className="text-[14px] font-medium text-neutral-400 mt-1">No saved designs yet</p>
           ) : (
             <div className="grid grid-cols-2 gap-3 mt-3">
               {designs.map((design) => (
@@ -759,13 +759,13 @@ export default function DesignerPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-[13px] text-neutral-400 uppercase">No preview</span>
+                      <span className="text-[13px] font-medium text-neutral-400">No preview</span>
                     </div>
                   )}
 
                   {/* Name overlay */}
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/90 to-transparent px-3 py-1.5">
-                    <span className="text-[13px] text-neutral-600 truncate block">{design.name}</span>
+                    <span className="text-[13px] font-medium text-squarage-black truncate block">{design.name}</span>
                   </div>
 
                   {/* Delete button */}
@@ -795,7 +795,7 @@ export default function DesignerPage() {
         <div className="order-first md:order-2 md:row-span-2 flex flex-col min-h-0 h-[45dvh] md:h-auto shrink-0">
           {/* Title bar — centered */}
           <div className="px-4 md:px-8 py-1.5 md:py-2 flex items-center justify-center shrink-0">
-            <h1 className="text-[20px] md:text-[36px] font-bold uppercase tracking-[0.10em] md:tracking-[0.18em] text-squarage-black">
+            <h1 className="text-[20px] md:text-[36px] font-bold tracking-[0.02em] text-squarage-black">
               Warped Shelf Designer
             </h1>
           </div>
@@ -868,7 +868,7 @@ export default function DesignerPage() {
             </div>
 
             {/* Drag/swipe hint at bottom */}
-            <span className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 text-[12px] md:text-[14px] uppercase tracking-[0.06em] text-neutral-600 select-none pointer-events-none">
+            <span className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 text-[12px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black/50 select-none pointer-events-none">
               <span className="hidden md:inline">Drag to rotate</span>
               <span className="md:hidden">Swipe to rotate</span>
             </span>
@@ -896,7 +896,7 @@ export default function DesignerPage() {
                       targetSpeedRef.current = type === 'corner' ? -0.0012 : -0.0012;
                       velocityRef.current = 0.0008;
                     }}
-                    className={`px-4 py-1 text-[14px] uppercase tracking-[0.06em] border transition-colors ${
+                    className={`px-4 py-1 text-[13px] font-medium uppercase tracking-[0.04em] border transition-colors ${
                       (type === 'corner') === p.isCorner
                         ? 'bg-squarage-green text-white border-squarage-green'
                         : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
@@ -910,7 +910,7 @@ export default function DesignerPage() {
 
             {!p.isCorner && (
               <div className="flex items-center justify-between">
-                <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600">Round Edges</span>
+                <span className="text-[14px] font-medium tracking-[0.01em] text-squarage-black">Round Edges</span>
                 <div className="flex gap-4">
                   <MiniCheck checked={p.roundLeft} onChange={(v) => set('roundLeft', v)} label={<><span className="md:hidden">Left</span><span className="hidden md:inline">L</span></>} />
                   <MiniCheck checked={p.roundRight} onChange={(v) => set('roundRight', v)} label={<><span className="md:hidden">Right</span><span className="hidden md:inline">R</span></>} />
@@ -930,7 +930,7 @@ export default function DesignerPage() {
                   <button
                     key={u}
                     onClick={() => setDimUnit(u)}
-                    className={`px-4 py-1 text-[13px] uppercase tracking-[0.08em] border transition-colors ${
+                    className={`px-4 py-1 text-[13px] font-medium uppercase tracking-[0.04em] border transition-colors ${
                       dimUnit === u
                         ? 'bg-squarage-green text-white border-squarage-green'
                         : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
@@ -1021,13 +1021,13 @@ export default function DesignerPage() {
           <div>
             <SectionLabel>Estimated Price</SectionLabel>
             <div className="mt-4">
-              <span className="text-[42px] font-semibold text-squarage-black tabular-nums leading-none">
+              <span className="text-[42px] font-bold text-squarage-black tabular-nums leading-none">
                 ${Math.round(price)}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 text-[14px] uppercase tracking-[0.06em] text-neutral-600 mt-5">
+          <div className="flex flex-col gap-2 text-[14px] font-medium tracking-[0.01em] text-squarage-black mt-5">
             {p.isCorner && (
               <div className="flex justify-between">
                 <span>Type</span>
@@ -1065,10 +1065,10 @@ export default function DesignerPage() {
         style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
         <div className="flex flex-col">
-          <span className="text-[28px] font-semibold text-squarage-black tabular-nums leading-none">
+          <span className="text-[28px] font-bold text-squarage-black tabular-nums leading-none">
             ${Math.round(price)}
           </span>
-          <span className="text-[12px] uppercase tracking-[0.06em] text-neutral-500 mt-1 tabular-nums">
+          <span className="text-[12px] font-medium tracking-[0.01em] text-squarage-black/60 mt-1 tabular-nums">
             {dimStr} &middot; {finish}
           </span>
         </div>
