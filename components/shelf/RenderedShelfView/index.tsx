@@ -44,7 +44,7 @@ export default function RenderedShelfView({
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 35, near: 0.1, far: 2000 }}
       gl={{ antialias: true, alpha: true }}
-      dpr={isMobile ? [1, 2] : undefined}
+      dpr={isMobile ? [1.5, 3] : undefined}
       style={{ background: 'transparent' }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
@@ -70,8 +70,8 @@ export default function RenderedShelfView({
         intensity={2.5}
         castShadow
         shadow-radius={8}
-        shadow-mapSize-width={isMobile ? 512 : 2048}
-        shadow-mapSize-height={isMobile ? 512 : 2048}
+        shadow-mapSize-width={isMobile ? 1024 : 2048}
+        shadow-mapSize-height={isMobile ? 1024 : 2048}
         shadow-camera-left={-80}
         shadow-camera-right={80}
         shadow-camera-top={80}

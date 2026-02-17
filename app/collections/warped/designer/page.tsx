@@ -36,8 +36,6 @@ const RenderedShelfView = dynamic(
 // Types & Constants
 // ---------------------------------------------------------------------------
 
-const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
 const WOOD_FINISHES: { name: WoodFinish; color: string }[] = [
@@ -98,18 +96,11 @@ function CompactSlider({
 }) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
-  const [dragging, setDragging] = useState(false);
-  const [localValue, setLocalValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
   const valueRef = useRef(value);
   valueRef.current = value;
 
-  // Sync localValue when value changes externally (e.g. loading a design)
-  useEffect(() => {
-    if (!dragging) setLocalValue(value);
-  }, [value, dragging]);
-
-  const displayValue = dragging ? localValue : value;
+  const displayValue = value;
 
   const handleDoubleClick = () => {
     setEditValue(step < 1 ? displayValue.toFixed(1) : String(displayValue));
@@ -163,15 +154,7 @@ function CompactSlider({
           max={max}
           step={step}
           value={displayValue}
-          onChange={(e) => {
-            const v = Number(e.target.value);
-            setLocalValue(v);
-            if (!dragging || !isMobile) onChange(v);
-          }}
-          onPointerDown={() => { if (isMobile) setDragging(true); }}
-          onPointerUp={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
-          onPointerCancel={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
-          onLostPointerCapture={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
+          onChange={(e) => onChange(Number(e.target.value))}
           className="compact-slider-track w-full h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer touch-manipulation
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[13px] [&::-webkit-slider-thumb]:h-[13px]
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-squarage-green [&::-webkit-slider-thumb]:cursor-pointer
@@ -785,7 +768,7 @@ export default function DesignerPage() {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden md:pt-[90px] lg:pt-[98px]">
+    <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden pt-[60px] md:pt-[90px] lg:pt-[98px]">
       {/* Main grid — mobile: flex column, desktop: 3-col grid */}
       <div className="flex-1 flex flex-col md:grid md:grid-cols-[320px_minmax(0,1fr)_340px] md:grid-rows-[2fr_1fr] min-h-0 border-t border-squarage-black">
 
