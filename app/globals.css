@@ -2,15 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Designer page slider thumbs — smaller on mobile */
+/* Designer page slider — full reset for mobile Safari */
+input[type="range"].compact-slider-track {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="range"].compact-slider-track::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 @media (max-width: 767px) {
-  .compact-slider-track::-webkit-slider-thumb {
-    width: 10px !important;
-    height: 10px !important;
+  input[type="range"].compact-slider-track::-webkit-slider-thumb {
+    width: 13px !important;
+    height: 13px !important;
+    border-radius: 50% !important;
   }
-  .compact-slider-track::-moz-range-thumb {
-    width: 10px !important;
-    height: 10px !important;
+  input[type="range"].compact-slider-track::-moz-range-thumb {
+    width: 13px !important;
+    height: 13px !important;
+    border-radius: 50% !important;
   }
 }
 
