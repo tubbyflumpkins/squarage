@@ -269,7 +269,7 @@ function MiniCheck({
       <div
         className={`w-[18px] h-[18px] border flex items-center justify-center ${
           checked
-            ? 'bg-squarage-black border-squarage-black'
+            ? 'bg-squarage-green border-squarage-green'
             : 'bg-transparent border-neutral-400'
         }`}
       >
@@ -730,8 +730,8 @@ export default function DesignerPage() {
               onClick={() => setDesignTab(tab)}
               className={`px-4 py-1 text-[13px] uppercase tracking-[0.08em] border transition-colors ${
                 designTab === tab
-                  ? 'bg-squarage-black text-cream border-squarage-black'
-                  : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-black hover:text-squarage-black'
+                  ? 'bg-squarage-green text-white border-squarage-green'
+                  : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
               } ${tab === 'preset' ? 'border-r-0' : ''}`}
             >
               {tab}
@@ -898,8 +898,8 @@ export default function DesignerPage() {
                     }}
                     className={`px-4 py-1 text-[14px] uppercase tracking-[0.06em] border transition-colors ${
                       (type === 'corner') === p.isCorner
-                        ? 'bg-squarage-black text-cream border-squarage-black'
-                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-black hover:text-squarage-black'
+                        ? 'bg-squarage-green text-white border-squarage-green'
+                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
                     } ${type === 'standard' ? 'border-r-0' : ''}`}
                   >
                     {type}
@@ -932,8 +932,8 @@ export default function DesignerPage() {
                     onClick={() => setDimUnit(u)}
                     className={`px-4 py-1 text-[13px] uppercase tracking-[0.08em] border transition-colors ${
                       dimUnit === u
-                        ? 'bg-squarage-black text-cream border-squarage-black'
-                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-black hover:text-squarage-black'
+                        ? 'bg-squarage-green text-white border-squarage-green'
+                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
                     } ${u === 'in' ? 'border-r-0' : ''}`}
                   >
                     {u}
