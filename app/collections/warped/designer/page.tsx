@@ -978,24 +978,25 @@ export default function DesignerPage() {
           <div className="h-[1.5px] bg-squarage-black shrink-0" />
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(20), paddingBottom: vs(24), gap: vs(16) }}>
             <SectionLabel>Finish</SectionLabel>
-            <div className="flex flex-col" style={{ gap: vs(12) }}>
+            <div className="grid grid-cols-3 gap-2">
               {WOOD_FINISHES.map((f) => (
-                <div
+                <button
                   key={f.name}
                   onClick={() => setFinish(f.name)}
-                  className={`flex items-center gap-4 px-4 border-2 cursor-pointer ${
+                  className={`px-4 py-3 border-2 font-medium font-neue-haas text-sm transition-all ${
                     finish === f.name
-                      ? 'border-squarage-green'
-                      : 'border-neutral-200 hover:border-neutral-400'
+                      ? 'border-squarage-green bg-green-50'
+                      : 'border-gray-300 hover:border-gray-400'
                   }`}
-                  style={{ paddingTop: vs(12), paddingBottom: vs(12) }}
                 >
-                  <div
-                    className="w-7 h-7 border border-neutral-300"
-                    style={{ backgroundColor: f.color }}
-                  />
-                  <span className="text-[14px] uppercase tracking-[0.06em] text-neutral-600">{f.name}</span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 border border-gray-300 rounded-full"
+                      style={{ backgroundColor: f.color }}
+                    />
+                    <span>{f.name}</span>
+                  </div>
+                </button>
               ))}
             </div>
           </div>
