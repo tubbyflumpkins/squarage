@@ -174,10 +174,10 @@ function CompactSlider({
           onLostPointerCapture={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
           className="compact-slider-track w-full h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer touch-manipulation
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[13px] [&::-webkit-slider-thumb]:h-[13px]
-            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-squarage-black [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-squarage-green [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:shadow-[0_0_0_2px_#fffaf4]
             [&::-moz-range-thumb]:w-[13px] [&::-moz-range-thumb]:h-[13px] [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-squarage-black [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
+            [&::-moz-range-thumb]:bg-squarage-green [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
         />
       </div>
       <button
