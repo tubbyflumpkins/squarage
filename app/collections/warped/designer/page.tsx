@@ -144,7 +144,7 @@ function CompactSlider({
 
   return (
     <div className="flex items-center h-[38px] gap-1.5">
-      <span className="text-[14px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
+      <span className="text-[15px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
         {label}
       </span>
       <button
@@ -200,12 +200,12 @@ function CompactSlider({
             if (e.key === 'Enter') commit();
             if (e.key === 'Escape') setEditing(false);
           }}
-          className="w-[28px] shrink-0 text-[18px] font-mono text-squarage-black text-left bg-transparent border-b border-squarage-black outline-none tabular-nums"
+          className="w-[32px] shrink-0 text-[15px] font-medium font-neue-haas text-squarage-black text-left bg-transparent border-b border-squarage-black outline-none tabular-nums"
         />
       ) : (
         <span
           onClick={handleDoubleClick}
-          className="text-[18px] font-mono font-medium text-squarage-black w-[28px] shrink-0 text-left select-none tabular-nums cursor-default"
+          className="text-[15px] font-medium font-neue-haas text-squarage-black w-[32px] shrink-0 text-left select-none tabular-nums cursor-default"
         >
           {step < 1 ? displayValue.toFixed(1) : displayValue}{unit}
         </span>
@@ -290,7 +290,7 @@ function MiniCheck({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[18px] font-semibold tracking-[0.01em] text-squarage-black select-none">
+    <h3 className="text-[20px] font-semibold tracking-[0.01em] text-squarage-black select-none">
       {children}
     </h3>
   );
@@ -809,14 +809,14 @@ export default function DesignerPage() {
             <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10 flex flex-row gap-1.5">
               <button
                 onClick={() => setShowSaveInput(!showSaveInput)}
-                className="px-3 md:px-4 py-1 text-[12px] md:text-[13px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors"
+                className="px-3 md:px-4 py-1 text-[13px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors font-neue-haas"
               >
                 {showSaveInput ? 'Cancel' : 'Save'}
               </button>
               {/* Load Design button — mobile only */}
               <button
                 onClick={() => setShowDesignsPanel(true)}
-                className="md:hidden px-3 py-1 text-[12px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors"
+                className="md:hidden px-3 py-1 text-[13px] font-medium tracking-[0.01em] text-squarage-black border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors font-neue-haas"
               >
                 Load
               </button>
@@ -830,11 +830,11 @@ export default function DesignerPage() {
                     onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                     placeholder="Design name..."
                     autoFocus
-                    className="flex-1 text-[16px] px-3 py-1.5 border border-neutral-300 bg-transparent outline-none focus:border-squarage-black transition-colors placeholder:text-neutral-400"
+                    className="flex-1 text-[15px] font-medium font-neue-haas px-3 py-1.5 border border-neutral-300 bg-transparent outline-none focus:border-squarage-green transition-colors placeholder:text-neutral-400"
                   />
                   <button
                     onClick={handleSave}
-                    className="text-[13px] uppercase tracking-[0.08em] px-3 py-1.5 bg-squarage-green text-white hover:bg-squarage-green/80 transition-colors shrink-0"
+                    className="text-[14px] font-medium font-neue-haas tracking-[0.01em] px-3 py-1.5 bg-squarage-green text-white hover:bg-squarage-green/80 transition-colors shrink-0"
                   >
                     Save
                   </button>
@@ -910,7 +910,7 @@ export default function DesignerPage() {
 
             {!p.isCorner && (
               <div className="flex items-center justify-between">
-                <span className="text-[14px] font-medium tracking-[0.01em] text-squarage-black">Round Edges</span>
+                <span className="text-[15px] font-medium tracking-[0.01em] text-squarage-black">Round Edges</span>
                 <div className="flex gap-4">
                   <MiniCheck checked={p.roundLeft} onChange={(v) => set('roundLeft', v)} label={<><span className="md:hidden">Left</span><span className="hidden md:inline">L</span></>} />
                   <MiniCheck checked={p.roundRight} onChange={(v) => set('roundRight', v)} label={<><span className="md:hidden">Right</span><span className="hidden md:inline">R</span></>} />
@@ -1027,7 +1027,7 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 text-[14px] font-medium tracking-[0.01em] text-squarage-black mt-5">
+          <div className="flex flex-col gap-2 text-[15px] font-medium tracking-[0.01em] text-squarage-black mt-5">
             {p.isCorner && (
               <div className="flex justify-between">
                 <span>Type</span>
