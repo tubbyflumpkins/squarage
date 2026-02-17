@@ -152,7 +152,7 @@ function CompactSlider({
         onPointerUp={down.stop}
         onPointerLeave={down.stop}
         onPointerCancel={down.stop}
-        className="text-neutral-400 hover:text-neutral-800 transition-colors leading-none select-none shrink-0 p-4 md:p-0 touch-manipulation flex items-center justify-center"
+        className="text-neutral-400 hover:text-squarage-black transition-colors leading-none select-none shrink-0 p-4 md:p-0 touch-manipulation flex items-center justify-center"
       >
         <svg width="7" height="12" viewBox="0 0 7 12"><polygon points="0,6 7,0 7,12" fill="currentColor" /></svg>
       </button>
@@ -174,10 +174,10 @@ function CompactSlider({
           onLostPointerCapture={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
           className="compact-slider-track w-full h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer touch-manipulation
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[13px] [&::-webkit-slider-thumb]:h-[13px]
-            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-neutral-800 [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-squarage-black [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:shadow-[0_0_0_2px_#fffaf4]
             [&::-moz-range-thumb]:w-[13px] [&::-moz-range-thumb]:h-[13px] [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-neutral-800 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
+            [&::-moz-range-thumb]:bg-squarage-black [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
         />
       </div>
       <button
@@ -185,7 +185,7 @@ function CompactSlider({
         onPointerUp={up.stop}
         onPointerLeave={up.stop}
         onPointerCancel={up.stop}
-        className="text-neutral-400 hover:text-neutral-800 transition-colors leading-none select-none shrink-0 p-4 md:p-0 touch-manipulation flex items-center justify-center"
+        className="text-neutral-400 hover:text-squarage-black transition-colors leading-none select-none shrink-0 p-4 md:p-0 touch-manipulation flex items-center justify-center"
       >
         <svg width="7" height="12" viewBox="0 0 7 12"><polygon points="7,6 0,0 0,12" fill="currentColor" /></svg>
       </button>
@@ -200,7 +200,7 @@ function CompactSlider({
             if (e.key === 'Enter') commit();
             if (e.key === 'Escape') setEditing(false);
           }}
-          className="w-[28px] shrink-0 text-[18px] font-mono text-neutral-800 text-left bg-transparent border-b border-neutral-800 outline-none tabular-nums"
+          className="w-[28px] shrink-0 text-[18px] font-mono text-squarage-black text-left bg-transparent border-b border-squarage-black outline-none tabular-nums"
         />
       ) : (
         <span
@@ -235,7 +235,7 @@ function Toggle({
       <div
         role="switch"
         aria-checked={checked}
-        className={`relative w-[36px] h-[18px] ${checked ? 'bg-neutral-800' : 'bg-neutral-300'}`}
+        className={`relative w-[36px] h-[18px] ${checked ? 'bg-squarage-black' : 'bg-neutral-300'}`}
       >
         <span
           className={`absolute top-[1px] w-[16px] h-[16px] bg-white ${
@@ -269,7 +269,7 @@ function MiniCheck({
       <div
         className={`w-[18px] h-[18px] border flex items-center justify-center ${
           checked
-            ? 'bg-neutral-800 border-neutral-800'
+            ? 'bg-squarage-black border-squarage-black'
             : 'bg-transparent border-neutral-400'
         }`}
       >
@@ -290,7 +290,7 @@ function MiniCheck({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[18px] font-bold uppercase tracking-[0.12em] text-neutral-800 select-none">
+    <h3 className="text-[18px] font-bold uppercase tracking-[0.12em] text-squarage-black select-none">
       {children}
     </h3>
   );
@@ -730,8 +730,8 @@ export default function DesignerPage() {
               onClick={() => setDesignTab(tab)}
               className={`px-4 py-1 text-[13px] uppercase tracking-[0.08em] border transition-colors ${
                 designTab === tab
-                  ? 'bg-neutral-800 text-cream border-neutral-800'
-                  : 'bg-cream text-neutral-600 border-neutral-300 hover:border-neutral-800 hover:text-neutral-800'
+                  ? 'bg-squarage-black text-cream border-squarage-black'
+                  : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-black hover:text-squarage-black'
               } ${tab === 'preset' ? 'border-r-0' : ''}`}
             >
               {tab}
@@ -771,7 +771,7 @@ export default function DesignerPage() {
                   {/* Delete button */}
                   <button
                     onClick={(e) => { e.stopPropagation(); deleteDesign(design.id); }}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 hover:bg-neutral-800 text-neutral-800 hover:text-white flex items-center justify-center transition-all text-[13px]"
+                    className="absolute top-1.5 right-1.5 w-6 h-6 hover:bg-squarage-black text-squarage-black hover:text-white flex items-center justify-center transition-all text-[13px]"
                   >
                     &times;
                   </button>
@@ -787,7 +787,7 @@ export default function DesignerPage() {
   return (
     <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden md:pt-[90px] lg:pt-[98px]">
       {/* Main grid — mobile: flex column, desktop: 3-col grid */}
-      <div className="flex-1 flex flex-col md:grid md:grid-cols-[320px_minmax(0,1fr)_340px] md:grid-rows-[2fr_1fr] min-h-0 border-t border-neutral-800">
+      <div className="flex-1 flex flex-col md:grid md:grid-cols-[320px_minmax(0,1fr)_340px] md:grid-rows-[2fr_1fr] min-h-0 border-t border-squarage-black">
 
         {/* ============================================================= */}
         {/* CENTER COLUMN — TITLE + VIEWER (order-first on mobile) */}
@@ -795,13 +795,13 @@ export default function DesignerPage() {
         <div className="order-first md:order-2 md:row-span-2 flex flex-col min-h-0 h-[45dvh] md:h-auto shrink-0">
           {/* Title bar — centered */}
           <div className="px-4 md:px-8 py-1.5 md:py-2 flex items-center justify-center shrink-0">
-            <h1 className="text-[20px] md:text-[36px] font-bold uppercase tracking-[0.10em] md:tracking-[0.18em] text-neutral-800">
+            <h1 className="text-[20px] md:text-[36px] font-bold uppercase tracking-[0.10em] md:tracking-[0.18em] text-squarage-black">
               Warped Shelf Designer
             </h1>
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-neutral-800" />
+          <div className="h-px bg-squarage-black" />
 
           {/* Visualizer */}
           <div className="relative flex-1 flex items-center justify-center min-h-0 p-1 md:p-5 touch-none">
@@ -809,14 +809,14 @@ export default function DesignerPage() {
             <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10 flex flex-row gap-1.5">
               <button
                 onClick={() => setShowSaveInput(!showSaveInput)}
-                className="px-3 md:px-4 py-1 text-[12px] md:text-[13px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-neutral-800 hover:text-neutral-800 transition-colors"
+                className="px-3 md:px-4 py-1 text-[12px] md:text-[13px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-squarage-black hover:text-squarage-black transition-colors"
               >
                 {showSaveInput ? 'Cancel' : 'Save'}
               </button>
               {/* Load Design button — mobile only */}
               <button
                 onClick={() => setShowDesignsPanel(true)}
-                className="md:hidden px-3 py-1 text-[12px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-neutral-800 hover:text-neutral-800 transition-colors"
+                className="md:hidden px-3 py-1 text-[12px] uppercase tracking-[0.08em] text-neutral-600 border border-neutral-300 bg-cream hover:border-squarage-black hover:text-squarage-black transition-colors"
               >
                 Load
               </button>
@@ -830,11 +830,11 @@ export default function DesignerPage() {
                     onKeyDown={(e) => e.key === 'Enter' && handleSave()}
                     placeholder="Design name..."
                     autoFocus
-                    className="flex-1 text-[16px] px-3 py-1.5 border border-neutral-300 bg-transparent outline-none focus:border-neutral-800 transition-colors placeholder:text-neutral-400"
+                    className="flex-1 text-[16px] px-3 py-1.5 border border-neutral-300 bg-transparent outline-none focus:border-squarage-black transition-colors placeholder:text-neutral-400"
                   />
                   <button
                     onClick={handleSave}
-                    className="text-[13px] uppercase tracking-[0.08em] px-3 py-1.5 bg-neutral-800 text-cream hover:bg-neutral-700 transition-colors shrink-0"
+                    className="text-[13px] uppercase tracking-[0.08em] px-3 py-1.5 bg-squarage-black text-cream hover:bg-neutral-700 transition-colors shrink-0"
                   >
                     Save
                   </button>
@@ -879,7 +879,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* LEFT COLUMN — controls (scrollable on mobile) */}
         {/* ============================================================= */}
-        <div className="order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-neutral-800 flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0">
+        <div className="order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-squarage-black flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0">
 
           {/* Design Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(24), paddingBottom: vs(20), gap: vs(20) }}>
@@ -898,8 +898,8 @@ export default function DesignerPage() {
                     }}
                     className={`px-4 py-1 text-[14px] uppercase tracking-[0.06em] border transition-colors ${
                       (type === 'corner') === p.isCorner
-                        ? 'bg-neutral-800 text-cream border-neutral-800'
-                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-neutral-800 hover:text-neutral-800'
+                        ? 'bg-squarage-black text-cream border-squarage-black'
+                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-black hover:text-squarage-black'
                     } ${type === 'standard' ? 'border-r-0' : ''}`}
                   >
                     {type}
@@ -919,7 +919,7 @@ export default function DesignerPage() {
             )}
           </div>
 
-          <div className="h-[1.5px] bg-neutral-800 shrink-0" />
+          <div className="h-[1.5px] bg-squarage-black shrink-0" />
 
           {/* Dimensions Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(20), paddingBottom: vs(16), gap: vs(6) }}>
@@ -932,8 +932,8 @@ export default function DesignerPage() {
                     onClick={() => setDimUnit(u)}
                     className={`px-4 py-1 text-[13px] uppercase tracking-[0.08em] border transition-colors ${
                       dimUnit === u
-                        ? 'bg-neutral-800 text-cream border-neutral-800'
-                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-neutral-800 hover:text-neutral-800'
+                        ? 'bg-squarage-black text-cream border-squarage-black'
+                        : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-black hover:text-squarage-black'
                     } ${u === 'in' ? 'border-r-0' : ''}`}
                   >
                     {u}
@@ -964,7 +964,7 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <div className="h-[1.5px] bg-neutral-800 shrink-0" />
+          <div className="h-[1.5px] bg-squarage-black shrink-0" />
 
           {/* Layout Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(16), paddingBottom: vs(16), gap: vs(6) }}>
@@ -975,7 +975,7 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <div className="h-[1.5px] bg-neutral-800 shrink-0" />
+          <div className="h-[1.5px] bg-squarage-black shrink-0" />
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(20), paddingBottom: vs(24), gap: vs(16) }}>
             <SectionLabel>Finish</SectionLabel>
             <div className="flex flex-col" style={{ gap: vs(12) }}>
@@ -1004,7 +1004,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* RIGHT COLUMN — SAVED DESIGNS (hidden on mobile) */}
         {/* ============================================================= */}
-        <div className="hidden md:flex md:order-3 border-l border-neutral-800 flex-col min-h-0">
+        <div className="hidden md:flex md:order-3 border-l border-squarage-black flex-col min-h-0">
           <div className="px-7 pt-6 pb-4 shrink-0">
             <SectionLabel>Saved Designs</SectionLabel>
           </div>
@@ -1016,11 +1016,11 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* BOTTOM ROW — Estimated Price (hidden on mobile, shown in sticky bar) */}
         {/* ============================================================= */}
-        <div className="hidden md:flex md:order-4 border-l border-t border-neutral-800 px-7 py-6 flex-col justify-between">
+        <div className="hidden md:flex md:order-4 border-l border-t border-squarage-black px-7 py-6 flex-col justify-between">
           <div>
             <SectionLabel>Estimated Price</SectionLabel>
             <div className="mt-4">
-              <span className="text-[42px] font-semibold text-neutral-800 tabular-nums leading-none">
+              <span className="text-[42px] font-semibold text-squarage-black tabular-nums leading-none">
                 ${Math.round(price)}
               </span>
             </div>
@@ -1060,11 +1060,11 @@ export default function DesignerPage() {
       {/* ============================================================= */}
       {/* MOBILE: Sticky bottom price bar */}
       {/* ============================================================= */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-800 bg-cream px-4 pt-3 flex items-center justify-between"
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-3 flex items-center justify-between"
         style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
         <div className="flex flex-col">
-          <span className="text-[28px] font-semibold text-neutral-800 tabular-nums leading-none">
+          <span className="text-[28px] font-semibold text-squarage-black tabular-nums leading-none">
             ${Math.round(price)}
           </span>
           <span className="text-[12px] uppercase tracking-[0.06em] text-neutral-500 mt-1 tabular-nums">
@@ -1101,7 +1101,7 @@ export default function DesignerPage() {
               <SectionLabel>Saved Designs</SectionLabel>
               <button
                 onClick={closeDesignsPanel}
-                className="w-8 h-8 flex items-center justify-center text-neutral-600 hover:text-neutral-800 text-[20px]"
+                className="w-8 h-8 flex items-center justify-center text-neutral-600 hover:text-squarage-black text-[20px]"
               >
                 &times;
               </button>
