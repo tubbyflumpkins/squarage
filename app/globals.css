@@ -2,18 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Designer page slider thumbs — smaller on mobile */
-@media (max-width: 767px) {
-  .compact-slider-track::-webkit-slider-thumb {
-    width: 10px !important;
-    height: 10px !important;
-  }
-  .compact-slider-track::-moz-range-thumb {
-    width: 10px !important;
-    height: 10px !important;
-  }
-}
-
 /* Prevent horizontal scrolling */
 html, body {
   overflow-x: hidden;
