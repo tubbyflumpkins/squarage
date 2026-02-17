@@ -1051,7 +1051,7 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <button className="mt-5 w-full py-4 bg-neutral-800 text-white text-[16px] uppercase tracking-[0.12em] font-semibold hover:bg-neutral-700 transition-colors">
+          <button className="mt-5 w-full py-4 bg-squarage-orange text-white text-2xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300">
             Get Quote
           </button>
         </div>
@@ -1071,7 +1071,7 @@ export default function DesignerPage() {
             {dimStr} &middot; {finish}
           </span>
         </div>
-        <button className="px-6 py-3 bg-neutral-800 text-white text-[14px] uppercase tracking-[0.12em] font-semibold hover:bg-neutral-700 transition-colors shrink-0">
+        <button className="px-6 py-3 bg-squarage-orange text-white text-xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 shrink-0">
           Get Quote
         </button>
       </div>
