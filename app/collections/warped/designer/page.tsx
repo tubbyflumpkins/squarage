@@ -768,7 +768,7 @@ export default function DesignerPage() {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden md:pt-[90px] lg:pt-[98px]">
+    <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden pt-[60px] md:pt-[90px] lg:pt-[98px]">
       {/* Main grid — mobile: flex column, desktop: 3-col grid */}
       <div className="flex-1 flex flex-col md:grid md:grid-cols-[320px_minmax(0,1fr)_340px] md:grid-rows-[2fr_1fr] min-h-0 border-t border-squarage-black">
 
