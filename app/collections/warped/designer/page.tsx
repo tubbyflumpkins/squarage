@@ -36,6 +36,8 @@ const RenderedShelfView = dynamic(
 // Types & Constants
 // ---------------------------------------------------------------------------
 
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
 const WOOD_FINISHES: { name: WoodFinish; color: string }[] = [
@@ -164,11 +166,11 @@ function CompactSlider({
           onChange={(e) => {
             const v = Number(e.target.value);
             setLocalValue(v);
-            if (!dragging) onChange(v);
+            if (!dragging || !isMobile) onChange(v);
           }}
-          onPointerDown={() => setDragging(true)}
-          onPointerUp={() => { setDragging(false); onChange(localValue); }}
-          onPointerCancel={() => { setDragging(false); onChange(localValue); }}
+          onPointerDown={() => { if (isMobile) setDragging(true); }}
+          onPointerUp={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
+          onPointerCancel={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
           onLostPointerCapture={() => { if (dragging) { setDragging(false); onChange(localValue); } }}
           className="compact-slider-track w-full h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer touch-manipulation
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[13px] [&::-webkit-slider-thumb]:h-[13px]
