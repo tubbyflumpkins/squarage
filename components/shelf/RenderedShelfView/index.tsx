@@ -43,8 +43,8 @@ export default function RenderedShelfView({
     <Canvas
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 35, near: 0.1, far: 2000 }}
-      gl={{ antialias: !isMobile, alpha: true }}
-      dpr={isMobile ? 1 : undefined}
+      gl={{ antialias: true, alpha: true }}
+      dpr={isMobile ? [1, 2] : undefined}
       style={{ background: 'transparent' }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
