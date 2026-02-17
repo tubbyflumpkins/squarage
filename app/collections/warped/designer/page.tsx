@@ -143,7 +143,7 @@ function CompactSlider({
   const down = useHoldRepeat(decrement);
 
   return (
-    <div className="flex items-center h-[38px] gap-1.5">
+    <div className="flex items-center h-[38px] gap-3">
       <span className="text-[15px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
         {label}
       </span>
