@@ -311,8 +311,12 @@ export default function QuoteFlow({
         setSubmitStatus('success');
       } else {
         const errData = await res.json().catch(() => null);
-        console.error('Quote API error:', res.status, errData);
-        setSubmitError(errData?.error || `Server error (${res.status})`);
+        let errorMsg = errData?.error || `Server error (${res.status})`;
+        if (errData?.details?.length) {
+          const fields = errData.details.map((d: { path: string[]; message: string }) => d.path?.join('.') || d.message).join(', ');
+          errorMsg += ` (${fields})`;
+        }
+        setSubmitError(errorMsg);
         setSubmitStatus('error');
       }
     } catch (err) {
