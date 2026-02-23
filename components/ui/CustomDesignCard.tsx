@@ -124,8 +124,8 @@ export default function CustomDesignCard({ finish = 'Oak' }: CustomDesignCardPro
         </div>
 
         {/* Design Your Own button — overlays bottom of card */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-          <span className="inline-block text-center bg-squarage-green font-bold font-neue-haas text-xl sm:text-xl md:text-2xl py-1.5 md:py-3 px-3 sm:px-6 md:px-8 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white whitespace-nowrap">
+        <div className="hidden md:block absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+          <span className="inline-block text-center bg-squarage-green font-bold font-neue-haas text-2xl py-3 px-8 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white whitespace-nowrap">
             Design Your Own
           </span>
         </div>
