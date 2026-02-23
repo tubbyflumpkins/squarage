@@ -37,7 +37,6 @@ function sleep(ms: number, timeouts: ReturnType<typeof setTimeout>[]): Promise<v
 
 interface AnimatedLogoProps {
   inverted: boolean
-  isHomePage: boolean
   className?: string
   instanceId?: string
   /** When set, renders visible text on top of the knockout in this color (ignored when inverted) */
@@ -46,7 +45,6 @@ interface AnimatedLogoProps {
 
 export default function AnimatedLogo({
   inverted,
-  isHomePage,
   className = '',
   instanceId = 'default',
   textColor,
@@ -66,7 +64,6 @@ export default function AnimatedLogo({
   // Determine if animation should play (before first paint)
   useIsomorphicLayoutEffect(() => {
     if (hasRunRef.current) return
-    if (!isHomePage) return
     if (hasAnimatedThisPageLoad) return
 
     // Check if this instance is visible (avoid animating hidden desktop/mobile)
@@ -78,7 +75,7 @@ export default function AnimatedLogo({
     letterRefs.current.forEach(el => {
       if (el) el.style.opacity = '0'
     })
-  }, [isHomePage])
+  }, [])
 
   // Measure container and compute scale
   useEffect(() => {

@@ -104,8 +104,78 @@ function CompactSlider({
   const inputRef = useRef<HTMLInputElement>(null);
   const valueRef = useRef(value);
   valueRef.current = value;
+  const [dragValue, setDragValue] = useState<number | null>(null);
+  const rangeRef = useRef<HTMLInputElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const dragValueRef = useRef<number | null>(null);
+  const isMobileRef = useRef(false);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const minRef = useRef(min);
+  minRef.current = min;
+  const maxRef = useRef(max);
+  maxRef.current = max;
+  const stepRef = useRef(step);
+  stepRef.current = step;
 
-  const displayValue = value;
+  useEffect(() => {
+    isMobileRef.current = window.innerWidth < 768;
+  }, []);
+
+  // On mobile: capture touches on the wrapper div for a large 44px hit area.
+  // Calculates slider value from touch X position. Uses native listeners
+  // with { passive: false } so preventDefault() actually works (prevents
+  // browser back-gesture and scroll).
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    // Only attach on mobile
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) return;
+
+    const calcValue = (clientX: number): number => {
+      const rect = el.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, x / rect.width));
+      const raw = minRef.current + ratio * (maxRef.current - minRef.current);
+      const s = stepRef.current;
+      const stepped = Math.round(raw / s) * s;
+      const clamped = Math.max(minRef.current, Math.min(maxRef.current, stepped));
+      return s < 1 ? Math.round(clamped * 10) / 10 : clamped;
+    };
+
+    const onTouch = (e: TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const touch = e.touches[0];
+      if (!touch) return;
+      const v = calcValue(touch.clientX);
+      dragValueRef.current = v;
+      setDragValue(v);
+    };
+
+    const onEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      if (dragValueRef.current !== null) {
+        onChangeRef.current(dragValueRef.current);
+        dragValueRef.current = null;
+        setDragValue(null);
+      }
+    };
+
+    el.addEventListener('touchstart', onTouch, { passive: false });
+    el.addEventListener('touchmove', onTouch, { passive: false });
+    el.addEventListener('touchend', onEnd, { passive: false });
+    el.addEventListener('touchcancel', onEnd, { passive: false });
+
+    return () => {
+      el.removeEventListener('touchstart', onTouch);
+      el.removeEventListener('touchmove', onTouch);
+      el.removeEventListener('touchend', onEnd);
+      el.removeEventListener('touchcancel', onEnd);
+    };
+  }, []);
+
+  const displayValue = dragValue ?? value;
 
   const handleDoubleClick = () => {
     setEditValue(step < 1 ? displayValue.toFixed(1) : String(displayValue));
@@ -138,6 +208,25 @@ function CompactSlider({
   const up = useHoldRepeat(increment);
   const down = useHoldRepeat(decrement);
 
+  // Range slider handlers — on mobile, defer geometry update until finger lifts
+  const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    if (isMobileRef.current) {
+      dragValueRef.current = v;
+      setDragValue(v);
+    } else {
+      onChange(v);
+    }
+  };
+
+  const handleRangeRelease = useCallback(() => {
+    if (dragValueRef.current !== null) {
+      onChange(dragValueRef.current);
+      dragValueRef.current = null;
+      setDragValue(null);
+    }
+  }, [onChange]);
+
   return (
     <div className="flex items-center h-[38px] gap-3">
       <span className="text-[16px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
@@ -152,15 +241,17 @@ function CompactSlider({
       >
         <svg width="7" height="12" viewBox="0 0 7 12"><polygon points="0,6 7,0 7,12" fill="currentColor" /></svg>
       </button>
-      <div className="flex-1 min-w-0 flex items-center">
+      <div ref={wrapperRef} className="flex-1 min-w-0 flex items-center h-[44px] md:h-auto touch-none md:touch-auto">
         <input
+          ref={rangeRef}
           type="range"
           min={min}
           max={max}
           step={step}
           value={displayValue}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="compact-slider-track w-full h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer touch-manipulation
+          onChange={handleRangeChange}
+          onPointerUp={handleRangeRelease}
+          className="compact-slider-track w-full h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer pointer-events-none md:pointer-events-auto touch-manipulation
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[13px] [&::-webkit-slider-thumb]:h-[13px]
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-squarage-green [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:shadow-[0_0_0_2px_#fffaf4]
@@ -869,7 +960,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* LEFT COLUMN — controls (scrollable on mobile) */}
         {/* ============================================================= */}
-        <div className={"order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-squarage-black flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0"}>
+        <div className={"order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-squarage-black flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0 touch-pan-y md:touch-auto"}>
 
           {/* Design Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(24), paddingBottom: vs(20), gap: vs(20) }}>
