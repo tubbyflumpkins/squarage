@@ -183,8 +183,9 @@ ${new Date().toLocaleString()}
 </html>
 `
 
+    const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER
     const mailOptions = {
-      from: `"Squarage Shelf Designer" <${process.env.SMTP_USER}>`,
+      from: `"Squarage Studio" <${fromEmail}>`,
       to: recipientEmail,
       replyTo: sanitized.email,
       subject: emailSubject,

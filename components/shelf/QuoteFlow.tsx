@@ -166,6 +166,7 @@ export default function QuoteFlow({
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [closing, setClosing] = useState(false);
   const savedRef = useRef(false);
 
   // Notify navigation
@@ -190,9 +191,18 @@ export default function QuoteFlow({
       setSubmitting(false);
       setSubmitStatus('idle');
       setErrors({});
+      setClosing(false);
       savedRef.current = false;
     }
   }, [active]);
+
+  // Auto-close after success: wait 1.5s, fade out, then close
+  useEffect(() => {
+    if (submitStatus !== 'success') return;
+    const fadeTimer = setTimeout(() => setClosing(true), 1500);
+    const closeTimer = setTimeout(() => onClose(), 2000);
+    return () => { clearTimeout(fadeTimer); clearTimeout(closeTimer); };
+  }, [submitStatus, onClose]);
 
   // Escape key
   useEffect(() => {
@@ -464,18 +474,12 @@ export default function QuoteFlow({
                 <span className="text-[15px] font-medium font-neue-haas text-white/60">Submitting...</span>
               </div>
             ) : submitStatus === 'success' ? (
-              <div className="flex flex-col items-center gap-4 py-4">
-                <div className="flex items-center gap-3">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="11" stroke="white" strokeWidth="2" />
-                    <path d="M7 12L10 15L17 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span className="text-xl font-bold font-neue-haas text-white">Design Submitted</span>
-                </div>
-                <button onClick={onClose} className={nextBtnClass}>
-                  <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Back to Designer</span>
-                  <span className="relative z-10 text-white">Back to Designer</span>
-                </button>
+              <div className="flex items-center justify-center gap-3 py-6">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="11" stroke="white" strokeWidth="2" />
+                  <path d="M7 12L10 15L17 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span className="text-xl font-bold font-neue-haas text-white">Design Submitted</span>
               </div>
             ) : submitStatus === 'error' ? (
               <div className="flex flex-col gap-3">
@@ -501,7 +505,10 @@ export default function QuoteFlow({
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-squarage-red overflow-hidden" style={{ animation: 'slideInRight 400ms cubic-bezier(0.32, 0.72, 0, 1) forwards' }}>
+    <div
+      className={`h-[100dvh] flex flex-col bg-squarage-red overflow-hidden transition-opacity duration-500 ${closing ? 'opacity-0' : 'opacity-100'}`}
+      style={{ animation: 'slideInRight 400ms cubic-bezier(0.32, 0.72, 0, 1) forwards' }}
+    >
       {/* Close button */}
       <button
         onClick={onClose}
