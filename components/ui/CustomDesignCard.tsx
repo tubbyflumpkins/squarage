@@ -13,10 +13,13 @@ const RenderedShelfView = dynamic(
 
 export default function CustomDesignCard() {
   const [rotation, setRotation] = useState(15 * Math.PI / 180)
+  const [animHeight, setAnimHeight] = useState(24)
+  const [animShelfCount, setAnimShelfCount] = useState(3)
   const rotationRef = useRef(rotation)
   const velocityRef = useRef(0.002)
   const targetSpeedRef = useRef(-0.003)
   const lastFrameTime = useRef(0)
+  const phaseRef = useRef(0)
   const rotationSyncRef = useRef(rotation)
 
   if (rotation !== rotationSyncRef.current) {
@@ -45,6 +48,7 @@ export default function CustomDesignCard() {
       const dt = lastFrameTime.current ? Math.min((time - lastFrameTime.current) / 16.667, 3) : 1
       lastFrameTime.current = time
 
+      // Rotation boomerang
       for (let i = 0; i < dt; i++) {
         velocityRef.current = velocityRef.current * friction + (targetSpeedRef.current - velocityRef.current) * blendRate
       }
@@ -60,8 +64,16 @@ export default function CustomDesignCard() {
 
       rotationRef.current = ((newRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)
 
+      // Height & shelf count oscillation (smooth sine wave, ~8s full cycle)
+      phaseRef.current += dt * 0.008
+      const t = (Math.sin(phaseRef.current) + 1) / 2 // 0 → 1 → 0
+      const h = 24 + t * (50 - 24)
+      const sc = Math.round(3 + t * (5 - 3))
+
       if (time - lastStateUpdate > STATE_INTERVAL) {
         setRotation(rotationRef.current)
+        setAnimHeight(h)
+        setAnimShelfCount(sc)
         lastStateUpdate = time
       }
 
@@ -72,19 +84,22 @@ export default function CustomDesignCard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Compute amplitude from height (same formula as designer)
+  const animAmplitude = 2 + Math.max(0, Math.min(1, (animHeight - 24) / (76 - 24)))
+
   const flatParams: ShelfParams = useMemo(() => ({
-    width: 45, height: 24, depth: 10, length: 36,
-    amplitude: 2, shelfCount: 3, columnCount: 4,
+    width: 45, height: animHeight, depth: 10, length: 36,
+    amplitude: animAmplitude, shelfCount: animShelfCount, columnCount: 4,
     shelfOffset: 2, columnOffset: 8,
     roundLeft: false, roundRight: false,
-  }), [])
+  }), [animHeight, animAmplitude, animShelfCount])
 
   const cornerParams: CornerShelfParams = useMemo(() => ({
-    width: 45, length: 36, depth: 10, height: 24,
-    amplitude: 2, shelfCount: 3, columnCount: 4,
+    width: 45, length: 36, depth: 10, height: animHeight,
+    amplitude: animAmplitude, shelfCount: animShelfCount, columnCount: 4,
     shelfOffset: 2, columnOffset: 8,
     columnAngle: 52.5, wallAlign: 1,
-  }), [])
+  }), [animHeight, animAmplitude, animShelfCount])
 
   return (
     <Link href="/collections/warped/designer" className="block">
@@ -98,7 +113,7 @@ export default function CustomDesignCard() {
             tilt={25}
             finish="Oak"
             width={45}
-            height={24}
+            height={animHeight}
             depth={10}
             length={36}
           />
