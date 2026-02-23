@@ -104,17 +104,17 @@ export default function CustomDesignCard() {
           />
         </div>
 
-        {/* Start Designing button — overlays bottom of card */}
-        <div className="absolute bottom-6 inset-x-6 z-10 pointer-events-auto">
-          <span className="block w-full text-center bg-squarage-green font-bold font-neue-haas text-sm sm:text-lg md:text-xl py-2.5 md:py-3 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white">
-            Start Designing
+        {/* Design Your Own button — overlays bottom of card */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+          <span className="inline-block text-center bg-squarage-green font-bold font-neue-haas text-sm sm:text-lg md:text-xl py-2.5 md:py-3 px-6 md:px-8 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white whitespace-nowrap">
+            Design Your Own
           </span>
         </div>
       </div>
 
       <div className="flex justify-between items-start">
         <h3 className="font-neue-haas font-medium text-sm md:text-lg text-gray-900">
-          Design Your Own
+          Custom Design
         </h3>
         <span className="font-neue-haas font-medium text-sm md:text-lg text-gray-900 ml-4">
           Custom
