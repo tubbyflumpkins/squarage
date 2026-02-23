@@ -104,8 +104,16 @@ function CompactSlider({
   const inputRef = useRef<HTMLInputElement>(null);
   const valueRef = useRef(value);
   valueRef.current = value;
+  const [dragValue, setDragValue] = useState<number | null>(null);
+  const rangeRef = useRef<HTMLInputElement>(null);
+  const dragValueRef = useRef<number | null>(null);
+  const isMobileRef = useRef(false);
 
-  const displayValue = value;
+  useEffect(() => {
+    isMobileRef.current = window.innerWidth < 768;
+  }, []);
+
+  const displayValue = dragValue ?? value;
 
   const handleDoubleClick = () => {
     setEditValue(step < 1 ? displayValue.toFixed(1) : String(displayValue));
@@ -138,6 +146,25 @@ function CompactSlider({
   const up = useHoldRepeat(increment);
   const down = useHoldRepeat(decrement);
 
+  // Range slider handlers — on mobile, defer geometry update until finger lifts
+  const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    if (isMobileRef.current) {
+      dragValueRef.current = v;
+      setDragValue(v);
+    } else {
+      onChange(v);
+    }
+  };
+
+  const handleRangeRelease = useCallback(() => {
+    if (dragValueRef.current !== null) {
+      onChange(dragValueRef.current);
+      dragValueRef.current = null;
+      setDragValue(null);
+    }
+  }, [onChange]);
+
   return (
     <div className="flex items-center h-[38px] gap-3">
       <span className="text-[16px] font-medium tracking-[0.01em] text-squarage-black w-[78px] shrink-0 select-none">
@@ -154,17 +181,23 @@ function CompactSlider({
       </button>
       <div className="flex-1 min-w-0 flex items-center">
         <input
+          ref={rangeRef}
           type="range"
           min={min}
           max={max}
           step={step}
           value={displayValue}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="compact-slider-track w-full h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer touch-manipulation
-            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[13px] [&::-webkit-slider-thumb]:h-[13px]
+          onChange={handleRangeChange}
+          onPointerUp={handleRangeRelease}
+          onTouchEnd={handleRangeRelease}
+          className="compact-slider-track w-full h-[2px] md:h-[1px] appearance-none bg-neutral-300 outline-none cursor-pointer touch-none md:touch-manipulation
+            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[28px] [&::-webkit-slider-thumb]:h-[28px]
+            md:[&::-webkit-slider-thumb]:w-[13px] md:[&::-webkit-slider-thumb]:h-[13px]
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-squarage-green [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:shadow-[0_0_0_2px_#fffaf4]
-            [&::-moz-range-thumb]:w-[13px] [&::-moz-range-thumb]:h-[13px] [&::-moz-range-thumb]:rounded-full
+            [&::-moz-range-thumb]:w-[28px] [&::-moz-range-thumb]:h-[28px]
+            md:[&::-moz-range-thumb]:w-[13px] md:[&::-moz-range-thumb]:h-[13px]
+            [&::-moz-range-thumb]:rounded-full
             [&::-moz-range-thumb]:bg-squarage-green [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer"
         />
       </div>
