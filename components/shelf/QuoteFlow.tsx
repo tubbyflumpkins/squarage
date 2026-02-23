@@ -353,6 +353,7 @@ export default function QuoteFlow({
               <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Next</span>
               <span className="relative z-10 text-white">Next</span>
             </button>
+            <button onClick={onClose} className={backBtnClass}>Back</button>
           </div>
         );
       case 2:
