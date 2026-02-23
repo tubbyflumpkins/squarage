@@ -11,7 +11,11 @@ const RenderedShelfView = dynamic(
   { ssr: false },
 )
 
-export default function CustomDesignCard() {
+interface CustomDesignCardProps {
+  finish?: 'Walnut' | 'Oak' | 'Birch'
+}
+
+export default function CustomDesignCard({ finish = 'Oak' }: CustomDesignCardProps) {
   const [rotation, setRotation] = useState(15 * Math.PI / 180)
   const [animHeight, setAnimHeight] = useState(24)
   const [animShelfCount, setAnimShelfCount] = useState(3)
@@ -111,7 +115,7 @@ export default function CustomDesignCard() {
             cornerParams={cornerParams}
             rotation={rotation + Math.PI / 4}
             tilt={25}
-            finish="Oak"
+            finish={finish}
             width={45}
             height={animHeight}
             depth={10}

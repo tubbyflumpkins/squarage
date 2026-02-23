@@ -9,9 +9,10 @@ import { useState } from 'react'
 interface ProductCardProps {
   product: Product
   className?: string
+  selectedFinish?: string
 }
 
-export default function ProductCard({ product, className = '' }: ProductCardProps) {
+export default function ProductCard({ product, className = '', selectedFinish }: ProductCardProps) {
   const { preloadProductImages, isProductPreloaded } = useImageCache()
   const [imageLoaded, setImageLoaded] = useState(false)
   
@@ -31,6 +32,17 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
     : 'Price unavailable'
 
 
+  // Pick the display image based on selectedFinish (if provided)
+  const displayImage = (() => {
+    if (!selectedFinish || !product.images?.length) return product.images?.[0] || null
+    const finishLower = selectedFinish.toLowerCase()
+    const match = product.images.find(img => {
+      const text = (img.altText || img.src || '').toLowerCase()
+      return text.includes(finishLower)
+    })
+    return match || product.images[0]
+  })()
+
   // Handle hover to prefetch product details if not already preloaded
   const handleMouseEnter = () => {
     if (!isProductPreloaded(product.id.toString())) {
@@ -47,10 +59,10 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
     >
       {/* Product Image */}
       <div className="relative bg-gray-50 mb-4">
-        {product.images && product.images.length > 0 ? (
+        {displayImage ? (
           <Image
-            src={product.images[0].src}
-            alt={product.images[0].altText || product.title}
+            src={displayImage.src}
+            alt={displayImage.altText || product.title}
             width={600}
             height={600}
             className="w-full h-auto object-contain"
