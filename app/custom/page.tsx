@@ -183,7 +183,7 @@ export default function CustomPage() {
   return (
     <div className="min-h-screen bg-cream">
       {/* Section 1: Warped Shelf Designer Preview */}
-      <section className="pt-24 md:pt-28 pb-8 md:pb-16 px-6">
+      <section className="pt-24 md:pt-28 pb-2 md:pb-4 px-6">
         <div className="max-w-7xl mx-auto">
           {/* Title with Warped blob — floats over the 3D view */}
           <h1 className="relative z-10 text-4xl md:text-6xl lg:text-7xl font-black font-neue-haas text-squarage-black text-center mb-[-1em] md:mb-[-0.6em] flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
@@ -203,7 +203,7 @@ export default function CustomPage() {
 
           {/* 3D Preview — auto-rotating, no drag interaction */}
           <div
-            className="relative w-full aspect-[4/3] md:aspect-[2/1] mb-8 md:mb-10"
+            className="relative w-full aspect-[4/3] md:aspect-[2/1]"
             style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}
           >
             <div className="w-full h-full pointer-events-none">
@@ -261,7 +261,7 @@ export default function CustomPage() {
                 Need Something More Specific?
               </h2>
               <p className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black/70 mb-8 leading-relaxed">
-                Have a unique vision in mind? We work directly with you to design and build custom furniture pieces tailored to your space. Get in touch to start the conversation.
+                Have a unique vision in mind? We work directly with you to design and build custom furniture, spaces, and everything in between. Get in touch to start the conversation.
               </p>
               <Link
                 href="/contact"
