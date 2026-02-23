@@ -300,7 +300,6 @@ export default function QuoteFlow({
       });
       if (res.ok) {
         setSubmitStatus('success');
-        setTimeout(() => onClose(), 2000);
       } else {
         setSubmitStatus('error');
       }
@@ -457,34 +456,44 @@ export default function QuoteFlow({
               <div className="absolute top-0 left-0 w-full h-full bg-[#F5B74C] transform translate-x-2 translate-y-2" />
             </div>
 
-            {submitStatus === 'success' ? (
-              <div className="flex items-center justify-center gap-3 py-4">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <circle cx="14" cy="14" r="13" stroke="#4A9B4E" strokeWidth="2" />
-                  <path d="M8 14L12 18L20 10" stroke="#4A9B4E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-xl font-bold font-neue-haas text-white">Quote Sent!</span>
+            {submitting ? (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="w-full h-[3px] bg-white/20 overflow-hidden">
+                  <div className="h-full bg-white animate-[loading_1.2s_ease-in-out_infinite]" />
+                </div>
+                <span className="text-[15px] font-medium font-neue-haas text-white/60">Submitting...</span>
+              </div>
+            ) : submitStatus === 'success' ? (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <div className="flex items-center gap-3">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="11" stroke="white" strokeWidth="2" />
+                    <path d="M7 12L10 15L17 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="text-xl font-bold font-neue-haas text-white">Design Submitted</span>
+                </div>
+                <button onClick={onClose} className={nextBtnClass}>
+                  <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Back to Designer</span>
+                  <span className="relative z-10 text-white">Back to Designer</span>
+                </button>
               </div>
             ) : submitStatus === 'error' ? (
               <div className="flex flex-col gap-3">
                 <p className="text-white font-neue-haas text-center py-2">Something went wrong. Please try again.</p>
-                <button onClick={handleSubmit} disabled={submitting} className={`${nextBtnClass} ${submitting ? 'opacity-50' : ''}`}>
+                <button onClick={handleSubmit} className={nextBtnClass}>
                   <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Retry</span>
                   <span className="relative z-10 text-white">Retry</span>
                 </button>
+                <button onClick={goBack} className={backBtnClass}>Back</button>
               </div>
             ) : (
-              <button onClick={handleSubmit} disabled={submitting} className={`${nextBtnClass} ${submitting ? 'opacity-50' : ''}`}>
-                <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">
-                  {submitting ? 'Sending...' : 'Submit Quote Request'}
-                </span>
-                <span className="relative z-10 text-white">
-                  {submitting ? 'Sending...' : 'Submit Quote Request'}
-                </span>
-              </button>
-            )}
-            {submitStatus !== 'success' && (
-              <button onClick={goBack} className={backBtnClass}>Back</button>
+              <>
+                <button onClick={handleSubmit} className={nextBtnClass}>
+                  <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Submit Quote Request</span>
+                  <span className="relative z-10 text-white">Submit Quote Request</span>
+                </button>
+                <button onClick={goBack} className={backBtnClass}>Back</button>
+              </>
             )}
           </div>
         );
