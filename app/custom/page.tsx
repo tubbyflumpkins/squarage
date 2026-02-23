@@ -242,15 +242,15 @@ export default function CustomPage() {
       {/* Section 1: Warped Shelf Designer Preview */}
       <section className="pt-24 md:pt-28 pb-8 md:pb-16 px-6">
         <div className="max-w-7xl mx-auto">
-          {/* Title with Warped blob */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black font-neue-haas text-squarage-black text-center mb-6 md:mb-8 flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
+          {/* Title with Warped blob — floats over the 3D view */}
+          <h1 className="relative z-10 text-4xl md:text-6xl lg:text-7xl font-black font-neue-haas text-squarage-black text-center mb-[-1em] md:mb-[-0.6em] flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
             <span>Use Our</span>
             <span
-              className="inline-block text-white"
+              className="inline-block text-white leading-none"
               style={{
                 backgroundColor: '#4A9B4E',
                 borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%',
-                padding: '0.1em 0.4em',
+                padding: '0.25em 0.45em 0.3em',
               }}
             >
               Warped
