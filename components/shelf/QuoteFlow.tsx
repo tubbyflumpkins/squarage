@@ -509,7 +509,7 @@ export default function QuoteFlow({
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-squarage-red overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-[#F5B74C] overflow-hidden">
       {/* Close button */}
       <button
         onClick={onClose}
