@@ -30,17 +30,28 @@ const BagIcon = ({ className }: { className: string }) => (
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [quoteFlowOpen, setQuoteFlowOpen] = useState(false)
   const { toggleCart, closeCart, state } = useCart()
   const pathname = usePathname()
-  
-  // Use white logo only on contact page
-  const useSpecialLogo = pathname === '/contact'
+
+  // Listen for quote flow open/close events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail
+      setQuoteFlowOpen(detail?.open ?? false)
+    }
+    window.addEventListener('quoteflow', handler)
+    return () => window.removeEventListener('quoteflow', handler)
+  }, [])
+
+  // Use white logo on contact page or when quote flow is open
+  const useSpecialLogo = pathname === '/contact' || quoteFlowOpen
   const logoSrc = useSpecialLogo ? '/images/logo_main_white_transparent_small.png' : '/images/logo_main_small.png'
-  
+
   // Check if we're on specific pages
   const isTiledPage = pathname === '/collections/tiled'
   const isWarpedPage = pathname === '/collections/warped'
-  const isContactPage = pathname === '/contact'
+  const isContactPage = pathname === '/contact' || quoteFlowOpen
   const isHomePage = pathname === '/'
   
   
@@ -147,7 +158,13 @@ export default function Navigation() {
   let headerClasses = 'hidden md:block fixed top-0 left-0 right-0 z-[9990]'
 
   // Apply page-specific styling
-  if (isWarpedPage || isTiledPage || isHomePage) {
+  if (quoteFlowOpen) {
+    // Quote flow overrides everything with red background + smooth transition
+    headerStyle = {
+      backgroundColor: '#F04E23',
+      transition: 'background-color 0.3s ease'
+    }
+  } else if (isWarpedPage || isTiledPage || isHomePage) {
     // For Warped, Tiled, and Home pages, use inline styles for background transition (no shadow)
     headerStyle = {
       backgroundColor: isScrolled ? '#fffaf4' : 'transparent',
@@ -158,7 +175,10 @@ export default function Navigation() {
     headerClasses += ' bg-squarage-red'
   } else {
     // All other pages have cream background (no shadow)
-    headerClasses += ' bg-cream'
+    headerStyle = {
+      backgroundColor: '#fffaf4',
+      transition: 'background-color 0.3s ease'
+    }
   }
 
 

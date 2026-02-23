@@ -1112,10 +1112,6 @@ export default function DesignerPage() {
         <div className="fixed inset-0 z-50">
           <QuoteFlow
             isCorner={p.isCorner}
-            flatParams={flatParams}
-            cornerParams={cornerParams}
-            rotation={rotation}
-            tilt={tilt}
             finish={finish}
             width={p.width}
             height={p.height}
