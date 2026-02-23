@@ -1,9 +1,8 @@
 'use client';
 
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { useSavedDesigns, type SavedDesign } from '@/stores/useSavedDesigns';
-import { useShelfViewer } from '@/stores/useShelfViewer';
-import ShelfViewerSlot from '@/components/shelf/ShelfViewerSlot';
 import { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 import {
@@ -18,6 +17,20 @@ import {
   calculateBounds as calculateCornerBounds,
   pointsToPath as cornerPointsToPath,
 } from '@/components/shelf/CornerShelfVisualizer/geometry';
+
+const RenderedShelfView = dynamic(
+  () => import('@/components/shelf/RenderedShelfView'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center">
+        <span className="text-[16px] uppercase tracking-[0.1em] text-neutral-400 animate-pulse">
+          Loading 3D view...
+        </span>
+      </div>
+    ),
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Types & Constants
@@ -368,7 +381,13 @@ function computeColumnOffset(isCorner: boolean, width: number, length: number): 
 export default function DesignerPage() {
   const [p, setP] = useState<DesignParams>(DEFAULTS);
   const [finish, setFinish] = useState<WoodFinish>('Oak');
+  const [viewMode, setViewMode] = useState<'wireframe' | 'rendered'>('rendered');
+  const [rotation, setRotation] = useState(15 * Math.PI / 180);
+  const velocityRef = useRef(0.0008);
+  const targetSpeedRef = useRef(-0.0012);
   const [introAnim, setIntroAnim] = useState(false);
+  const [tilt] = useState(25);
+  const [isDragging, setIsDragging] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [showSaveInput, setShowSaveInput] = useState(false);
   const [designTab, setDesignTab] = useState<'custom' | 'preset'>('custom');
@@ -380,7 +399,10 @@ export default function DesignerPage() {
     setClosingDesignsPanel(true);
   }, []);
 
-  const { setConfig, setRotationBounds } = useShelfViewer();
+  const lastMouseX = useRef(0);
+  const lastMouseY = useRef(0);
+  const lastTime = useRef(0);
+  const dragVelocityRef = useRef(0);
 
   const { designs, loadDesign, saveDesign, deleteDesign, loadDesigns } = useSavedDesigns();
 
@@ -403,7 +425,6 @@ export default function DesignerPage() {
   const columnAngle = computeColumnAngle(p.width, p.length);
   const shelfOffset = computeShelfOffset(p.isCorner, p.height);
   const columnOffset = computeColumnOffset(p.isCorner, p.width, p.length);
-  const tilt = 25;
 
   const flatParams: ShelfParams = useMemo(() => ({
     width: p.width, height: p.height, depth: p.depth, length: p.length,
@@ -419,35 +440,176 @@ export default function DesignerPage() {
     columnAngle, wallAlign: 1,
   }), [p, amplitude, columnAngle, shelfOffset, columnOffset]);
 
-  // Sync designer params → persistent shelf viewer store
+  // Boomerang rotation — bounces between two angles so the back is never shown
+  const minAngleDeg = p.isCorner ? -30 : -85;
+  const maxAngleDeg = p.isCorner ? 20 : -10;
+  const baseSpeed = 0.0012;
+  const friction = 0.97;
+  const blendRate = 0.01;
+  const isDraggingRef = useRef(isDragging);
+  isDraggingRef.current = isDragging;
+  // Refs so the RAF closure always sees current bounds without restarting
+  const minAngleDegRef = useRef(minAngleDeg);
+  const maxAngleDegRef = useRef(maxAngleDeg);
+  minAngleDegRef.current = minAngleDeg;
+  maxAngleDegRef.current = maxAngleDeg;
+
+  const normalizeAngle = (rad: number): number => {
+    let deg = (rad * 180 / Math.PI) % 360;
+    if (deg > 180) deg -= 360;
+    if (deg < -180) deg += 360;
+    return deg;
+  };
+
+  const lastFrameTime = useRef(0);
+  const rotationRef = useRef(rotation);
+  // Sync ref when rotation changes from external sources (drag, design switch)
+  const rotationSyncRef = useRef(rotation);
+  if (rotation !== rotationSyncRef.current) {
+    rotationRef.current = rotation;
+    rotationSyncRef.current = rotation;
+  }
+
   useEffect(() => {
-    setConfig({
-      isCorner: p.isCorner,
-      width: p.width,
-      height: p.height,
-      depth: p.depth,
-      length: p.length,
-      shelfCount: p.shelfCount,
-      columnCount: p.columnCount,
-      roundLeft: p.roundLeft,
-      roundRight: p.roundRight,
-      amplitude,
-      shelfOffset,
-      columnOffset,
-      columnAngle,
-      finish,
-      tilt: 25,
-    });
-    const minDeg = p.isCorner ? -30 : -85;
-    const maxDeg = p.isCorner ? 20 : -10;
-    setRotationBounds(minDeg, maxDeg);
-  }, [p, amplitude, shelfOffset, columnOffset, columnAngle, finish, setConfig, setRotationBounds]);
+    let id: number;
+    let lastStateUpdate = 0;
+    const mobile = window.innerWidth < 768;
+    const STATE_INTERVAL = mobile ? 33 : 0; // throttle to ~30fps on mobile only
+    const tick = (time: number) => {
+      const dt = lastFrameTime.current ? Math.min((time - lastFrameTime.current) / 16.667, 3) : 1;
+      lastFrameTime.current = time;
+
+      if (!isDraggingRef.current) {
+        for (let i = 0; i < dt; i++) {
+          velocityRef.current = velocityRef.current * friction + (targetSpeedRef.current - velocityRef.current) * blendRate;
+        }
+
+        const newRotation = rotationRef.current + velocityRef.current * dt;
+        const angleDeg = normalizeAngle(newRotation);
+
+        if (angleDeg <= minAngleDegRef.current && targetSpeedRef.current < 0) {
+          targetSpeedRef.current = baseSpeed;
+        } else if (angleDeg >= maxAngleDegRef.current && targetSpeedRef.current > 0) {
+          targetSpeedRef.current = -baseSpeed;
+        }
+
+        rotationRef.current = ((newRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+
+        // Only push to React state at ~16fps — R3F reads the prop on its own render cycle
+        if (time - lastStateUpdate > STATE_INTERVAL) {
+          setRotation(rotationRef.current);
+          lastStateUpdate = time;
+        }
+      }
+      id = requestAnimationFrame(tick);
+    };
+    id = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Mouse handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    lastMouseX.current = e.clientX;
+    lastMouseY.current = e.clientY;
+    lastTime.current = performance.now();
+    dragVelocityRef.current = 0;
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging) return;
+    const now = performance.now();
+    const dx = e.clientX - lastMouseX.current;
+    const dt = now - lastTime.current;
+    if (dt > 0) dragVelocityRef.current = (dx * 0.002) / Math.max(dt, 8);
+    setRotation((r) => ((r + dx * 0.005) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2));
+    lastMouseX.current = e.clientX;
+    lastMouseY.current = e.clientY;
+    lastTime.current = now;
+  }, [isDragging]);
+
+  const handleMouseUp = useCallback(() => {
+    if (isDragging) {
+      velocityRef.current = Math.max(-0.05, Math.min(0.05, dragVelocityRef.current * 30));
+      setIsDragging(false);
+    }
+  }, [isDragging]);
+
+  // Touch handlers — mirror mouse handlers for mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    setIsDragging(true);
+    lastMouseX.current = e.touches[0].clientX;
+    lastMouseY.current = e.touches[0].clientY;
+    lastTime.current = performance.now();
+    dragVelocityRef.current = 0;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    const now = performance.now();
+    const dx = e.touches[0].clientX - lastMouseX.current;
+    const dt = now - lastTime.current;
+    if (dt > 0) dragVelocityRef.current = (-dx * 0.004) / Math.max(dt, 8);
+    setRotation((r) => ((r - dx * 0.01) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2));
+    lastMouseX.current = e.touches[0].clientX;
+    lastMouseY.current = e.touches[0].clientY;
+    lastTime.current = now;
+  }, [isDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (isDragging) {
+      velocityRef.current = Math.max(-0.05, Math.min(0.05, dragVelocityRef.current * 30));
+      setIsDragging(false);
+    }
+  }, [isDragging]);
+
+  // Stable viewBox across all rotations
+  const viewBox = useMemo(() => {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2;
+      let bounds;
+      if (p.isCorner) {
+        const geo = generateCornerShelfGeometry(cornerParams);
+        const proj = projectCornerGeometryWithRotation(geo, angle, p.width, p.length, tilt);
+        bounds = calculateCornerBounds(proj);
+      } else {
+        const geo = generateShelfGeometry(flatParams);
+        const proj = projectGeometryWithRotation(geo, angle, p.width, p.depth, tilt);
+        bounds = calculateFlatBounds(proj);
+      }
+      minX = Math.min(minX, bounds.minX);
+      maxX = Math.max(maxX, bounds.maxX);
+      minY = Math.min(minY, bounds.minY);
+      maxY = Math.max(maxY, bounds.maxY);
+    }
+    const pad = 8;
+    const w = maxX - minX + pad * 2;
+    const h = maxY - minY + pad * 2;
+    const scale = 1 / 1.1;
+    const sw = w * scale, sh = h * scale;
+    return `${minX - pad + (w - sw) / 2} ${minY - pad + (h - sh) / 2} ${sw} ${sh}`;
+  }, [p.isCorner, flatParams, cornerParams, p.width, p.depth, p.length, tilt]);
+
+  // Project current rotation
+  const svgPaths = useMemo(() => {
+    if (p.isCorner) {
+      const geo = generateCornerShelfGeometry(cornerParams);
+      const proj = projectCornerGeometryWithRotation(geo, rotation, p.width, p.length, tilt);
+      return { type: 'corner' as const, proj };
+    } else {
+      const geo = generateShelfGeometry(flatParams);
+      const proj = projectGeometryWithRotation(geo, rotation, p.width, p.depth, tilt);
+      return { type: 'flat' as const, proj };
+    }
+  }, [p.isCorner, flatParams, cornerParams, rotation, p.width, p.depth, p.length, tilt]);
 
   // SVG preview string for saving
   const getSvgPreview = useCallback((): string => {
     const sw = '0.4';
     const stroke = '#2C2C2C';
-    const rotation = (window as any).__shelfViewer?.rotationRef?.current ?? (15 * Math.PI / 180);
     const line = (a: { x: number; y: number }, b: { x: number; y: number }) =>
       `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="${sw}"/>`;
 
@@ -493,7 +655,7 @@ export default function DesignerPage() {
       });
       return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">${paths}</svg>`;
     }
-  }, [p.isCorner, flatParams, cornerParams, p.width, p.depth, p.length, tilt]);
+  }, [p.isCorner, flatParams, cornerParams, rotation, p.width, p.depth, p.length, tilt]);
 
   // Save / Load
   const handleSave = () => {
@@ -635,10 +797,10 @@ export default function DesignerPage() {
           {/* Divider */}
           <div className="h-px bg-squarage-black" />
 
-          {/* Visualizer — persistent shelf viewer slot */}
-          <ShelfViewerSlot className="flex-1 min-h-0">
+          {/* Visualizer */}
+          <div className="relative flex-1 flex items-center justify-center min-h-0 p-1 md:p-5 touch-none" style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}>
             {/* Floating Save Button — top right */}
-            <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10 flex flex-row gap-1.5 pointer-events-auto">
+            <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10 flex flex-row gap-1.5">
               <button
                 onClick={() => setShowSaveInput(!showSaveInput)}
                 className="px-3 md:px-4 py-1 text-[13px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors font-neue-haas"
@@ -648,13 +810,13 @@ export default function DesignerPage() {
               {/* Load Design button — mobile only */}
               <button
                 onClick={() => setShowDesignsPanel(true)}
-                className="md:hidden px-3 py-1 text-[13px] font-medium tracking-[0.01em] text-squarage-black border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors font-neue-haas pointer-events-auto"
+                className="md:hidden px-3 py-1 text-[13px] font-medium tracking-[0.01em] text-squarage-black border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors font-neue-haas"
               >
                 Load
               </button>
 
               {showSaveInput && (
-                <div className="absolute top-full right-0 mt-1.5 flex gap-3 bg-cream border border-neutral-300 p-3 w-[calc(100vw-24px)] md:w-[340px] pointer-events-auto">
+                <div className="absolute top-full right-0 mt-1.5 flex gap-3 bg-cream border border-neutral-300 p-3 w-[calc(100vw-24px)] md:w-[340px]">
                   <input
                     type="text"
                     value={saveName}
@@ -673,7 +835,39 @@ export default function DesignerPage() {
                 </div>
               )}
             </div>
-          </ShelfViewerSlot>
+
+            <div
+              className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
+            >
+              <RenderedShelfView
+                isCorner={p.isCorner}
+                flatParams={flatParams}
+                cornerParams={cornerParams}
+                rotation={rotation + Math.PI / 4}
+                tilt={tilt}
+                finish={finish}
+                width={p.width}
+                height={p.height}
+                depth={p.depth}
+                length={p.length}
+              />
+            </div>
+
+            {/* Drag/swipe hint at bottom */}
+            <span className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 text-[12px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black/50 select-none pointer-events-none">
+              <span className="hidden md:inline">Drag to rotate</span>
+              <span className="md:hidden">Swipe to rotate</span>
+            </span>
+
+          </div>
         </div>
 
         {/* ============================================================= */}
@@ -692,14 +886,9 @@ export default function DesignerPage() {
                     key={type}
                     onClick={() => {
                       set('isCorner', type === 'corner');
-                      const viewer = (window as any).__shelfViewer;
-                      if (viewer) {
-                        const newR = type === 'corner' ? 15 * Math.PI / 180 : 350 * Math.PI / 180;
-                        viewer.rotationRef.current = newR;
-                        viewer.setRotation(newR);
-                        viewer.targetSpeedRef.current = -0.0012;
-                        viewer.velocityRef.current = 0.0008;
-                      }
+                      setRotation(type === 'corner' ? 15 * Math.PI / 180 : 350 * Math.PI / 180);
+                      targetSpeedRef.current = type === 'corner' ? -0.0012 : -0.0012;
+                      velocityRef.current = 0.0008;
                     }}
                     className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
                       (type === 'corner') === p.isCorner

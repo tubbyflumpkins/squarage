@@ -8,7 +8,6 @@ import { EmailCaptureProvider } from '@/context/EmailCaptureContext'
 import CookieConsentWrapper from '@/components/CookieConsentWrapper'
 import EmailCapturePopup from '@/components/EmailCapturePopup'
 import StructuredData, { organizationSchema, localBusinessSchema, websiteSchema } from '@/components/StructuredData'
-import PersistentShelfViewer from '@/components/shelf/PersistentShelfViewer'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://squarage.com'),
@@ -94,7 +93,6 @@ export default function RootLayout({
                 <LayoutWrapper>
                   {children}
                 </LayoutWrapper>
-                <PersistentShelfViewer />
               </CartProvider>
             </ImageCacheProvider>
             <CookieConsentWrapper />
