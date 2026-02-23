@@ -295,13 +295,13 @@ export default function Navigation() {
           style={{ isolation: 'isolate' }}
         >
           <span className={`block h-0.5 w-3.5 sm:h-0.5 sm:w-[18px] transition-all duration-300 ${
-            useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+            quoteFlowOpen ? 'bg-squarage-green' : useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
           }`} />
           <span className={`block h-0.5 w-3.5 sm:h-0.5 sm:w-[18px] transition-all duration-300 ${
-            useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+            quoteFlowOpen ? 'bg-squarage-green' : useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
           }`} />
           <span className={`block h-0.5 w-3.5 sm:h-0.5 sm:w-[18px] transition-all duration-300 ${
-            useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
+            quoteFlowOpen ? 'bg-squarage-green' : useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
           }`} />
         </button>
       </div>
