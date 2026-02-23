@@ -10,13 +10,15 @@ interface ProductGridProps {
   loading?: boolean
   emptyMessage?: string
   className?: string
+  children?: React.ReactNode
 }
 
-export default function ProductGrid({ 
-  products, 
-  loading = false, 
+export default function ProductGrid({
+  products,
+  loading = false,
   emptyMessage = "No products found.",
-  className = ""
+  className = "",
+  children,
 }: ProductGridProps) {
   const { preloadProductImages, isProductPreloaded, getCacheStats } = useImageCache()
 
@@ -101,11 +103,12 @@ export default function ProductGrid({
     <div className={`w-full ${className}`}>
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <ProductCard 
-            key={product.id} 
+          <ProductCard
+            key={product.id}
             product={product}
           />
         ))}
+        {children}
       </div>
     </div>
   )
