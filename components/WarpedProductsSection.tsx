@@ -8,9 +8,9 @@ import CustomDesignCard from '@/components/ui/CustomDesignCard'
 import { preloadImages } from '@/lib/simplePreloader'
 
 const WOOD_FINISHES = [
-  { name: 'Walnut', texture: '/textures/swatches/walnut_btn.jpg' },
-  { name: 'Oak', texture: '/textures/swatches/oak_btn.jpg' },
-  { name: 'Birch', texture: '/textures/swatches/birch_btn.jpg' },
+  { name: 'Walnut', texture: '/textures/walnut.webp' },
+  { name: 'Oak', texture: '/textures/oak.webp' },
+  { name: 'Birch', texture: '/textures/birch.webp' },
 ] as const
 
 export default function WarpedProductsSection() {
@@ -44,25 +44,20 @@ export default function WarpedProductsSection() {
   }, [])
 
   // Preload ALL product images (all finishes) into simpleImageCache for instant switching
-  // Delayed to let the 3D renderer finish loading first
   useEffect(() => {
     if (products.length === 0) return
 
-    const timer = setTimeout(() => {
-      const allImageSrcs: string[] = []
-      products.forEach((product: any) => {
-        product.images?.forEach((img: any) => {
-          const src = img.src || img.url
-          if (src) allImageSrcs.push(src)
-        })
+    const allImageSrcs: string[] = []
+    products.forEach((product: any) => {
+      product.images?.forEach((img: any) => {
+        const src = img.src || img.url
+        if (src) allImageSrcs.push(src)
       })
+    })
 
-      if (allImageSrcs.length > 0) {
-        preloadImages(allImageSrcs, 2)
-      }
-    }, 3000)
-
-    return () => clearTimeout(timer)
+    if (allImageSrcs.length > 0) {
+      preloadImages(allImageSrcs, 4)
+    }
   }, [products])
 
   return (
@@ -80,12 +75,12 @@ export default function WarpedProductsSection() {
                 <button
                   key={finish.name}
                   onClick={() => setSelectedFinish(finish.name)}
-                  className={`relative w-24 md:w-28 py-4 md:py-5 rounded-full border-2 font-medium font-neue-haas text-base md:text-lg transition-all bg-cover bg-center overflow-hidden ${
+                  className={`relative w-24 md:w-28 py-2.5 md:py-3 rounded-full border-2 font-medium font-neue-haas text-base md:text-lg transition-all bg-center overflow-hidden ${
                     isSelected
                       ? 'border-squarage-green shadow-md scale-105'
                       : 'border-transparent shadow-sm hover:shadow-md hover:scale-105'
                   }`}
-                  style={{ backgroundImage: `url(${finish.texture})` }}
+                  style={{ backgroundImage: `url(${finish.texture})`, backgroundSize: '400%' }}
                 >
                   <span className={`relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] font-semibold ${
                     isSelected ? 'text-[#a8d5a2]' : 'text-white'
