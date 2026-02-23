@@ -83,7 +83,7 @@ export default function WarpedProductsSection() {
                   style={{ backgroundImage: `url(${finish.texture})`, backgroundSize: '400%' }}
                 >
                   <span className={`relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] font-semibold ${
-                    isSelected ? 'text-[#6fcf73]' : 'text-white'
+                    isSelected ? 'text-[#a8d5a2]' : 'text-white'
                   }`}>
                     {finish.name}
                   </span>
