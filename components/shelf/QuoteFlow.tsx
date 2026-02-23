@@ -567,8 +567,8 @@ export default function QuoteFlow({
         )}
 
         {/* Form content — right side on steps 1-3, centered on step 4 */}
-        <div className={`flex-1 flex items-center justify-center min-h-0 overflow-y-auto transition-all duration-500 ${
-          !isReview ? 'md:pt-0 pt-[calc(35dvh)]' : ''
+        <div className={`flex-1 flex min-h-0 overflow-y-auto transition-all duration-500 ${
+          isReview ? 'items-start justify-center pt-4 pb-6' : 'items-center justify-center md:pt-0 pt-[calc(35dvh)]'
         }`}>
           <div className={`w-full max-w-md px-6 md:px-10 py-4 ${animClass}`}>
             {renderFormContent()}
