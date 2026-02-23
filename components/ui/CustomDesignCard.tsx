@@ -88,7 +88,7 @@ export default function CustomDesignCard() {
 
   return (
     <Link href="/custom" className="block">
-      <div className="relative aspect-[3/4] mb-4 border border-squarage-black">
+      <div className="relative aspect-[4/5] mb-4 border border-squarage-black">
         <div className="w-full h-full pointer-events-none">
           <RenderedShelfView
             isCorner={true}
