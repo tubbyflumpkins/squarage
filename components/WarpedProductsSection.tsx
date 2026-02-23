@@ -8,9 +8,9 @@ import CustomDesignCard from '@/components/ui/CustomDesignCard'
 import { preloadImages } from '@/lib/simplePreloader'
 
 const WOOD_FINISHES = [
-  { name: 'Walnut', texture: '/textures/walnut.webp', blob: '60% 40% 30% 70% / 50% 50% 65% 35%' },
-  { name: 'Oak', texture: '/textures/oak.webp', blob: '45% 55% 65% 35% / 55% 45% 40% 60%' },
-  { name: 'Birch', texture: '/textures/birch.webp', blob: '50% 50% 40% 60% / 35% 65% 55% 45%' },
+  { name: 'Walnut', texture: '/textures/swatches/walnut_btn.jpg', blob: '60% 40% 30% 70% / 50% 50% 65% 35%' },
+  { name: 'Oak', texture: '/textures/swatches/oak_btn.jpg', blob: '45% 55% 65% 35% / 55% 45% 40% 60%' },
+  { name: 'Birch', texture: '/textures/swatches/birch_btn.jpg', blob: '50% 50% 40% 60% / 35% 65% 55% 45%' },
 ] as const
 
 export default function WarpedProductsSection() {
@@ -80,7 +80,7 @@ export default function WarpedProductsSection() {
                       ? 'border-squarage-green shadow-md scale-105'
                       : 'border-transparent shadow-sm hover:shadow-md hover:scale-105'
                   }`}
-                  style={{ backgroundImage: `url(${finish.texture})`, backgroundSize: '400%', borderRadius: finish.blob }}
+                  style={{ backgroundImage: `url(${finish.texture})`, backgroundSize: 'cover', borderRadius: finish.blob }}
                 >
                   <span className={`relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] font-semibold ${
                     isSelected ? 'text-[#a8d5a2]' : 'text-white'
