@@ -38,37 +38,6 @@ interface QuoteFlowProps {
   active: boolean;
 }
 
-function StepIndicator({ current }: { current: number }) {
-  return (
-    <div className="flex items-center justify-center gap-0 py-4 md:py-6 select-none">
-      {[1, 2, 3, 4].map((step, i) => (
-        <div key={step} className="flex items-center">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold font-neue-haas transition-all duration-300 ${
-              step < current
-                ? 'bg-white text-squarage-green'
-                : step === current
-                  ? 'bg-[#F5B74C] text-white'
-                  : 'border-2 border-white/40 text-white/40'
-            }`}
-          >
-            {step < current ? (
-              <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
-                <path d="M1 5L5 9L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            ) : (
-              step
-            )}
-          </div>
-          {i < 3 && (
-            <div className={`w-8 md:w-12 h-[2px] transition-colors duration-300 ${step < current ? 'bg-white' : 'bg-white/20'}`} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function ShadowLabel({ children }: { children: string }) {
   return (
     <h2 className="text-3xl md:text-5xl font-bold font-neue-haas text-white mb-4 relative">
@@ -522,8 +491,6 @@ export default function QuoteFlow({
       >
         &times;
       </button>
-
-      <StepIndicator current={step} />
 
       {/* Body: steps 1-3 = two-column (3D left, form right), step 4 = centered */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
