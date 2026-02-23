@@ -166,7 +166,6 @@ export default function QuoteFlow({
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [closing, setClosing] = useState(false);
   const savedRef = useRef(false);
 
   // Notify navigation
@@ -191,17 +190,15 @@ export default function QuoteFlow({
       setSubmitting(false);
       setSubmitStatus('idle');
       setErrors({});
-      setClosing(false);
       savedRef.current = false;
     }
   }, [active]);
 
-  // Auto-close after success: wait 1.5s, fade out, then close
+  // Auto-close after success: wait 1.5s then slide out
   useEffect(() => {
     if (submitStatus !== 'success') return;
-    const fadeTimer = setTimeout(() => setClosing(true), 1500);
-    const closeTimer = setTimeout(() => onClose(), 2000);
-    return () => { clearTimeout(fadeTimer); clearTimeout(closeTimer); };
+    const timer = setTimeout(() => onClose(), 1500);
+    return () => clearTimeout(timer);
   }, [submitStatus, onClose]);
 
   // Escape key
@@ -505,10 +502,7 @@ export default function QuoteFlow({
   };
 
   return (
-    <div
-      className={`h-[100dvh] flex flex-col bg-squarage-red overflow-hidden transition-opacity duration-500 ${closing ? 'opacity-0' : 'opacity-100'}`}
-      style={{ animation: 'slideInRight 400ms cubic-bezier(0.32, 0.72, 0, 1) forwards' }}
-    >
+    <div className="h-[100dvh] flex flex-col bg-squarage-red overflow-hidden">
       {/* Close button */}
       <button
         onClick={onClose}

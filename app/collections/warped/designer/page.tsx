@@ -1107,36 +1107,42 @@ export default function DesignerPage() {
         </div>
       )}
 
-      {/* Quote Flow overlay */}
-      {showQuoteFlow && (
-        <div className="fixed inset-0 z-50">
-          <QuoteFlow
-            isCorner={p.isCorner}
-            flatParams={flatParams}
-            cornerParams={cornerParams}
-            rotation={rotation}
-            tilt={tilt}
-            finish={finish}
-            width={p.width}
-            height={p.height}
-            depth={p.depth}
-            length={p.length}
-            price={price}
-            shelfCount={p.shelfCount}
-            columnCount={p.columnCount}
-            roundLeft={p.roundLeft}
-            roundRight={p.roundRight}
-            amplitude={amplitude}
-            shelfOffset={shelfOffset}
-            columnOffset={columnOffset}
-            columnAngle={columnAngle}
-            onClose={() => setShowQuoteFlow(false)}
-            saveDesign={saveDesign}
-            getSvgPreview={getSvgPreview}
-            active={showQuoteFlow}
-          />
-        </div>
-      )}
+      {/* Quote Flow overlay — always mounted, slides in/out via transform */}
+      <div
+        className="fixed inset-0 z-50"
+        style={{
+          transform: showQuoteFlow ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 500ms cubic-bezier(0.32, 0.72, 0, 1)',
+          willChange: 'transform',
+          pointerEvents: showQuoteFlow ? 'auto' : 'none',
+        }}
+      >
+        <QuoteFlow
+          isCorner={p.isCorner}
+          flatParams={flatParams}
+          cornerParams={cornerParams}
+          rotation={rotation}
+          tilt={tilt}
+          finish={finish}
+          width={p.width}
+          height={p.height}
+          depth={p.depth}
+          length={p.length}
+          price={price}
+          shelfCount={p.shelfCount}
+          columnCount={p.columnCount}
+          roundLeft={p.roundLeft}
+          roundRight={p.roundRight}
+          amplitude={amplitude}
+          shelfOffset={shelfOffset}
+          columnOffset={columnOffset}
+          columnAngle={columnAngle}
+          onClose={() => setShowQuoteFlow(false)}
+          saveDesign={saveDesign}
+          getSvgPreview={getSvgPreview}
+          active={showQuoteFlow}
+        />
+      </div>
     </div>
   );
 }
