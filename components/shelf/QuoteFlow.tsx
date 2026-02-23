@@ -526,13 +526,14 @@ export default function QuoteFlow({
 
         {/* 3D rendered view — slides out left on step 4 */}
         <div
-          className="hidden md:flex items-center justify-end transition-all duration-500 ease-out shrink-0 overflow-hidden"
+          className="hidden md:block transition-all duration-500 ease-out shrink-0 overflow-hidden"
           style={{
-            width: isReview ? 0 : '42%',
+            width: isReview ? 0 : '50%',
             opacity: isReview ? 0 : 1,
+            paddingLeft: isReview ? 0 : '8%',
           }}
         >
-          <div className="w-[90%] h-full cursor-grab active:cursor-grabbing">
+          <div className="w-full h-full cursor-grab active:cursor-grabbing">
             <RenderedShelfView
               isCorner={isCorner}
               flatParams={flatParams}
