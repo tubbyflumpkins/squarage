@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -21,22 +22,20 @@ const RenderedShelfView = dynamic(
   },
 )
 
-// Default shelf parameters (matches designer defaults)
+// Default shelf parameters — corner shelf to match designer defaults
 const DEFAULTS = {
-  isCorner: false,
+  isCorner: true,
   width: 45,
   height: 24,
   depth: 10,
   length: 36,
   shelfCount: 3,
   columnCount: 4,
-  roundLeft: false,
-  roundRight: false,
 }
 
-function computeAmplitude(height: number): number {
+function computeAmplitude(isCorner: boolean, height: number): number {
   const minH = 24, maxH = 76
-  const minAmp = 1.5, maxAmp = 3
+  const minAmp = isCorner ? 2 : 1.5, maxAmp = 3
   const t = Math.max(0, Math.min(1, (height - minH) / (maxH - minH)))
   return minAmp + t * (maxAmp - minAmp)
 }
@@ -46,20 +45,39 @@ function computeShelfOffset(height: number): number {
   return Math.round(2 + t * 4)
 }
 
-function computeColumnOffset(width: number): number {
+function computeColumnOffset(isCorner: boolean, width: number, length: number): number {
+  if (isCorner) {
+    const dim = Math.max(width, length)
+    const t = Math.max(0, Math.min(1, (dim - 10) / (76 - 10)))
+    return Math.round(6 + t * 4)
+  }
   const t = Math.max(0, Math.min(1, (width - 24) / (76 - 24)))
   return Math.round(2 + t * 4)
 }
 
+function computeColumnAngle(width: number, length: number): number {
+  const ratio = width / length
+  const capRatio = 1.5
+  if (ratio >= 1) {
+    const t = Math.min((ratio - 1) / (capRatio - 1), 1)
+    return 45 + t * 15
+  } else {
+    const t = Math.min((1 / ratio - 1) / (capRatio - 1), 1)
+    return 45 - t * 15
+  }
+}
+
 export default function CustomPage() {
-  const [rotation, setRotation] = useState(350 * Math.PI / 180)
+  const router = useRouter()
+  const [rotation, setRotation] = useState(15 * Math.PI / 180)
   const velocityRef = useRef(0.0008)
   const targetSpeedRef = useRef(-0.0012)
   const tilt = 25
 
-  const amplitude = computeAmplitude(DEFAULTS.height)
+  const amplitude = computeAmplitude(DEFAULTS.isCorner, DEFAULTS.height)
   const shelfOffset = computeShelfOffset(DEFAULTS.height)
-  const columnOffset = computeColumnOffset(DEFAULTS.width)
+  const columnOffset = computeColumnOffset(DEFAULTS.isCorner, DEFAULTS.width, DEFAULTS.length)
+  const columnAngle = computeColumnAngle(DEFAULTS.width, DEFAULTS.length)
 
   const flatParams: ShelfParams = useMemo(() => ({
     width: DEFAULTS.width,
@@ -71,8 +89,8 @@ export default function CustomPage() {
     columnCount: DEFAULTS.columnCount,
     shelfOffset,
     columnOffset,
-    roundLeft: DEFAULTS.roundLeft,
-    roundRight: DEFAULTS.roundRight,
+    roundLeft: false,
+    roundRight: false,
   }), [amplitude, shelfOffset, columnOffset])
 
   const cornerParams: CornerShelfParams = useMemo(() => ({
@@ -85,11 +103,11 @@ export default function CustomPage() {
     columnCount: DEFAULTS.columnCount,
     shelfOffset,
     columnOffset,
-    columnAngle: 45,
+    columnAngle,
     wallAlign: 1,
-  }), [amplitude, shelfOffset, columnOffset])
+  }), [amplitude, shelfOffset, columnOffset, columnAngle])
 
-  // Boomerang auto-rotation
+  // Boomerang auto-rotation — corner shelf angles
   const rotationRef = useRef(rotation)
   const lastFrameTime = useRef(0)
   const rotationSyncRef = useRef(rotation)
@@ -101,8 +119,8 @@ export default function CustomPage() {
   const baseSpeed = 0.0012
   const friction = 0.97
   const blendRate = 0.01
-  const minAngleDeg = -85
-  const maxAngleDeg = -10
+  const minAngleDeg = -30
+  const maxAngleDeg = 20
 
   const normalizeAngle = (rad: number): number => {
     let deg = (rad * 180 / Math.PI) % 360
@@ -149,19 +167,13 @@ export default function CustomPage() {
   }, [])
 
   // Drag interaction for the 3D view
-  const [isDragging, setIsDragging] = useState(false)
   const isDraggingRef = useRef(false)
   const lastMouseX = useRef(0)
   const lastTime = useRef(0)
   const dragVelocityRef = useRef(0)
 
-  // Pause auto-rotation while dragging
-  useEffect(() => {
-    isDraggingRef.current = isDragging
-  }, [isDragging])
-
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    setIsDragging(true)
+    isDraggingRef.current = true
     lastMouseX.current = e.clientX
     lastTime.current = performance.now()
     dragVelocityRef.current = 0
@@ -181,13 +193,13 @@ export default function CustomPage() {
   const handleMouseUp = useCallback(() => {
     if (isDraggingRef.current) {
       velocityRef.current = Math.max(-0.05, Math.min(0.05, dragVelocityRef.current * 30))
-      setIsDragging(false)
+      isDraggingRef.current = false
     }
   }, [])
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length !== 1) return
-    setIsDragging(true)
+    isDraggingRef.current = true
     lastMouseX.current = e.touches[0].clientX
     lastTime.current = performance.now()
     dragVelocityRef.current = 0
@@ -207,24 +219,50 @@ export default function CustomPage() {
   const handleTouchEnd = useCallback(() => {
     if (isDraggingRef.current) {
       velocityRef.current = Math.max(-0.05, Math.min(0.05, dragVelocityRef.current * 30))
-      setIsDragging(false)
+      isDraggingRef.current = false
     }
   }, [])
+
+  // Navigate to designer with smooth transition
+  const handleStartDesigning = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    sessionStorage.setItem('designer-transition', 'true')
+
+    const navigate = () => router.push('/collections/warped/designer')
+
+    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+      (document as any).startViewTransition(navigate)
+    } else {
+      navigate()
+    }
+  }, [router])
 
   return (
     <div className="min-h-screen bg-cream">
       {/* Section 1: Warped Shelf Designer Preview */}
-      <section className="pt-24 md:pt-32 pb-12 md:pb-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black font-neue-haas text-squarage-black text-center mb-4">
-            Use Our Warped Shelf Designer
+      <section className="pt-24 md:pt-28 pb-8 md:pb-16 px-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Title with Warped blob */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black font-neue-haas text-squarage-black text-center mb-6 md:mb-8 flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
+            <span>Use Our</span>
+            <span
+              className="inline-block text-white"
+              style={{
+                backgroundColor: '#4A9B4E',
+                borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%',
+                padding: '0.1em 0.4em',
+              }}
+            >
+              Warped
+            </span>
+            <span>Shelf Designer</span>
           </h1>
-          <p className="text-lg md:text-2xl font-medium font-neue-haas text-squarage-black/70 text-center max-w-3xl mx-auto mb-8 md:mb-12">
-            Design your perfect warped shelf with our interactive 3D tool. Customize dimensions, layout, and finish.
-          </p>
 
-          {/* 3D Preview */}
-          <div className="relative w-full aspect-[4/3] md:aspect-[16/9] max-w-4xl mx-auto mb-8 md:mb-12">
+          {/* 3D Preview — large, fills width */}
+          <div
+            className="relative w-full aspect-[4/3] md:aspect-[2/1] mb-8 md:mb-10"
+            style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}
+          >
             <div
               className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
               onMouseDown={handleMouseDown}
@@ -237,7 +275,7 @@ export default function CustomPage() {
               onTouchCancel={handleTouchEnd}
             >
               <RenderedShelfView
-                isCorner={false}
+                isCorner={true}
                 flatParams={flatParams}
                 cornerParams={cornerParams}
                 rotation={rotation + Math.PI / 4}
@@ -257,12 +295,13 @@ export default function CustomPage() {
 
           {/* CTA Button */}
           <div className="flex justify-center">
-            <Link
+            <a
               href="/collections/warped/designer"
-              className="inline-block bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white"
+              onClick={handleStartDesigning}
+              className="inline-block bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white cursor-pointer"
             >
               Start Designing
-            </Link>
+            </a>
           </div>
         </div>
       </section>
