@@ -75,15 +75,15 @@ export default function WarpedProductsSection() {
                 <button
                   key={finish.name}
                   onClick={() => setSelectedFinish(finish.name)}
-                  className={`relative w-24 md:w-28 py-2.5 md:py-3 rounded-lg border-2 font-medium font-neue-haas text-sm md:text-base transition-all bg-cover bg-center overflow-hidden ${
+                  className={`relative w-24 md:w-28 py-2.5 md:py-3 rounded-lg border-2 font-medium font-neue-haas text-base md:text-lg transition-all bg-center overflow-hidden ${
                     isSelected
                       ? 'border-squarage-green shadow-md scale-105'
                       : 'border-transparent shadow-sm hover:shadow-md hover:scale-105'
                   }`}
-                  style={{ backgroundImage: `url(${finish.texture})` }}
+                  style={{ backgroundImage: `url(${finish.texture})`, backgroundSize: '400%' }}
                 >
                   <span className={`relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] font-semibold ${
-                    isSelected ? 'text-squarage-green' : 'text-white'
+                    isSelected ? 'text-[#2d7e32] drop-shadow-[0_1px_3px_rgba(255,255,255,0.7)]' : 'text-white'
                   }`}>
                     {finish.name}
                   </span>
