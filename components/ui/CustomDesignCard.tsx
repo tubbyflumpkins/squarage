@@ -114,7 +114,7 @@ export default function CustomDesignCard() {
 
       <div className="flex justify-between items-start">
         <h3 className="font-neue-haas font-medium text-sm md:text-lg text-gray-900">
-          Your Custom Design
+          Design Your Own
         </h3>
         <span className="font-neue-haas font-medium text-sm md:text-lg text-gray-900 ml-4">
           Custom
