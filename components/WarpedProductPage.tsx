@@ -283,9 +283,9 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
   // Get texture path for finish buttons
   const getFinishTexture = (finishName: string) => {
     const textureMapping: Record<string, string> = {
-      'Birch': '/textures/birch.webp',
-      'Oak': '/textures/oak.webp',
-      'Walnut': '/textures/walnut.webp',
+      'Birch': '/textures/swatches/birch.webp',
+      'Oak': '/textures/swatches/oak.webp',
+      'Walnut': '/textures/swatches/walnut.webp',
     }
     return textureMapping[finishName] || ''
   }

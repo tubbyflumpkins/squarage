@@ -39,9 +39,9 @@ const RenderedShelfView = dynamic(
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
 const WOOD_FINISHES: { name: WoodFinish; color: string; texture: string }[] = [
-  { name: 'Walnut', color: '#5D4E37', texture: '/textures/walnut.webp' },
-  { name: 'Oak', color: '#B08D57', texture: '/textures/oak.webp' },
-  { name: 'Birch', color: '#E8D5B7', texture: '/textures/birch.webp' },
+  { name: 'Walnut', color: '#5D4E37', texture: '/textures/swatches/walnut.webp' },
+  { name: 'Oak', color: '#B08D57', texture: '/textures/swatches/oak.webp' },
+  { name: 'Birch', color: '#E8D5B7', texture: '/textures/swatches/birch.webp' },
 ];
 
 // ---------------------------------------------------------------------------
