@@ -202,7 +202,6 @@ export default function Navigation() {
           >
             <AnimatedLogo
               inverted={useSpecialLogo}
-              isHomePage={isHomePage}
               className="h-[36px] lg:h-[42px]"
               instanceId="desktop"
             />
@@ -275,7 +274,6 @@ export default function Navigation() {
         >
           <AnimatedLogo
             inverted={useSpecialLogo}
-            isHomePage={isHomePage}
             className="h-[26px] sm:h-[33px] drop-shadow-lg"
             instanceId="mobile"
             textColor="#fffaf4"
