@@ -188,11 +188,11 @@ export default function Navigation() {
         className={headerClasses}
         style={headerStyle}
       >
-        <div className="relative px-6 py-6">
-          {/* Logo - positioned absolutely so it doesn't push nav items */}
+        <div className="flex items-center px-6 py-6">
+          {/* Logo */}
           <Link
             href="/"
-            className="absolute left-6 top-1/2 -translate-y-1/2 hover:scale-105 transition-transform duration-300 z-10"
+            className="hover:scale-105 transition-transform duration-300 flex-shrink-0 mr-4 lg:mr-6"
             onClick={(e) => {
               if (state.isOpen) {
                 e.preventDefault()
@@ -208,8 +208,8 @@ export default function Navigation() {
             />
           </Link>
 
-          {/* Desktop Menu Items - centered across full page width */}
-          <nav className="flex items-center justify-center gap-4 lg:gap-6">
+          {/* Desktop Menu Items - left-aligned after logo */}
+          <nav className="flex items-center gap-4 lg:gap-6">
             <Link
               href="/products"
               className={`font-neue-haas font-medium text-xl lg:text-2xl ${
@@ -276,7 +276,7 @@ export default function Navigation() {
           <AnimatedLogo
             inverted={useSpecialLogo}
             isHomePage={isHomePage}
-            className="h-[22px] sm:h-[29px] drop-shadow-lg"
+            className="h-[26px] sm:h-[33px] drop-shadow-lg"
             instanceId="mobile"
           />
         </Link>
@@ -289,19 +289,19 @@ export default function Navigation() {
         {/* Floating Menu Button - Mobile Only */}
         <button
           onClick={handleMenuToggle}
-          className={`fixed top-6 right-6 flex flex-col items-center justify-center w-8 h-8 sm:w-10 sm:h-10 space-y-1 group z-[10005] transition-all duration-300 drop-shadow-lg ${
+          className={`fixed top-6 right-6 flex flex-col items-center justify-center w-[26px] h-[26px] sm:w-[33px] sm:h-[33px] space-y-0.5 sm:space-y-1 group z-[10005] transition-all duration-300 drop-shadow-lg ${
             useSpecialLogo ? 'bg-white' : 'bg-squarage-green'
           }`}
           aria-label="Toggle menu"
           style={{ isolation: 'isolate' }}
         >
-          <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 transition-all duration-300 ${
+          <span className={`block h-0.5 w-3.5 sm:h-0.5 sm:w-[18px] transition-all duration-300 ${
             useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
           }`} />
-          <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 transition-all duration-300 ${
+          <span className={`block h-0.5 w-3.5 sm:h-0.5 sm:w-[18px] transition-all duration-300 ${
             useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
           }`} />
-          <span className={`block h-0.5 w-4 sm:h-1 sm:w-5 transition-all duration-300 ${
+          <span className={`block h-0.5 w-3.5 sm:h-0.5 sm:w-[18px] transition-all duration-300 ${
             useSpecialLogo ? 'bg-squarage-red' : 'bg-white'
           }`} />
         </button>
