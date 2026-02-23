@@ -511,7 +511,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
           </div>
 
           {/* Desktop Layout */}
-          <div className="hidden lg:block px-6">
+          <div className="hidden lg:block w-full px-6">
             <div className="flex flex-row">
             {/* Image Gallery - Left */}
             <div className="w-1/2 pr-8">
@@ -712,7 +712,14 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
         .warped-swiper-mobile .swiper-button-next {
           color: #333;
         }
-        
+
+        .warped-swiper .swiper-button-prev {
+          left: 4px;
+        }
+        .warped-swiper .swiper-button-next {
+          right: 4px;
+        }
+
         .warped-swiper .swiper-button-prev:after,
         .warped-swiper .swiper-button-next:after,
         .warped-swiper-mobile .swiper-button-prev:after,
