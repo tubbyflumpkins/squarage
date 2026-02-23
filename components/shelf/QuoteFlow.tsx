@@ -165,6 +165,7 @@ export default function QuoteFlow({
 
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitError, setSubmitError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const savedRef = useRef(false);
 
@@ -273,6 +274,7 @@ export default function QuoteFlow({
   const handleSubmit = useCallback(async () => {
     setSubmitting(true);
     setSubmitStatus('idle');
+    setSubmitError('');
     const shelfType = isCorner ? 'corner' : 'flat';
     const savedDesignObj = {
       id: `design-${Date.now()}`,
@@ -310,10 +312,12 @@ export default function QuoteFlow({
       } else {
         const errData = await res.json().catch(() => null);
         console.error('Quote API error:', res.status, errData);
+        setSubmitError(errData?.error || `Server error (${res.status})`);
         setSubmitStatus('error');
       }
     } catch (err) {
       console.error('Quote submit failed:', err);
+      setSubmitError(err instanceof Error ? err.message : 'Network error');
       setSubmitStatus('error');
     } finally {
       setSubmitting(false);
@@ -483,7 +487,7 @@ export default function QuoteFlow({
               </div>
             ) : submitStatus === 'error' ? (
               <div className="flex flex-col gap-3">
-                <p className="text-white font-neue-haas text-center py-2">Something went wrong. Please try again.</p>
+                <p className="text-white font-neue-haas text-center py-2">Something went wrong. Please try again.{submitError && <span className="block text-white/50 text-xs mt-1">{submitError}</span>}</p>
                 <button onClick={handleSubmit} className={nextBtnClass}>
                   <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Retry</span>
                   <span className="relative z-10 text-white">Retry</span>
