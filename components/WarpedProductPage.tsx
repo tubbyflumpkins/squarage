@@ -528,13 +528,13 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   >
                     {filteredImages.map((image, index) => (
                       <SwiperSlide key={index}>
-                        <div className="relative w-full h-[600px] flex items-center justify-center bg-cream">
+                        <div className="relative w-full">
                           <FastProductImage
                             src={image.src}
                             alt={image.altText || `${product.title} - ${selectedFinish} - View ${index + 1}`}
                             width={600}
                             height={600}
-                            className="w-full h-full object-contain"
+                            className="w-full h-auto object-contain"
                           />
                         </div>
                       </SwiperSlide>
