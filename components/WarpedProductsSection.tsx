@@ -67,7 +67,7 @@ export default function WarpedProductsSection() {
         <MobileCollectionPreloader products={products} />
 
         {/* Wood Finish Picker - pulled into padding with -mt-10, sticky below navbar */}
-        <div className="sticky top-[60px] md:top-[100px] z-10 flex justify-end -mt-[60px] mb-5 lg:-mt-[84px] lg:mb-[44px]">
+        <div className="flex justify-end -mt-[60px] mb-5 lg:-mt-[84px] lg:mb-[44px]">
           <div className="flex gap-2">
             {WOOD_FINISHES.map(finish => {
               const isSelected = selectedFinish === finish.name
