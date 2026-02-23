@@ -218,7 +218,7 @@ export default function Navigation() {
               Tiled
             </Link>
             <Link
-              href="/custom-projects"
+              href="/custom"
               className={`font-neue-haas font-medium text-xl lg:text-2xl ${
                 isContactPage ? 'text-white hover:text-squarage-orange' : 'text-squarage-green hover:text-squarage-orange'
               } transition-colors duration-200`}
@@ -357,7 +357,7 @@ export default function Navigation() {
               </li>
               <li>
                 <Link
-                  href="/custom-projects"
+                  href="/custom"
                   onClick={() => setIsMenuOpen(false)}
                   className={menuItemClass}
                 >

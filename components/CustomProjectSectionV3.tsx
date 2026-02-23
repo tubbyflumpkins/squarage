@@ -29,7 +29,7 @@ export default function CustomProjectSectionV3() {
                 </p>
                 
                 <Link
-                  href="/custom-projects"
+                  href="/custom"
                   className="inline-flex items-center gap-4 group"
                 >
                   <span className="bg-squarage-yellow text-white font-neue-haas font-bold text-lg md:text-xl py-3 px-6 border-2 border-squarage-yellow hover:bg-white hover:text-squarage-black hover:border-white transition-all duration-300">

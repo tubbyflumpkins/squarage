@@ -14,7 +14,7 @@ export default function CustomProjectSectionOriginal() {
         
         {/* Button - Green on mobile with blue hover, Yellow on desktop with blue hover */}
         <Link
-          href="/custom-projects"
+          href="/custom"
           className="inline-block bg-squarage-green md:bg-squarage-yellow font-bold font-neue-haas text-lg sm:text-3xl md:text-4xl py-2 px-5 md:py-4 md:px-8 border-2 border-squarage-green md:border-squarage-yellow hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 text-white"
         >
           Start Designing

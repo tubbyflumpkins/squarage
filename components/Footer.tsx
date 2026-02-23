@@ -71,8 +71,8 @@ export default function Footer() {
               <h3 className="font-neue-haas font-bold text-xl md:text-2xl mb-2">Information</h3>
               <ul className="space-y-1">
                 <li>
-                  <Link href="/custom-projects" className="text-lg md:text-xl opacity-90 hover:opacity-100 transition-opacity">
-                    Custom Projects
+                  <Link href="/custom" className="text-lg md:text-xl opacity-90 hover:opacity-100 transition-opacity">
+                    Custom
                   </Link>
                 </li>
                 <li>
