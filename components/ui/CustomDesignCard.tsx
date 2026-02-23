@@ -14,8 +14,8 @@ const RenderedShelfView = dynamic(
 export default function CustomDesignCard() {
   const [rotation, setRotation] = useState(15 * Math.PI / 180)
   const rotationRef = useRef(rotation)
-  const velocityRef = useRef(0.0008)
-  const targetSpeedRef = useRef(-0.0012)
+  const velocityRef = useRef(0.002)
+  const targetSpeedRef = useRef(-0.003)
   const lastFrameTime = useRef(0)
   const rotationSyncRef = useRef(rotation)
 

@@ -68,8 +68,8 @@ function computeColumnAngle(width: number, length: number): number {
 
 export default function CustomPage() {
   const [rotation, setRotation] = useState(15 * Math.PI / 180)
-  const velocityRef = useRef(0.0008)
-  const targetSpeedRef = useRef(-0.0012)
+  const velocityRef = useRef(0.002)
+  const targetSpeedRef = useRef(-0.003)
   const tilt = 25
 
   const amplitude = computeAmplitude(DEFAULTS.isCorner, DEFAULTS.height)
