@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import CartIcon from '@/components/CartIcon'
 import { useCart } from '@/context/CartContext'
+import AnimatedLogo from '@/components/AnimatedLogo'
 
 // Shared icon components to reduce bundle size
 const EmailIcon = ({ className }: { className: string }) => (
@@ -44,9 +44,8 @@ export default function Navigation() {
     return () => window.removeEventListener('quoteflow', handler)
   }, [])
 
-  // Use white logo on contact page or when quote flow is open
+  // Use white/inverted logo on contact page or when quote flow is open
   const useSpecialLogo = pathname === '/contact' || quoteFlowOpen
-  const logoSrc = useSpecialLogo ? '/images/logo_main_white_transparent_small.png' : '/images/logo_main_small.png'
 
   // Check if we're on specific pages
   const isTiledPage = pathname === '/collections/tiled'
@@ -189,11 +188,11 @@ export default function Navigation() {
         className={headerClasses}
         style={headerStyle}
       >
-        <div className="flex items-center px-6 py-6">
-          {/* Logo */}
-          <Link 
-            href="/" 
-            className="hover:scale-105 transition-transform duration-300 flex-shrink-0 mr-12"
+        <div className="relative px-6 py-6">
+          {/* Logo - positioned absolutely so it doesn't push nav items */}
+          <Link
+            href="/"
+            className="absolute left-6 top-1/2 -translate-y-1/2 hover:scale-105 transition-transform duration-300 z-10"
             onClick={(e) => {
               if (state.isOpen) {
                 e.preventDefault()
@@ -201,18 +200,16 @@ export default function Navigation() {
               }
             }}
           >
-            <Image
-              src={logoSrc}
-              alt="Squarage Studio"
-              width={254}
-              height={61}
-              className="w-auto h-[42px] lg:h-[50px]"
-              priority
+            <AnimatedLogo
+              inverted={useSpecialLogo}
+              isHomePage={isHomePage}
+              className="h-[36px] lg:h-[42px]"
+              instanceId="desktop"
             />
           </Link>
-          
-          {/* Desktop Menu Items - aligned left after logo */}
-          <nav className="flex items-center gap-4 lg:gap-6 flex-1">
+
+          {/* Desktop Menu Items - centered across full page width */}
+          <nav className="flex items-center justify-center gap-4 lg:gap-6">
             <Link
               href="/products"
               className={`font-neue-haas font-medium text-xl lg:text-2xl ${
@@ -276,13 +273,11 @@ export default function Navigation() {
             }
           }}
         >
-          <Image
-            src={logoSrc}
-            alt="Squarage Studio"
-            width={254}
-            height={61}
-            className="w-auto h-[26px] sm:h-[34px] drop-shadow-lg"
-            priority
+          <AnimatedLogo
+            inverted={useSpecialLogo}
+            isHomePage={isHomePage}
+            className="h-[22px] sm:h-[29px] drop-shadow-lg"
+            instanceId="mobile"
           />
         </Link>
 

@@ -61,16 +61,20 @@ export default function CollectionsSection() {
     }
   }
   
+  // Initial bounce animation disabled — keep code for later re-enable
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setInitialAnimationStarted(true)
-      const maxDelay = Math.max(...randomDelays)
-      setTimeout(() => {
-        setInitialAnimationCompleted(true)
-      }, maxDelay * 1000 + 1000)
-    }, 100)
+    // Skip the bounce animation, just mark as completed so hover still works
+    setInitialAnimationCompleted(true)
 
-    return () => clearTimeout(timer)
+    // Original animation code:
+    // const timer = setTimeout(() => {
+    //   setInitialAnimationStarted(true)
+    //   const maxDelay = Math.max(...randomDelays)
+    //   setTimeout(() => {
+    //     setInitialAnimationCompleted(true)
+    //   }, maxDelay * 1000 + 1000)
+    // }, 100)
+    // return () => clearTimeout(timer)
   }, [randomDelays])
 
   return (
