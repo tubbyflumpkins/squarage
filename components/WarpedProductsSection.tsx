@@ -61,13 +61,13 @@ export default function WarpedProductsSection() {
   }, [products])
 
   return (
-    <section className="pt-20 lg:pt-32 pb-20 px-6 bg-cream">
+    <section className="pt-28 lg:pt-32 pb-20 px-6 bg-cream">
       <div>
         {/* Mobile-only preloader - won't affect desktop */}
         <MobileCollectionPreloader products={products} />
 
         {/* Wood Finish Picker - pulled into padding with -mt-10, sticky below navbar */}
-        <div className="flex justify-end -mt-[60px] mb-5 lg:-mt-[84px] lg:mb-[44px] lg:pr-[1in]">
+        <div className="flex justify-center lg:justify-end -mt-[72px] mb-4 lg:-mt-[84px] lg:mb-[44px] lg:pr-[1in]">
           <div className="flex gap-2">
             {WOOD_FINISHES.map(finish => {
               const isSelected = selectedFinish === finish.name
