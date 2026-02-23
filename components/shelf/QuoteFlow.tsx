@@ -308,9 +308,12 @@ export default function QuoteFlow({
       if (res.ok) {
         setSubmitStatus('success');
       } else {
+        const errData = await res.json().catch(() => null);
+        console.error('Quote API error:', res.status, errData);
         setSubmitStatus('error');
       }
-    } catch {
+    } catch (err) {
+      console.error('Quote submit failed:', err);
       setSubmitStatus('error');
     } finally {
       setSubmitting(false);
