@@ -344,7 +344,7 @@ export default function QuoteFlow({
     ? `${width}" x ${length}" x ${height}"`
     : `${width}" x ${height}" x ${depth}"`;
 
-  const nextBtnClass = 'w-full py-4 bg-[#F5B74C] font-bold font-neue-haas text-2xl hover:bg-squarage-red hover:scale-[1.02] transition-all duration-300 relative';
+  const nextBtnClass = 'w-full py-4 bg-[#F5B74C] font-bold font-neue-haas text-2xl hover:bg-squarage-blue hover:scale-[1.02] transition-all duration-300 relative';
   const backBtnClass = 'text-white/60 hover:text-white text-[15px] font-medium font-neue-haas transition-colors cursor-pointer';
 
   const isReview = step === 4;
