@@ -44,20 +44,25 @@ export default function WarpedProductsSection() {
   }, [])
 
   // Preload ALL product images (all finishes) into simpleImageCache for instant switching
+  // Delayed to let the 3D renderer finish loading first
   useEffect(() => {
     if (products.length === 0) return
 
-    const allImageSrcs: string[] = []
-    products.forEach((product: any) => {
-      product.images?.forEach((img: any) => {
-        const src = img.src || img.url
-        if (src) allImageSrcs.push(src)
+    const timer = setTimeout(() => {
+      const allImageSrcs: string[] = []
+      products.forEach((product: any) => {
+        product.images?.forEach((img: any) => {
+          const src = img.src || img.url
+          if (src) allImageSrcs.push(src)
+        })
       })
-    })
 
-    if (allImageSrcs.length > 0) {
-      preloadImages(allImageSrcs, 4)
-    }
+      if (allImageSrcs.length > 0) {
+        preloadImages(allImageSrcs, 2)
+      }
+    }, 3000)
+
+    return () => clearTimeout(timer)
   }, [products])
 
   return (

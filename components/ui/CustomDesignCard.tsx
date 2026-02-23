@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState, useEffect } from 'react'
+import React, { useMemo, useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types'
@@ -10,6 +10,30 @@ const RenderedShelfView = dynamic(
   () => import('@/components/shelf/RenderedShelfView'),
   { ssr: false },
 )
+
+// Error boundary to prevent 3D renderer failures from crashing the page
+class ShelfErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+          <span className="text-gray-400 font-neue-haas text-sm">3D preview unavailable</span>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 interface CustomDesignCardProps {
   finish?: 'Walnut' | 'Oak' | 'Birch'
@@ -109,18 +133,20 @@ export default function CustomDesignCard({ finish = 'Oak' }: CustomDesignCardPro
     <Link href="/collections/warped/designer" className="block">
       <div className="relative aspect-[4/5] mb-4 border border-squarage-black">
         <div className="w-full h-full pointer-events-none">
-          <RenderedShelfView
-            isCorner={true}
-            flatParams={flatParams}
-            cornerParams={cornerParams}
-            rotation={rotation + Math.PI / 4}
-            tilt={25}
-            finish={finish}
-            width={45}
-            height={animHeight}
-            depth={10}
-            length={36}
-          />
+          <ShelfErrorBoundary>
+            <RenderedShelfView
+              isCorner={true}
+              flatParams={flatParams}
+              cornerParams={cornerParams}
+              rotation={rotation + Math.PI / 4}
+              tilt={25}
+              finish={finish}
+              width={45}
+              height={animHeight}
+              depth={10}
+              length={36}
+            />
+          </ShelfErrorBoundary>
         </div>
 
         {/* Design Your Own button — overlays bottom of card */}
