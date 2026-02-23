@@ -87,7 +87,7 @@ export default function CustomDesignCard() {
   }), [])
 
   return (
-    <Link href="/custom" className="block">
+    <Link href="/collections/warped/designer" className="block">
       <div className="relative aspect-[4/5] mb-4 border border-squarage-black">
         <div className="w-full h-full pointer-events-none">
           <RenderedShelfView
@@ -102,6 +102,13 @@ export default function CustomDesignCard() {
             depth={10}
             length={36}
           />
+        </div>
+
+        {/* Start Designing button — overlays bottom of card */}
+        <div className="absolute bottom-6 inset-x-6 z-10 pointer-events-auto">
+          <span className="block w-full text-center bg-squarage-green font-bold font-neue-haas text-sm sm:text-lg md:text-xl py-2.5 md:py-3 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white">
+            Start Designing
+          </span>
         </div>
       </div>
 
