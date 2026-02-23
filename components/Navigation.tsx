@@ -159,9 +159,9 @@ export default function Navigation() {
 
   // Apply page-specific styling
   if (quoteFlowOpen) {
-    // Quote flow overrides everything with red background + smooth transition
+    // Quote flow overrides everything with yellow background + smooth transition
     headerStyle = {
-      backgroundColor: '#F04E23',
+      backgroundColor: '#F5B74C',
       transition: 'background-color 0.3s ease'
     }
   } else if (isWarpedPage || isTiledPage || isHomePage) {

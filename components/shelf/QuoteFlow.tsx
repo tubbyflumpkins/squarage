@@ -48,7 +48,7 @@ function StepIndicator({ current }: { current: number }) {
               step < current
                 ? 'bg-white text-squarage-red'
                 : step === current
-                  ? 'bg-[#F5B74C] text-white'
+                  ? 'bg-squarage-red text-white'
                   : 'border-2 border-white/40 text-white/40'
             }`}
           >
@@ -72,7 +72,7 @@ function StepIndicator({ current }: { current: number }) {
 function ShadowLabel({ children }: { children: string }) {
   return (
     <h2 className="text-3xl md:text-5xl font-bold font-neue-haas text-white mb-4 relative">
-      <span className="absolute text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">{children}</span>
+      <span className="absolute text-squarage-red transform translate-x-0.5 translate-y-0.5">{children}</span>
       <span className="relative z-10">{children}</span>
     </h2>
   );
@@ -124,7 +124,7 @@ function ShadowInput({
           className={baseClasses}
         />
       )}
-      <div className="absolute top-0 left-0 w-full h-full bg-[#F5B74C] transform translate-x-2 translate-y-2" />
+      <div className="absolute top-0 left-0 w-full h-full bg-squarage-red transform translate-x-2 translate-y-2" />
     </div>
   );
 }
@@ -363,7 +363,7 @@ export default function QuoteFlow({
             />
             {errors.designName && <p className="text-white font-neue-haas text-sm -mt-4">{errors.designName}</p>}
             <button onClick={handleStep1} className={nextBtnClass}>
-              <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Next</span>
+              <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">Next</span>
               <span className="relative z-10 text-white">Next</span>
             </button>
             <button onClick={onClose} className={backBtnClass}>Back</button>
@@ -394,7 +394,7 @@ export default function QuoteFlow({
               {errors.email && <p className="text-white font-neue-haas text-sm mt-1">{errors.email}</p>}
             </div>
             <button onClick={handleStep2} className={nextBtnClass}>
-              <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Next</span>
+              <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">Next</span>
               <span className="relative z-10 text-white">Next</span>
             </button>
             <button onClick={goBack} className={backBtnClass}>Back</button>
@@ -413,7 +413,7 @@ export default function QuoteFlow({
               bottomHint="optional"
             />
             <button onClick={handleStep3} className={nextBtnClass}>
-              <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Review</span>
+              <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">Review</span>
               <span className="relative z-10 text-white">Review</span>
             </button>
             <button onClick={goBack} className={backBtnClass}>Back</button>
@@ -467,7 +467,7 @@ export default function QuoteFlow({
                   )}
                 </div>
               </div>
-              <div className="absolute top-0 left-0 w-full h-full bg-[#F5B74C] transform translate-x-2 translate-y-2" />
+              <div className="absolute top-0 left-0 w-full h-full bg-squarage-red transform translate-x-2 translate-y-2" />
             </div>
 
             {submitting ? (
@@ -489,7 +489,7 @@ export default function QuoteFlow({
               <div className="flex flex-col gap-3">
                 <p className="text-white font-neue-haas text-center py-2">Something went wrong. Please try again.{submitError && <span className="block text-white/50 text-xs mt-1">{submitError}</span>}</p>
                 <button onClick={handleSubmit} className={nextBtnClass}>
-                  <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Retry</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">Retry</span>
                   <span className="relative z-10 text-white">Retry</span>
                 </button>
                 <button onClick={goBack} className={backBtnClass}>Back</button>
@@ -497,7 +497,7 @@ export default function QuoteFlow({
             ) : (
               <>
                 <button onClick={handleSubmit} className={nextBtnClass}>
-                  <span className="absolute inset-0 flex items-center justify-center text-[#F5B74C] transform translate-x-0.5 translate-y-0.5">Submit Quote Request</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-squarage-red transform translate-x-0.5 translate-y-0.5">Submit Quote Request</span>
                   <span className="relative z-10 text-white">Submit Quote Request</span>
                 </button>
                 <button onClick={goBack} className={backBtnClass}>Back</button>
