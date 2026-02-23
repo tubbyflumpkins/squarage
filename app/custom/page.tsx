@@ -172,7 +172,7 @@ export default function CustomPage() {
         <div className="max-w-7xl mx-auto">
           {/* Title with Warped blob — floats over the 3D view */}
           <h1 className="relative z-10 text-4xl md:text-6xl lg:text-7xl font-black font-neue-haas text-squarage-black text-center mb-[-1em] md:mb-[-0.6em] flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
-            <span>Use Our</span>
+            <span>Try Our</span>
             <span
               className="inline-block text-white leading-none"
               style={{

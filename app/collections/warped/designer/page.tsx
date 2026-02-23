@@ -38,10 +38,10 @@ const RenderedShelfView = dynamic(
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
-const WOOD_FINISHES: { name: WoodFinish; color: string }[] = [
-  { name: 'Walnut', color: '#5D4E37' },
-  { name: 'Oak', color: '#B08D57' },
-  { name: 'Birch', color: '#E8D5B7' },
+const WOOD_FINISHES: { name: WoodFinish; color: string; texture: string }[] = [
+  { name: 'Walnut', color: '#5D4E37', texture: '/textures/walnut.webp' },
+  { name: 'Oak', color: '#B08D57', texture: '/textures/oak.webp' },
+  { name: 'Birch', color: '#E8D5B7', texture: '/textures/birch.webp' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -975,8 +975,8 @@ export default function DesignerPage() {
                 >
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-4 h-4 border border-gray-300 rounded-full"
-                      style={{ backgroundColor: f.color }}
+                      className="w-4 h-4 border border-gray-300 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${f.texture})` }}
                     />
                     <span>{f.name}</span>
                   </div>

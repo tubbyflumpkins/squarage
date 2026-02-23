@@ -280,14 +280,14 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     return size || 'Custom sizing available'
   }
 
-  // Get color style for finish buttons
-  const getFinishColor = (finishName: string) => {
-    const colorMapping: Record<string, string> = {
-      'Birch': '#E8D5B7',
-      'Oak': '#B08D57',
-      'Walnut': '#5D4E37'
+  // Get texture path for finish buttons
+  const getFinishTexture = (finishName: string) => {
+    const textureMapping: Record<string, string> = {
+      'Birch': '/textures/birch.webp',
+      'Oak': '/textures/oak.webp',
+      'Walnut': '/textures/walnut.webp',
     }
-    return colorMapping[finishName] || '#999'
+    return textureMapping[finishName] || ''
   }
 
   // Handle scroll for sticky cart
@@ -422,9 +422,9 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <div 
-                        className="w-4 h-4 border border-gray-300 rounded-full"
-                        style={{ backgroundColor: getFinishColor(finish) }}
+                      <div
+                        className="w-4 h-4 border border-gray-300 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${getFinishTexture(finish)})` }}
                       />
                       <span>{finish}</span>
                     </div>
@@ -613,9 +613,9 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-5 h-5 border border-gray-300 rounded-full"
-                          style={{ backgroundColor: getFinishColor(finish) }}
+                        <div
+                          className="w-5 h-5 border border-gray-300 bg-cover bg-center"
+                          style={{ backgroundImage: `url(${getFinishTexture(finish)})` }}
                         />
                         <span>{finish}</span>
                       </div>
