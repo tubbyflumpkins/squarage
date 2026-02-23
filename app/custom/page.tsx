@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
+import { useMemo, useRef, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
@@ -166,65 +166,8 @@ export default function CustomPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Drag interaction for the 3D view
-  const isDraggingRef = useRef(false)
-  const lastMouseX = useRef(0)
-  const lastTime = useRef(0)
-  const dragVelocityRef = useRef(0)
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    isDraggingRef.current = true
-    lastMouseX.current = e.clientX
-    lastTime.current = performance.now()
-    dragVelocityRef.current = 0
-  }, [])
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDraggingRef.current) return
-    const now = performance.now()
-    const dx = e.clientX - lastMouseX.current
-    const dt = now - lastTime.current
-    if (dt > 0) dragVelocityRef.current = (dx * 0.002) / Math.max(dt, 8)
-    setRotation((r) => ((r + dx * 0.005) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2))
-    lastMouseX.current = e.clientX
-    lastTime.current = now
-  }, [])
-
-  const handleMouseUp = useCallback(() => {
-    if (isDraggingRef.current) {
-      velocityRef.current = Math.max(-0.05, Math.min(0.05, dragVelocityRef.current * 30))
-      isDraggingRef.current = false
-    }
-  }, [])
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length !== 1) return
-    isDraggingRef.current = true
-    lastMouseX.current = e.touches[0].clientX
-    lastTime.current = performance.now()
-    dragVelocityRef.current = 0
-  }, [])
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDraggingRef.current || e.touches.length !== 1) return
-    const now = performance.now()
-    const dx = e.touches[0].clientX - lastMouseX.current
-    const dt = now - lastTime.current
-    if (dt > 0) dragVelocityRef.current = (-dx * 0.004) / Math.max(dt, 8)
-    setRotation((r) => ((r - dx * 0.01) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2))
-    lastMouseX.current = e.touches[0].clientX
-    lastTime.current = now
-  }, [])
-
-  const handleTouchEnd = useCallback(() => {
-    if (isDraggingRef.current) {
-      velocityRef.current = Math.max(-0.05, Math.min(0.05, dragVelocityRef.current * 30))
-      isDraggingRef.current = false
-    }
-  }, [])
-
   // Navigate to designer with smooth transition
-  const handleStartDesigning = useCallback((e: React.MouseEvent) => {
+  const handleStartDesigning = (e: React.MouseEvent) => {
     e.preventDefault()
     sessionStorage.setItem('designer-transition', 'true')
 
@@ -235,7 +178,7 @@ export default function CustomPage() {
     } else {
       navigate()
     }
-  }, [router])
+  }
 
   return (
     <div className="min-h-screen bg-cream">
@@ -258,22 +201,12 @@ export default function CustomPage() {
             <span>Shelf Designer</span>
           </h1>
 
-          {/* 3D Preview — large, fills width */}
+          {/* 3D Preview — auto-rotating, no drag interaction */}
           <div
             className="relative w-full aspect-[4/3] md:aspect-[2/1] mb-8 md:mb-10"
             style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}
           >
-            <div
-              className="w-full h-full cursor-grab active:cursor-grabbing touch-none"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onTouchCancel={handleTouchEnd}
-            >
+            <div className="w-full h-full pointer-events-none">
               <RenderedShelfView
                 isCorner={true}
                 flatParams={flatParams}
@@ -287,21 +220,17 @@ export default function CustomPage() {
                 length={DEFAULTS.length}
               />
             </div>
-            <span className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 text-[12px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black/40 select-none pointer-events-none">
-              <span className="hidden md:inline">Drag to rotate</span>
-              <span className="md:hidden">Swipe to rotate</span>
-            </span>
-          </div>
 
-          {/* CTA Button */}
-          <div className="flex justify-center">
-            <a
-              href="/collections/warped/designer"
-              onClick={handleStartDesigning}
-              className="inline-block bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white cursor-pointer"
-            >
-              Start Designing
-            </a>
+            {/* CTA Button — floating above viewer */}
+            <div className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 z-10">
+              <a
+                href="/collections/warped/designer"
+                onClick={handleStartDesigning}
+                className="inline-block bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white cursor-pointer"
+              >
+                Start Designing
+              </a>
+            </div>
           </div>
         </div>
       </section>
