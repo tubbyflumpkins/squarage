@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import { shopifyApi, Product } from '@/lib/shopify'
 import ProductGrid from '@/components/ProductGrid'
 import MobileCollectionPreloader from '@/components/MobileCollectionPreloader'
@@ -9,9 +8,9 @@ import CustomDesignCard from '@/components/ui/CustomDesignCard'
 import { preloadImages } from '@/lib/simplePreloader'
 
 const WOOD_FINISHES = [
-  { name: 'Walnut', texture: '/textures/swatches/walnut.webp' },
-  { name: 'Oak', texture: '/textures/swatches/oak.webp' },
-  { name: 'Birch', texture: '/textures/swatches/birch.webp' },
+  { name: 'Walnut', texture: '/textures/walnut.webp' },
+  { name: 'Oak', texture: '/textures/oak.webp' },
+  { name: 'Birch', texture: '/textures/birch.webp' },
 ] as const
 
 export default function WarpedProductsSection() {
@@ -69,27 +68,28 @@ export default function WarpedProductsSection() {
 
         {/* Wood Finish Picker - pulled into padding with -mt-10, sticky below navbar */}
         <div className="sticky top-[60px] md:top-[100px] z-10 flex justify-end -mt-[60px] mb-5 lg:-mt-[84px] lg:mb-[44px]">
-          <div className="flex gap-2 bg-cream/90 backdrop-blur-sm py-1 px-2 rounded-sm">
-            {WOOD_FINISHES.map(finish => (
-              <button
-                key={finish.name}
-                onClick={() => setSelectedFinish(finish.name)}
-                className={`flex items-center gap-2 px-3 py-1.5 border-2 font-medium font-neue-haas text-sm transition-all ${
-                  selectedFinish === finish.name
-                    ? 'border-squarage-green bg-green-50'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                <Image
-                  src={finish.texture}
-                  alt={finish.name}
-                  width={20}
-                  height={20}
-                  className="w-5 h-5 border border-gray-300"
-                />
-                <span>{finish.name}</span>
-              </button>
-            ))}
+          <div className="flex gap-2">
+            {WOOD_FINISHES.map(finish => {
+              const isSelected = selectedFinish === finish.name
+              return (
+                <button
+                  key={finish.name}
+                  onClick={() => setSelectedFinish(finish.name)}
+                  className={`relative w-24 md:w-28 py-2.5 md:py-3 rounded-lg border-2 font-medium font-neue-haas text-sm md:text-base transition-all bg-cover bg-center overflow-hidden ${
+                    isSelected
+                      ? 'border-squarage-green shadow-md scale-105'
+                      : 'border-transparent shadow-sm hover:shadow-md hover:scale-105'
+                  }`}
+                  style={{ backgroundImage: `url(${finish.texture})` }}
+                >
+                  <span className={`relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] font-semibold ${
+                    isSelected ? 'text-squarage-green' : 'text-white'
+                  }`}>
+                    {finish.name}
+                  </span>
+                </button>
+              )
+            })}
           </div>
         </div>
 
