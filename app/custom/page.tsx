@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useRef, useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -68,7 +67,6 @@ function computeColumnAngle(width: number, length: number): number {
 }
 
 export default function CustomPage() {
-  const router = useRouter()
   const [rotation, setRotation] = useState(15 * Math.PI / 180)
   const velocityRef = useRef(0.0008)
   const targetSpeedRef = useRef(-0.0012)
@@ -166,19 +164,6 @@ export default function CustomPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Navigate to designer with smooth transition
-  const handleStartDesigning = (e: React.MouseEvent) => {
-    e.preventDefault()
-    sessionStorage.setItem('designer-transition', 'true')
-
-    const navigate = () => router.push('/collections/warped/designer')
-
-    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
-      (document as any).startViewTransition(navigate)
-    } else {
-      navigate()
-    }
-  }
 
   return (
     <div className="min-h-screen bg-cream">
@@ -223,13 +208,12 @@ export default function CustomPage() {
 
             {/* CTA Button — floating above viewer */}
             <div className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 z-10">
-              <a
+              <Link
                 href="/collections/warped/designer"
-                onClick={handleStartDesigning}
                 className="inline-block bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white cursor-pointer"
               >
                 Start Designing
-              </a>
+              </Link>
             </div>
           </div>
         </div>
