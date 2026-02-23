@@ -298,7 +298,9 @@ export default function AnimatedLogo({
       <div
         ref={stageRef}
         style={{
-          position: 'relative',
+          position: 'absolute',
+          top: 0,
+          left: 0,
           width: STAGE_W,
           height: STAGE_H,
           transformOrigin: 'left top',
