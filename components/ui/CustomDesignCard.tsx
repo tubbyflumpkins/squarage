@@ -11,12 +11,19 @@ const RenderedShelfView = dynamic(
   { ssr: false },
 )
 
-export default function CustomDesignCard() {
+interface CustomDesignCardProps {
+  finish?: 'Walnut' | 'Oak' | 'Birch'
+}
+
+export default function CustomDesignCard({ finish = 'Oak' }: CustomDesignCardProps) {
   const [rotation, setRotation] = useState(15 * Math.PI / 180)
+  const [animHeight, setAnimHeight] = useState(24)
+  const [animShelfCount, setAnimShelfCount] = useState(3)
   const rotationRef = useRef(rotation)
-  const velocityRef = useRef(0.0008)
-  const targetSpeedRef = useRef(-0.0012)
+  const velocityRef = useRef(0.002)
+  const targetSpeedRef = useRef(-0.003)
   const lastFrameTime = useRef(0)
+  const phaseRef = useRef(0)
   const rotationSyncRef = useRef(rotation)
 
   if (rotation !== rotationSyncRef.current) {
@@ -24,7 +31,7 @@ export default function CustomDesignCard() {
     rotationSyncRef.current = rotation
   }
 
-  const baseSpeed = 0.0012
+  const baseSpeed = 0.003
   const friction = 0.97
   const blendRate = 0.01
 
@@ -45,6 +52,7 @@ export default function CustomDesignCard() {
       const dt = lastFrameTime.current ? Math.min((time - lastFrameTime.current) / 16.667, 3) : 1
       lastFrameTime.current = time
 
+      // Rotation boomerang
       for (let i = 0; i < dt; i++) {
         velocityRef.current = velocityRef.current * friction + (targetSpeedRef.current - velocityRef.current) * blendRate
       }
@@ -60,8 +68,16 @@ export default function CustomDesignCard() {
 
       rotationRef.current = ((newRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)
 
+      // Height & shelf count oscillation (smooth sine wave, ~8s full cycle)
+      phaseRef.current += dt * 0.008
+      const t = (Math.sin(phaseRef.current) + 1) / 2 // 0 → 1 → 0
+      const h = 24 + t * (50 - 24)
+      const sc = Math.round(3 + t * (5 - 3))
+
       if (time - lastStateUpdate > STATE_INTERVAL) {
         setRotation(rotationRef.current)
+        setAnimHeight(h)
+        setAnimShelfCount(sc)
         lastStateUpdate = time
       }
 
@@ -72,19 +88,22 @@ export default function CustomDesignCard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Compute amplitude from height (same formula as designer)
+  const animAmplitude = 2 + Math.max(0, Math.min(1, (animHeight - 24) / (76 - 24)))
+
   const flatParams: ShelfParams = useMemo(() => ({
-    width: 45, height: 24, depth: 10, length: 36,
-    amplitude: 2, shelfCount: 3, columnCount: 4,
+    width: 45, height: animHeight, depth: 10, length: 36,
+    amplitude: animAmplitude, shelfCount: animShelfCount, columnCount: 4,
     shelfOffset: 2, columnOffset: 8,
     roundLeft: false, roundRight: false,
-  }), [])
+  }), [animHeight, animAmplitude, animShelfCount])
 
   const cornerParams: CornerShelfParams = useMemo(() => ({
-    width: 45, length: 36, depth: 10, height: 24,
-    amplitude: 2, shelfCount: 3, columnCount: 4,
+    width: 45, length: 36, depth: 10, height: animHeight,
+    amplitude: animAmplitude, shelfCount: animShelfCount, columnCount: 4,
     shelfOffset: 2, columnOffset: 8,
     columnAngle: 52.5, wallAlign: 1,
-  }), [])
+  }), [animHeight, animAmplitude, animShelfCount])
 
   return (
     <Link href="/collections/warped/designer" className="block">
@@ -96,9 +115,9 @@ export default function CustomDesignCard() {
             cornerParams={cornerParams}
             rotation={rotation + Math.PI / 4}
             tilt={25}
-            finish="Oak"
+            finish={finish}
             width={45}
-            height={24}
+            height={animHeight}
             depth={10}
             length={36}
           />
@@ -106,7 +125,7 @@ export default function CustomDesignCard() {
 
         {/* Design Your Own button — overlays bottom of card */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
-          <span className="inline-block text-center bg-squarage-green font-bold font-neue-haas text-sm sm:text-lg md:text-xl py-2.5 md:py-3 px-6 md:px-8 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white whitespace-nowrap">
+          <span className="inline-block text-center bg-squarage-green font-bold font-neue-haas text-lg sm:text-xl md:text-2xl py-2.5 md:py-3 px-6 md:px-8 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white whitespace-nowrap">
             Design Your Own
           </span>
         </div>

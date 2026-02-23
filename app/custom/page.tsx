@@ -68,8 +68,8 @@ function computeColumnAngle(width: number, length: number): number {
 
 export default function CustomPage() {
   const [rotation, setRotation] = useState(15 * Math.PI / 180)
-  const velocityRef = useRef(0.0008)
-  const targetSpeedRef = useRef(-0.0012)
+  const velocityRef = useRef(0.002)
+  const targetSpeedRef = useRef(-0.003)
   const tilt = 25
 
   const amplitude = computeAmplitude(DEFAULTS.isCorner, DEFAULTS.height)
@@ -114,7 +114,7 @@ export default function CustomPage() {
     rotationSyncRef.current = rotation
   }
 
-  const baseSpeed = 0.0012
+  const baseSpeed = 0.003
   const friction = 0.97
   const blendRate = 0.01
   const minAngleDeg = -30
@@ -174,11 +174,11 @@ export default function CustomPage() {
           <h1 className="relative z-10 text-4xl md:text-6xl lg:text-7xl font-black font-neue-haas text-squarage-black text-center mb-[-1em] md:mb-[-0.6em] flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
             <span>Try Our</span>
             <span
-              className="inline-block text-white leading-none"
+              className="inline-block text-white"
               style={{
                 backgroundColor: '#4A9B4E',
                 borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%',
-                padding: '0.25em 0.45em 0.3em',
+                padding: '0.35em 0.5em 0.4em',
               }}
             >
               Warped

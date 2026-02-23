@@ -32,6 +32,11 @@ const RenderedShelfView = dynamic(
   },
 );
 
+const QuoteFlow = dynamic(
+  () => import('@/components/shelf/QuoteFlow'),
+  { ssr: false },
+);
+
 // ---------------------------------------------------------------------------
 // Types & Constants
 // ---------------------------------------------------------------------------
@@ -393,6 +398,7 @@ export default function DesignerPage() {
   const [dimUnit, setDimUnit] = useState<'in' | 'cm'>('in');
   const [showDesignsPanel, setShowDesignsPanel] = useState(false);
   const [closingDesignsPanel, setClosingDesignsPanel] = useState(false);
+  const [showQuoteFlow, setShowQuoteFlow] = useState(false);
 
   const closeDesignsPanel = useCallback(() => {
     setClosingDesignsPanel(true);
@@ -1036,7 +1042,7 @@ export default function DesignerPage() {
             </div>
           </div>
 
-          <button className="mt-5 w-full py-4 bg-squarage-orange text-white text-2xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300">
+          <button onClick={() => setShowQuoteFlow(true)} className="mt-5 w-full py-4 bg-squarage-orange text-white text-2xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300">
             Get Quote
           </button>
         </div>
@@ -1045,7 +1051,7 @@ export default function DesignerPage() {
       {/* ============================================================= */}
       {/* MOBILE: Sticky bottom price bar */}
       {/* ============================================================= */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-3 flex items-center justify-between"
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-3 flex items-center justify-between transition-opacity duration-300 ${showQuoteFlow ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
         style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
         <div className="flex flex-col">
@@ -1056,7 +1062,7 @@ export default function DesignerPage() {
             {dimStr} &middot; {finish}
           </span>
         </div>
-        <button className="px-6 py-3 bg-squarage-orange text-white text-xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 shrink-0">
+        <button onClick={() => setShowQuoteFlow(true)} className="px-6 py-3 bg-squarage-orange text-white text-xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 shrink-0">
           Get Quote
         </button>
       </div>
@@ -1100,6 +1106,43 @@ export default function DesignerPage() {
           </div>
         </div>
       )}
+
+      {/* Quote Flow overlay — always mounted, slides in/out via transform */}
+      <div
+        className="fixed inset-0 z-50"
+        style={{
+          transform: showQuoteFlow ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 500ms cubic-bezier(0.32, 0.72, 0, 1)',
+          willChange: 'transform',
+          pointerEvents: showQuoteFlow ? 'auto' : 'none',
+        }}
+      >
+        <QuoteFlow
+          isCorner={p.isCorner}
+          flatParams={flatParams}
+          cornerParams={cornerParams}
+          rotation={rotation}
+          tilt={tilt}
+          finish={finish}
+          width={p.width}
+          height={p.height}
+          depth={p.depth}
+          length={p.length}
+          price={price}
+          shelfCount={p.shelfCount}
+          columnCount={p.columnCount}
+          roundLeft={p.roundLeft}
+          roundRight={p.roundRight}
+          amplitude={amplitude}
+          shelfOffset={shelfOffset}
+          columnOffset={columnOffset}
+          columnAngle={columnAngle}
+          onClose={() => setShowQuoteFlow(false)}
+          saveDesign={saveDesign}
+          getSvgPreview={getSvgPreview}
+          active={showQuoteFlow}
+        />
+      </div>
     </div>
   );
 }

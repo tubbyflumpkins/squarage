@@ -11,9 +11,10 @@ const THICKNESS = 0.5; // inches
 interface CornerShelfMeshesProps {
   params: CornerShelfParams;
   finish: WoodFinish;
+  wireframe?: boolean;
 }
 
-export default function CornerShelfMeshes({ params, finish }: CornerShelfMeshesProps) {
+export default function CornerShelfMeshes({ params, finish, wireframe }: CornerShelfMeshesProps) {
   const material = useWoodMaterial(finish);
 
   const geometries = useMemo(() => {
@@ -38,10 +39,22 @@ export default function CornerShelfMeshes({ params, finish }: CornerShelfMeshesP
   return (
     <group>
       {geometries.shelfGeos.map((geo, i) => (
-        <mesh key={`s${i}`} geometry={geo} material={material} castShadow receiveShadow />
+        <mesh key={`s${i}`} geometry={geo} castShadow receiveShadow>
+          {wireframe ? (
+            <meshStandardMaterial wireframe color="white" />
+          ) : (
+            <primitive object={material} attach="material" />
+          )}
+        </mesh>
       ))}
       {geometries.columnGeos.map((geo, i) => (
-        <mesh key={`c${i}`} geometry={geo} material={material} castShadow receiveShadow />
+        <mesh key={`c${i}`} geometry={geo} castShadow receiveShadow>
+          {wireframe ? (
+            <meshStandardMaterial wireframe color="white" />
+          ) : (
+            <primitive object={material} attach="material" />
+          )}
+        </mesh>
       ))}
     </group>
   );

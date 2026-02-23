@@ -11,6 +11,7 @@ interface ProductGridProps {
   emptyMessage?: string
   className?: string
   children?: React.ReactNode
+  selectedFinish?: string
 }
 
 export default function ProductGrid({
@@ -19,6 +20,7 @@ export default function ProductGrid({
   emptyMessage = "No products found.",
   className = "",
   children,
+  selectedFinish,
 }: ProductGridProps) {
   const { preloadProductImages, isProductPreloaded, getCacheStats } = useImageCache()
 
@@ -106,6 +108,7 @@ export default function ProductGrid({
           <ProductCard
             key={product.id}
             product={product}
+            selectedFinish={selectedFinish}
           />
         ))}
         {children}
