@@ -489,7 +489,7 @@ export default function QuoteFlow({
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-squarage-red overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-squarage-red overflow-hidden" style={{ animation: 'slideInRight 400ms cubic-bezier(0.32, 0.72, 0, 1) forwards' }}>
       {/* Close button */}
       <button
         onClick={onClose}

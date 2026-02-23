@@ -775,16 +775,7 @@ export default function DesignerPage() {
   };
 
   return (
-    <div className="h-[100dvh] overflow-hidden">
-      <div
-        className="flex w-[200vw] h-full"
-        style={{
-          transform: showQuoteFlow ? 'translateX(-100vw)' : 'translateX(0)',
-          transition: 'transform 500ms cubic-bezier(0.32, 0.72, 0, 1)',
-        }}
-      >
-      {/* --- Designer page (left panel) --- */}
-      <div className="w-[100vw] h-full flex flex-col bg-cream overflow-hidden pt-[60px] md:pt-[90px] lg:pt-[98px]">
+    <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden pt-[60px] md:pt-[90px] lg:pt-[98px]">
       {/* Main grid — mobile: flex column, desktop: 3-col grid */}
       <div className="flex-1 flex flex-col md:grid md:grid-cols-[320px_minmax(0,1fr)_340px] md:grid-rows-[2fr_1fr] min-h-0 border-t border-squarage-black">
 
@@ -1115,36 +1106,37 @@ export default function DesignerPage() {
           </div>
         </div>
       )}
-    </div>
-    {/* --- Quote Flow (right panel) --- */}
-    <div className="w-[100vw] h-full">
-      <QuoteFlow
-        isCorner={p.isCorner}
-        flatParams={flatParams}
-        cornerParams={cornerParams}
-        rotation={rotation}
-        tilt={tilt}
-        finish={finish}
-        width={p.width}
-        height={p.height}
-        depth={p.depth}
-        length={p.length}
-        price={price}
-        shelfCount={p.shelfCount}
-        columnCount={p.columnCount}
-        roundLeft={p.roundLeft}
-        roundRight={p.roundRight}
-        amplitude={amplitude}
-        shelfOffset={shelfOffset}
-        columnOffset={columnOffset}
-        columnAngle={columnAngle}
-        onClose={() => setShowQuoteFlow(false)}
-        saveDesign={saveDesign}
-        getSvgPreview={getSvgPreview}
-        active={showQuoteFlow}
-      />
-    </div>
-    </div>
+
+      {/* Quote Flow overlay */}
+      {showQuoteFlow && (
+        <div className="fixed inset-0 z-50">
+          <QuoteFlow
+            isCorner={p.isCorner}
+            flatParams={flatParams}
+            cornerParams={cornerParams}
+            rotation={rotation}
+            tilt={tilt}
+            finish={finish}
+            width={p.width}
+            height={p.height}
+            depth={p.depth}
+            length={p.length}
+            price={price}
+            shelfCount={p.shelfCount}
+            columnCount={p.columnCount}
+            roundLeft={p.roundLeft}
+            roundRight={p.roundRight}
+            amplitude={amplitude}
+            shelfOffset={shelfOffset}
+            columnOffset={columnOffset}
+            columnAngle={columnAngle}
+            onClose={() => setShowQuoteFlow(false)}
+            saveDesign={saveDesign}
+            getSvgPreview={getSvgPreview}
+            active={showQuoteFlow}
+          />
+        </div>
+      )}
     </div>
   );
 }
