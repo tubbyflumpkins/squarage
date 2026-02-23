@@ -3,21 +3,25 @@ import * as THREE from 'three';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
+// Mobile gets 1024x1024 textures, desktop gets 2048x2048
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+const TEX_PREFIX = isMobile ? '/textures/mobile' : '/textures';
+
 const TEXTURE_PATHS: Record<WoodFinish, { color: string; roughness: string; normal: string }> = {
   Walnut: {
-    color: '/textures/walnut.png',
-    roughness: '/textures/walnut_roughness.png',
-    normal: '/textures/walnut_normal.png',
+    color: `${TEX_PREFIX}/walnut.webp`,
+    roughness: `${TEX_PREFIX}/walnut_roughness.webp`,
+    normal: `${TEX_PREFIX}/walnut_normal.png`,
   },
   Oak: {
-    color: '/textures/oak.png',
-    roughness: '/textures/oak_roughness.png',
-    normal: '/textures/oak_normal.png',
+    color: `${TEX_PREFIX}/oak.webp`,
+    roughness: `${TEX_PREFIX}/oak_roughness.webp`,
+    normal: `${TEX_PREFIX}/oak_normal.png`,
   },
   Birch: {
-    color: '/textures/birch.png',
-    roughness: '/textures/birch_roughness.png',
-    normal: '/textures/birch_normal.png',
+    color: `${TEX_PREFIX}/birch.webp`,
+    roughness: `${TEX_PREFIX}/birch_roughness.webp`,
+    normal: `${TEX_PREFIX}/birch_normal.png`,
   },
 };
 

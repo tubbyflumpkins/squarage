@@ -280,14 +280,14 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     return size || 'Custom sizing available'
   }
 
-  // Get color style for finish buttons
-  const getFinishColor = (finishName: string) => {
-    const colorMapping: Record<string, string> = {
-      'Birch': '#E8D5B7',
-      'Oak': '#B08D57',
-      'Walnut': '#5D4E37'
+  // Get texture path for finish buttons
+  const getFinishTexture = (finishName: string) => {
+    const textureMapping: Record<string, string> = {
+      'Birch': '/textures/swatches/birch.webp',
+      'Oak': '/textures/swatches/oak.webp',
+      'Walnut': '/textures/swatches/walnut.webp',
     }
-    return colorMapping[finishName] || '#999'
+    return textureMapping[finishName] || ''
   }
 
   // Handle scroll for sticky cart
@@ -422,9 +422,9 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <div 
-                        className="w-4 h-4 border border-gray-300 rounded-full"
-                        style={{ backgroundColor: getFinishColor(finish) }}
+                      <div
+                        className="w-4 h-4 border border-gray-300 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${getFinishTexture(finish)})` }}
                       />
                       <span>{finish}</span>
                     </div>
@@ -511,7 +511,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
           </div>
 
           {/* Desktop Layout */}
-          <div className="hidden lg:block px-6">
+          <div className="hidden lg:block w-full px-6">
             <div className="flex flex-row">
             {/* Image Gallery - Left */}
             <div className="w-1/2 pr-8">
@@ -528,13 +528,13 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   >
                     {filteredImages.map((image, index) => (
                       <SwiperSlide key={index}>
-                        <div className="relative w-full h-[600px] flex items-center justify-center bg-cream">
+                        <div className="relative w-full">
                           <FastProductImage
                             src={image.src}
                             alt={image.altText || `${product.title} - ${selectedFinish} - View ${index + 1}`}
                             width={600}
                             height={600}
-                            className="w-full h-full object-contain"
+                            className="w-full h-auto object-contain"
                           />
                         </div>
                       </SwiperSlide>
@@ -613,9 +613,9 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-5 h-5 border border-gray-300 rounded-full"
-                          style={{ backgroundColor: getFinishColor(finish) }}
+                        <div
+                          className="w-5 h-5 border border-gray-300 bg-cover bg-center"
+                          style={{ backgroundImage: `url(${getFinishTexture(finish)})` }}
                         />
                         <span>{finish}</span>
                       </div>
@@ -712,7 +712,14 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
         .warped-swiper-mobile .swiper-button-next {
           color: #333;
         }
-        
+
+        .warped-swiper .swiper-button-prev {
+          left: 4px;
+        }
+        .warped-swiper .swiper-button-next {
+          right: 4px;
+        }
+
         .warped-swiper .swiper-button-prev:after,
         .warped-swiper .swiper-button-next:after,
         .warped-swiper-mobile .swiper-button-prev:after,

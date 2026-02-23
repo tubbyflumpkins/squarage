@@ -23,7 +23,7 @@ export default function CustomProjectSectionV2() {
         </p>
         
         <Link
-          href="/custom-projects"
+          href="/custom"
           className="inline-block bg-white text-squarage-black font-neue-haas font-bold text-xl md:text-2xl py-4 px-10 hover:bg-squarage-black hover:text-white transition-all duration-300 transform hover:scale-105"
         >
           Start Your Project

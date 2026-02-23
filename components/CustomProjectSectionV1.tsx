@@ -14,7 +14,7 @@ export default function CustomProjectSectionV1() {
           
           {/* Right side - CTA */}
           <Link
-            href="/custom-projects"
+            href="/custom"
             className="group flex items-center gap-3 text-white hover:text-squarage-yellow transition-colors duration-300"
           >
             <span className="text-xl md:text-2xl font-neue-haas">Start Designing</span>

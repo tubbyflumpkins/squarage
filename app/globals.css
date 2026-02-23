@@ -291,4 +291,11 @@ body {
   .compact-slider-track::-moz-range-thumb { width: 28px !important; height: 28px !important; }
 }
 
+/* View Transitions — smooth page navigation for shelf designer */
+::view-transition-old(shelf-viewer),
+::view-transition-new(shelf-viewer) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+}
+
 /* Remove Webflow cursor styles - no custom cursor */

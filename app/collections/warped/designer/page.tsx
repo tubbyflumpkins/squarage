@@ -38,10 +38,10 @@ const RenderedShelfView = dynamic(
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
-const WOOD_FINISHES: { name: WoodFinish; color: string }[] = [
-  { name: 'Walnut', color: '#5D4E37' },
-  { name: 'Oak', color: '#B08D57' },
-  { name: 'Birch', color: '#E8D5B7' },
+const WOOD_FINISHES: { name: WoodFinish; color: string; texture: string }[] = [
+  { name: 'Walnut', color: '#5D4E37', texture: '/textures/swatches/walnut.webp' },
+  { name: 'Oak', color: '#B08D57', texture: '/textures/swatches/oak.webp' },
+  { name: 'Birch', color: '#E8D5B7', texture: '/textures/swatches/birch.webp' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -343,7 +343,7 @@ interface DesignParams {
 }
 
 const DEFAULTS: DesignParams = {
-  isCorner: false,
+  isCorner: true,
   width: 45,
   height: 24,
   depth: 10,
@@ -382,7 +382,7 @@ export default function DesignerPage() {
   const [p, setP] = useState<DesignParams>(DEFAULTS);
   const [finish, setFinish] = useState<WoodFinish>('Oak');
   const [viewMode, setViewMode] = useState<'wireframe' | 'rendered'>('rendered');
-  const [rotation, setRotation] = useState(350 * Math.PI / 180);
+  const [rotation, setRotation] = useState(15 * Math.PI / 180);
   const velocityRef = useRef(0.0008);
   const targetSpeedRef = useRef(-0.0012);
   const [tilt] = useState(25);
@@ -406,6 +406,7 @@ export default function DesignerPage() {
   const { designs, loadDesign, saveDesign, deleteDesign, loadDesigns } = useSavedDesigns();
 
   useEffect(() => { loadDesigns(); }, [loadDesigns]);
+
 
   const set = <K extends keyof DesignParams>(key: K, value: DesignParams[K]) =>
     setP((prev) => ({ ...prev, [key]: value }));
@@ -777,7 +778,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         <div className="order-first md:order-2 md:row-span-2 flex flex-col min-h-0 h-[45dvh] md:h-auto shrink-0">
           {/* Title bar — centered */}
-          <div className="px-4 md:px-8 py-1 md:py-1 flex items-center justify-center shrink-0">
+          <div className={"px-4 md:px-8 py-1 md:py-1 flex items-center justify-center shrink-0"}>
             <h1 className="text-[24px] md:text-[42px] font-bold tracking-[0.02em] text-squarage-black">
               Warped Shelf Designer
             </h1>
@@ -787,7 +788,7 @@ export default function DesignerPage() {
           <div className="h-px bg-squarage-black" />
 
           {/* Visualizer */}
-          <div className="relative flex-1 flex items-center justify-center min-h-0 p-1 md:p-5 touch-none">
+          <div className="relative flex-1 flex items-center justify-center min-h-0 p-1 md:p-5 touch-none" style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}>
             {/* Floating Save Button — top right */}
             <div className="absolute top-3 right-3 md:top-5 md:right-5 z-10 flex flex-row gap-1.5">
               <button
@@ -862,7 +863,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* LEFT COLUMN — controls (scrollable on mobile) */}
         {/* ============================================================= */}
-        <div className="order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-squarage-black flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0">
+        <div className={"order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-squarage-black flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0"}>
 
           {/* Design Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(24), paddingBottom: vs(20), gap: vs(20) }}>
@@ -974,8 +975,8 @@ export default function DesignerPage() {
                 >
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-4 h-4 border border-gray-300 rounded-full"
-                      style={{ backgroundColor: f.color }}
+                      className="w-4 h-4 border border-gray-300 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${f.texture})` }}
                     />
                     <span>{f.name}</span>
                   </div>
@@ -988,7 +989,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* RIGHT COLUMN — SAVED DESIGNS (hidden on mobile) */}
         {/* ============================================================= */}
-        <div className="hidden md:flex md:order-3 border-l border-squarage-black flex-col min-h-0">
+        <div className={"hidden md:flex md:order-3 border-l border-squarage-black flex-col min-h-0"}>
           <div className="px-7 pt-6 pb-4 shrink-0">
             <SectionLabel>Saved Designs</SectionLabel>
           </div>
@@ -1000,7 +1001,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* BOTTOM ROW — Estimated Price (hidden on mobile, shown in sticky bar) */}
         {/* ============================================================= */}
-        <div className="hidden md:flex md:order-4 border-l border-t border-squarage-black px-7 py-6 flex-col justify-between">
+        <div className={"hidden md:flex md:order-4 border-l border-t border-squarage-black px-7 py-6 flex-col justify-between"}>
           <div>
             <SectionLabel>Estimated Price</SectionLabel>
             <div className="mt-4">
