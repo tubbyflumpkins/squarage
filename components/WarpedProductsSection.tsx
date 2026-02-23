@@ -8,9 +8,9 @@ import CustomDesignCard from '@/components/ui/CustomDesignCard'
 import { preloadImages } from '@/lib/simplePreloader'
 
 const WOOD_FINISHES = [
-  { name: 'Walnut', texture: '/textures/swatches/walnut_btn.jpg', blob: '60% 40% 30% 70% / 50% 50% 65% 35%' },
-  { name: 'Oak', texture: '/textures/swatches/oak_btn.jpg', blob: '45% 55% 65% 35% / 55% 45% 40% 60%' },
-  { name: 'Birch', texture: '/textures/swatches/birch_btn.jpg', blob: '50% 50% 40% 60% / 35% 65% 55% 45%' },
+  { name: 'Walnut', texture: '/textures/swatches/walnut_btn.jpg' },
+  { name: 'Oak', texture: '/textures/swatches/oak_btn.jpg' },
+  { name: 'Birch', texture: '/textures/swatches/birch_btn.jpg' },
 ] as const
 
 export default function WarpedProductsSection() {
@@ -80,12 +80,12 @@ export default function WarpedProductsSection() {
                 <button
                   key={finish.name}
                   onClick={() => setSelectedFinish(finish.name)}
-                  className={`relative w-24 md:w-28 py-4 md:py-5 border-2 font-medium font-neue-haas text-base md:text-lg transition-all bg-center overflow-hidden ${
+                  className={`relative w-24 md:w-28 py-4 md:py-5 rounded-full border-2 font-medium font-neue-haas text-base md:text-lg transition-all bg-cover bg-center overflow-hidden ${
                     isSelected
                       ? 'border-squarage-green shadow-md scale-105'
                       : 'border-transparent shadow-sm hover:shadow-md hover:scale-105'
                   }`}
-                  style={{ backgroundImage: `url(${finish.texture})`, backgroundSize: 'cover', borderRadius: finish.blob }}
+                  style={{ backgroundImage: `url(${finish.texture})` }}
                 >
                   <span className={`relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] font-semibold ${
                     isSelected ? 'text-[#a8d5a2]' : 'text-white'
