@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Product } from 'shopify-buy'
 import { useImageCache } from '@/context/ImageCacheContext'
 import { useState } from 'react'
+import FastProductImage from '@/components/FastProductImage'
 
 interface ProductCardProps {
   product: Product
@@ -60,25 +61,35 @@ export default function ProductCard({ product, className = '', selectedFinish }:
       {/* Product Image */}
       <div className="relative bg-gray-50 mb-4">
         {displayImage ? (
-          <Image
-            src={displayImage.src}
-            alt={displayImage.altText || product.title}
-            width={600}
-            height={600}
-            className="w-full h-auto object-contain"
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageLoaded(true)}
-            priority={false} // Let the grid manage priority loading
-          />
+          selectedFinish ? (
+            <FastProductImage
+              src={displayImage.src}
+              alt={displayImage.altText || product.title}
+              width={600}
+              height={600}
+              className="w-full h-auto object-contain"
+            />
+          ) : (
+            <Image
+              src={displayImage.src}
+              alt={displayImage.altText || product.title}
+              width={600}
+              height={600}
+              className="w-full h-auto object-contain"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageLoaded(true)}
+              priority={false}
+            />
+          )
         ) : (
           <div className="w-full h-96 flex items-center justify-center bg-gray-100">
             <span className="text-gray-400 font-neue-haas">No Image</span>
           </div>
         )}
-        
-        {/* Loading indicator for main image */}
-        {!imageLoaded && (
+
+        {/* Loading indicator for main image (only when not using FastProductImage) */}
+        {!selectedFinish && !imageLoaded && (
           <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
           </div>

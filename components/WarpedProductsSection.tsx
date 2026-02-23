@@ -6,6 +6,7 @@ import { shopifyApi, Product } from '@/lib/shopify'
 import ProductGrid from '@/components/ProductGrid'
 import MobileCollectionPreloader from '@/components/MobileCollectionPreloader'
 import CustomDesignCard from '@/components/ui/CustomDesignCard'
+import { preloadImages } from '@/lib/simplePreloader'
 
 const WOOD_FINISHES = [
   { name: 'Walnut', texture: '/textures/swatches/walnut.webp' },
@@ -28,8 +29,8 @@ export default function WarpedProductsSection() {
           setLoading(false)
           return
         }
-        
-        // Fetch products by collection handle 'warped' 
+
+        // Fetch products by collection handle 'warped'
         const warpedProducts = await shopifyApi.getProductsByCollection('warped')
         setProducts(warpedProducts)
       } catch (error) {
@@ -43,20 +44,40 @@ export default function WarpedProductsSection() {
     fetchProducts()
   }, [])
 
+  // Preload ALL product images (all finishes) into simpleImageCache for instant switching
+  useEffect(() => {
+    if (products.length === 0) return
+
+    const allImageSrcs: string[] = []
+    products.forEach((product: any) => {
+      product.images?.forEach((img: any) => {
+        const src = img.src || img.url
+        if (src) allImageSrcs.push(src)
+      })
+    })
+
+    if (allImageSrcs.length > 0) {
+      preloadImages(allImageSrcs, 4)
+    }
+  }, [products])
+
   return (
-    <section className="pt-20 lg:pt-32 pb-20 px-6 bg-cream">
+    <section className="pb-20 px-6 bg-cream">
       <div>
         {/* Mobile-only preloader - won't affect desktop */}
         <MobileCollectionPreloader products={products} />
 
-        {/* Wood Finish Picker */}
-        <div className="flex justify-end mb-8">
-          <div className="flex gap-2">
+        {/* Spacer for hero blob overlap */}
+        <div className="h-14 lg:h-20" />
+
+        {/* Wood Finish Picker - sticky below navbar */}
+        <div className="sticky top-20 z-10 flex justify-end mb-4 lg:mb-6">
+          <div className="flex gap-2 bg-cream/90 backdrop-blur-sm py-2 px-3 rounded-sm">
             {WOOD_FINISHES.map(finish => (
               <button
                 key={finish.name}
                 onClick={() => setSelectedFinish(finish.name)}
-                className={`flex items-center gap-2 px-4 py-2 border-2 font-medium font-neue-haas text-sm transition-all ${
+                className={`flex items-center gap-2 px-3 py-1.5 border-2 font-medium font-neue-haas text-sm transition-all ${
                   selectedFinish === finish.name
                     ? 'border-squarage-green bg-green-50'
                     : 'border-gray-300 hover:border-gray-400'
