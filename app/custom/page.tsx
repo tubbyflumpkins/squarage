@@ -207,10 +207,10 @@ export default function CustomPage() {
             </div>
 
             {/* CTA Button — floating above viewer */}
-            <div className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 z-10">
+            <div className="absolute -bottom-2 md:bottom-12 left-1/2 -translate-x-1/2 z-10">
               <Link
                 href="/collections/warped/designer"
-                className="inline-block bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white cursor-pointer"
+                className="inline-block whitespace-nowrap bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-green hover:bg-squarage-yellow hover:border-squarage-yellow hover:scale-105 transition-all duration-300 text-white cursor-pointer"
               >
                 Start Designing
               </Link>
@@ -220,12 +220,12 @@ export default function CustomPage() {
       </section>
 
       {/* Divider */}
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-6 pt-6 md:pt-0">
         <div className="h-px bg-squarage-black/15" />
       </div>
 
       {/* Section 2: Get in Touch */}
-      <section className="py-12 md:py-20 px-6">
+      <section className="py-6 md:py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Image */}
