@@ -1,11 +1,23 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
+import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
+import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
+
+const RenderedShelfView = dynamic(
+  () => import('@/components/shelf/RenderedShelfView'),
+  { ssr: false, loading: () => <div className="w-full h-full" /> },
+);
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
 interface QuoteFlowProps {
   isCorner: boolean;
+  flatParams: ShelfParams;
+  cornerParams: CornerShelfParams;
+  rotation: number;
+  tilt: number;
   finish: WoodFinish;
   width: number;
   height: number;
@@ -26,7 +38,6 @@ interface QuoteFlowProps {
   active: boolean;
 }
 
-// Step indicator — 4 circles connected by lines
 function StepIndicator({ current }: { current: number }) {
   return (
     <div className="flex items-center justify-center gap-0 py-4 md:py-6 select-none">
@@ -58,7 +69,6 @@ function StepIndicator({ current }: { current: number }) {
   );
 }
 
-// Shadow label matching contact page style
 function ShadowLabel({ children }: { children: string }) {
   return (
     <h2 className="text-3xl md:text-5xl font-bold font-neue-haas text-white mb-4 relative">
@@ -68,7 +78,6 @@ function ShadowLabel({ children }: { children: string }) {
   );
 }
 
-// Input with yellow shadow box (contact page style)
 function ShadowInput({
   value,
   onChange,
@@ -122,6 +131,10 @@ function ShadowInput({
 
 export default function QuoteFlow({
   isCorner,
+  flatParams,
+  cornerParams,
+  rotation,
+  tilt,
   finish,
   width,
   height,
@@ -143,28 +156,19 @@ export default function QuoteFlow({
 }: QuoteFlowProps) {
   const [step, setStep] = useState(1);
   const [animating, setAnimating] = useState(false);
-  const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward');
 
-  // Form state
   const [designName, setDesignName] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-
-  // SVG preview captured at save time
   const [svgPreview, setSvgPreview] = useState('');
 
-  // Submit state
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Track if design was saved
   const savedRef = useRef(false);
 
-  // Notify navigation of quote flow state
+  // Notify navigation
   useEffect(() => {
     if (active) {
       window.dispatchEvent(new CustomEvent('quoteflow', { detail: { open: true } }));
@@ -174,7 +178,7 @@ export default function QuoteFlow({
     };
   }, [active]);
 
-  // Reset when opened
+  // Reset on open
   useEffect(() => {
     if (active) {
       setStep(1);
@@ -190,7 +194,7 @@ export default function QuoteFlow({
     }
   }, [active]);
 
-  // Escape key to go back / close
+  // Escape key
   useEffect(() => {
     if (!active) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -205,7 +209,6 @@ export default function QuoteFlow({
   }, [active, step]);
 
   const goForward = useCallback((nextStep: number) => {
-    setAnimDir('forward');
     setAnimating(true);
     setTimeout(() => {
       setStep(nextStep);
@@ -214,7 +217,6 @@ export default function QuoteFlow({
   }, []);
 
   const goBack = useCallback(() => {
-    setAnimDir('back');
     setAnimating(true);
     setTimeout(() => {
       setStep((s) => Math.max(1, s - 1));
@@ -222,14 +224,12 @@ export default function QuoteFlow({
     }, 250);
   }, []);
 
-  // Step 1 → save design + advance
   const handleStep1 = useCallback(() => {
     if (!designName.trim()) {
       setErrors({ designName: 'Please name your design' });
       return;
     }
     setErrors({});
-    // Capture SVG preview and save design
     const preview = getSvgPreview();
     setSvgPreview(preview);
     if (!savedRef.current) {
@@ -246,7 +246,6 @@ export default function QuoteFlow({
     goForward(2);
   }, [designName, isCorner, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, amplitude, shelfOffset, columnOffset, columnAngle, saveDesign, getSvgPreview, goForward]);
 
-  // Step 2 validation
   const handleStep2 = useCallback(() => {
     const newErrors: Record<string, string> = {};
     if (customerName.trim().length < 2) newErrors.customerName = 'Please enter your name';
@@ -259,17 +258,14 @@ export default function QuoteFlow({
     goForward(3);
   }, [customerName, email, goForward]);
 
-  // Step 3 → advance (optional)
   const handleStep3 = useCallback(() => {
     setErrors({});
     goForward(4);
   }, [goForward]);
 
-  // Submit
   const handleSubmit = useCallback(async () => {
     setSubmitting(true);
     setSubmitStatus('idle');
-
     const shelfType = isCorner ? 'corner' : 'flat';
     const savedDesignObj = {
       id: `design-${Date.now()}`,
@@ -284,7 +280,6 @@ export default function QuoteFlow({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-
     try {
       const res = await fetch('/api/quote', {
         method: 'POST',
@@ -295,19 +290,14 @@ export default function QuoteFlow({
           email: email.trim().toLowerCase(),
           message: message.trim(),
           specs: {
-            shelfType,
-            width, height, depth, length,
-            shelfCount, columnCount,
-            roundLeft, roundRight,
-            finish,
-            amplitude, shelfOffset, columnOffset,
-            columnAngle,
-            estimatedPrice: price,
+            shelfType, width, height, depth, length,
+            shelfCount, columnCount, roundLeft, roundRight,
+            finish, amplitude, shelfOffset, columnOffset,
+            columnAngle, estimatedPrice: price,
           },
           savedDesignJson: JSON.stringify(savedDesignObj, null, 2),
         }),
       });
-
       if (res.ok) {
         setSubmitStatus('success');
         setTimeout(() => onClose(), 2000);
@@ -325,7 +315,6 @@ export default function QuoteFlow({
     ? 'animate-[fadeSlideOut_250ms_ease-out_forwards]'
     : 'animate-[fadeSlideIn_250ms_ease-out_forwards]';
 
-  // Specs for review step
   const specRows: [string, string][] = [
     ['Type', isCorner ? 'Corner Unit' : 'Standard'],
     ['Width', `${width}"`],
@@ -338,16 +327,16 @@ export default function QuoteFlow({
     ...(!isCorner ? [['Round Edges', `L: ${roundLeft ? 'Yes' : 'No'} / R: ${roundRight ? 'Yes' : 'No'}`] as [string, string]] : []),
   ];
 
-  // Dimension string
   const dimStr = isCorner
     ? `${width}" x ${length}" x ${height}"`
     : `${width}" x ${height}" x ${depth}"`;
 
-  // Button styles
   const nextBtnClass = 'w-full py-4 bg-squarage-green font-bold font-neue-haas text-2xl hover:bg-squarage-blue hover:scale-[1.02] transition-all duration-300 relative';
   const backBtnClass = 'text-white/60 hover:text-white text-[15px] font-medium font-neue-haas transition-colors cursor-pointer';
 
-  const renderStepContent = () => {
+  const isReview = step === 4;
+
+  const renderFormContent = () => {
     switch (step) {
       case 1:
         return (
@@ -421,10 +410,9 @@ export default function QuoteFlow({
           <div className="flex flex-col gap-5">
             <ShadowLabel>Review &amp; Submit</ShadowLabel>
 
-            {/* Receipt-style spec sheet inside a shadow box */}
+            {/* Receipt-style spec sheet */}
             <div className="relative">
               <div className="relative z-10 bg-cream px-5 py-5">
-                {/* SVG wireframe preview */}
                 {svgPreview && (
                   <div className="w-full h-[140px] md:h-[180px] mb-4 flex items-center justify-center">
                     <div
@@ -433,35 +421,21 @@ export default function QuoteFlow({
                     />
                   </div>
                 )}
-
-                {/* Dashed separator */}
                 <div className="border-b border-dashed border-squarage-black/20 mb-3" />
-
-                {/* Design name */}
                 <h3 className="text-xl font-bold font-neue-haas text-squarage-black mb-1">{designName}</h3>
                 <p className="text-[13px] font-neue-haas text-squarage-black/50 mb-3 tabular-nums">{dimStr}</p>
-
-                {/* Spec rows */}
                 {specRows.map(([k, v]) => (
                   <div key={k} className="flex justify-between py-[5px]">
                     <span className="text-[14px] font-neue-haas text-squarage-black/60">{k}</span>
                     <span className="text-[14px] font-medium font-neue-haas text-squarage-black tabular-nums">{v}</span>
                   </div>
                 ))}
-
-                {/* Dashed separator */}
                 <div className="border-b border-dashed border-squarage-black/20 my-3" />
-
-                {/* Estimated total */}
                 <div className="flex justify-between items-baseline">
                   <span className="text-[16px] font-bold font-neue-haas text-squarage-black">Estimated Total</span>
                   <span className="text-2xl font-bold font-neue-haas text-squarage-black tabular-nums">${Math.round(price)}</span>
                 </div>
-
-                {/* Dashed separator */}
                 <div className="border-b border-dashed border-squarage-black/20 my-3" />
-
-                {/* Customer info */}
                 <div className="space-y-1">
                   <div className="flex justify-between">
                     <span className="text-[13px] font-neue-haas text-squarage-black/50">Customer</span>
@@ -482,7 +456,6 @@ export default function QuoteFlow({
               <div className="absolute top-0 left-0 w-full h-full bg-[#F5B74C] transform translate-x-2 translate-y-2" />
             </div>
 
-            {/* Submit */}
             {submitStatus === 'success' ? (
               <div className="flex items-center justify-center gap-3 py-4">
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -530,10 +503,58 @@ export default function QuoteFlow({
 
       <StepIndicator current={step} />
 
-      {/* Form content — centered vertically */}
-      <div className="flex-1 flex items-center justify-center min-h-0 overflow-y-auto">
-        <div className={`w-full max-w-md px-6 md:px-10 py-4 ${animClass}`}>
-          {renderStepContent()}
+      {/* Body: steps 1-3 = two-column (3D left, form right), step 4 = centered */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+
+        {/* 3D rendered view — slides out left on step 4 */}
+        <div
+          className="hidden md:block transition-all duration-500 ease-out shrink-0 overflow-hidden"
+          style={{
+            width: isReview ? 0 : '50%',
+            opacity: isReview ? 0 : 1,
+          }}
+        >
+          <div className="w-full h-full cursor-grab active:cursor-grabbing">
+            <RenderedShelfView
+              isCorner={isCorner}
+              flatParams={flatParams}
+              cornerParams={cornerParams}
+              rotation={rotation + Math.PI / 4}
+              tilt={tilt}
+              finish={finish}
+              width={width}
+              height={height}
+              depth={depth}
+              length={length}
+            />
+          </div>
+        </div>
+
+        {/* Mobile: 3D view on top for steps 1-3, hidden on step 4 */}
+        {!isReview && (
+          <div className="md:hidden h-[35dvh] w-full shrink-0 absolute top-[72px] left-0">
+            <RenderedShelfView
+              isCorner={isCorner}
+              flatParams={flatParams}
+              cornerParams={cornerParams}
+              rotation={rotation + Math.PI / 4}
+              tilt={tilt}
+              finish={finish}
+              width={width}
+              height={height}
+              depth={depth}
+              length={length}
+            />
+          </div>
+        )}
+
+        {/* Form content — right side on steps 1-3, centered on step 4 */}
+        <div className={`flex-1 flex items-center justify-center min-h-0 overflow-y-auto transition-all duration-500 ${
+          !isReview ? 'md:pt-0 pt-[calc(35dvh)]' : ''
+        }`}>
+          <div className={`w-full max-w-md px-6 md:px-10 py-4 ${animClass}`}>
+            {renderFormContent()}
+          </div>
         </div>
       </div>
     </div>
