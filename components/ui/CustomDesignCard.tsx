@@ -24,7 +24,7 @@ export default function CustomDesignCard() {
     rotationSyncRef.current = rotation
   }
 
-  const baseSpeed = 0.0012
+  const baseSpeed = 0.003
   const friction = 0.97
   const blendRate = 0.01
 
