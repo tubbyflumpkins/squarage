@@ -62,17 +62,14 @@ export default function WarpedProductsSection() {
   }, [products])
 
   return (
-    <section className="pb-20 px-6 bg-cream">
+    <section className="pt-20 lg:pt-32 pb-20 px-6 bg-cream">
       <div>
         {/* Mobile-only preloader - won't affect desktop */}
         <MobileCollectionPreloader products={products} />
 
-        {/* Spacer for hero blob overlap */}
-        <div className="h-14 lg:h-20" />
-
-        {/* Wood Finish Picker - sticky below navbar */}
-        <div className="sticky top-20 z-10 flex justify-end mb-4 lg:mb-6">
-          <div className="flex gap-2 bg-cream/90 backdrop-blur-sm py-2 px-3 rounded-sm">
+        {/* Wood Finish Picker - pulled into padding with -mt-10, sticky below navbar */}
+        <div className="sticky top-[60px] md:top-[100px] z-10 flex justify-end -mt-10">
+          <div className="flex gap-2 bg-cream/90 backdrop-blur-sm py-1 px-2 rounded-sm">
             {WOOD_FINISHES.map(finish => (
               <button
                 key={finish.name}
