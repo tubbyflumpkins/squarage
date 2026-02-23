@@ -40,6 +40,8 @@ interface AnimatedLogoProps {
   isHomePage: boolean
   className?: string
   instanceId?: string
+  /** When set, renders visible text on top of the knockout in this color (ignored when inverted) */
+  textColor?: string
 }
 
 export default function AnimatedLogo({
@@ -47,6 +49,7 @@ export default function AnimatedLogo({
   isHomePage,
   className = '',
   instanceId = 'default',
+  textColor,
 }: AnimatedLogoProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
@@ -343,6 +346,20 @@ export default function AnimatedLogo({
               mask={`url(#logo-mask-${instanceId}-${i})`}
               style={{ transition: 'fill 0.3s ease' }}
             />
+            {/* Visible text layer on top of knockout (when textColor is set and not inverted) */}
+            {textColor && !inverted && (
+              <text
+                x={TILE_W / 2}
+                y={TEXT_Y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontFamily="'Soap Regular', serif"
+                fontSize={FONT_SIZE}
+                fill={textColor}
+              >
+                {letter}
+              </text>
+            )}
           </svg>
         ))}
 

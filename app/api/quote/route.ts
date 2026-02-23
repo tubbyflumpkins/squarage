@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { z } from 'zod'
 
+// Use z.coerce for numeric/boolean fields to handle production builds
+// where values may arrive as strings instead of their original types
+const coerceBoolean = z.preprocess(
+  (v) => (v === 'true' ? true : v === 'false' ? false : v),
+  z.boolean(),
+)
+
 const quoteSchema = z.object({
   designName: z.string().min(1, 'Design name is required').max(100),
   customerName: z.string().min(2, 'Name must be at least 2 characters').max(100),
@@ -9,20 +16,20 @@ const quoteSchema = z.object({
   message: z.string().max(5000).optional().default(''),
   specs: z.object({
     shelfType: z.enum(['flat', 'corner']),
-    width: z.number(),
-    height: z.number(),
-    depth: z.number(),
-    length: z.number(),
-    shelfCount: z.number(),
-    columnCount: z.number(),
-    roundLeft: z.boolean().optional(),
-    roundRight: z.boolean().optional(),
+    width: z.coerce.number(),
+    height: z.coerce.number(),
+    depth: z.coerce.number(),
+    length: z.coerce.number(),
+    shelfCount: z.coerce.number(),
+    columnCount: z.coerce.number(),
+    roundLeft: coerceBoolean.optional(),
+    roundRight: coerceBoolean.optional(),
     finish: z.string(),
-    amplitude: z.number(),
-    shelfOffset: z.number(),
-    columnOffset: z.number(),
-    columnAngle: z.number().optional(),
-    estimatedPrice: z.number(),
+    amplitude: z.coerce.number(),
+    shelfOffset: z.coerce.number(),
+    columnOffset: z.coerce.number(),
+    columnAngle: z.coerce.number().optional(),
+    estimatedPrice: z.coerce.number(),
   }),
   savedDesignJson: z.string(),
 })

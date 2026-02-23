@@ -17,8 +17,8 @@ export default function CartIcon({ onClick }: CartIconProps) {
   const { state } = useCart()
   const pathname = usePathname()
   
-  // Use special styling on custom and contact pages
-  const useSpecialStyling = pathname === '/custom' || pathname === '/contact'
+  // Use special styling on contact page only
+  const useSpecialStyling = pathname === '/contact'
   
   if (useSpecialStyling) {
     return (

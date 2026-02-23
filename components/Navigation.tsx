@@ -278,6 +278,7 @@ export default function Navigation() {
             isHomePage={isHomePage}
             className="h-[26px] sm:h-[33px] drop-shadow-lg"
             instanceId="mobile"
+            textColor="#fffaf4"
           />
         </Link>
 

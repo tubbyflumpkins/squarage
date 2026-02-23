@@ -81,7 +81,7 @@ export default function CollectionsSection() {
     <>
       {/* Green animated header section */}
       <section className="bg-squarage-green">
-        <div className="flex items-center justify-center min-h-[60px] sm:min-h-[80px] px-4 sm:px-6">
+        <div className="flex items-center justify-center min-h-0 sm:min-h-[80px] py-2 sm:py-0 px-4 sm:px-6">
           <div className="max-w-7xl mx-auto w-full">
             <div className="text-center">
               <div className="flex justify-center items-center w-full whitespace-nowrap">
