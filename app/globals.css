@@ -298,4 +298,21 @@ body {
   animation-timing-function: ease-in-out;
 }
 
+/* Quote flow — step content transitions */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-30px); }
+}
+
+/* Quote flow — wireframe glow pulse */
+@keyframes wireframePulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255,255,255,0.3)); }
+  50% { filter: drop-shadow(0 0 12px rgba(255,255,255,0.6)); }
+}
+
 /* Remove Webflow cursor styles - no custom cursor */
