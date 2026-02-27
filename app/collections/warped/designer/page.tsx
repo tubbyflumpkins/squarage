@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useSavedDesigns, type SavedDesign } from '@/stores/useSavedDesigns';
+import { PRESET_DESIGNS, type PresetDesign } from '@/data/presetDesigns';
 import { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 import {
@@ -500,7 +501,7 @@ export default function DesignerPage() {
   const lastTime = useRef(0);
   const dragVelocityRef = useRef(0);
 
-  const { designs, loadDesign, saveDesign, deleteDesign, loadDesigns } = useSavedDesigns();
+  const { designs, loadDesign, saveDesign, deleteDesign, loadDesigns, resetToNew } = useSavedDesigns();
 
   useEffect(() => { loadDesigns(); }, [loadDesigns]);
 
@@ -775,6 +776,22 @@ export default function DesignerPage() {
     });
   };
 
+  const handleLoadPreset = (preset: PresetDesign) => {
+    const lp = preset.params;
+    setP({
+      isCorner: preset.shelfType === 'corner',
+      width: (lp.width as number) ?? DEFAULTS.width,
+      height: (lp.height as number) ?? DEFAULTS.height,
+      depth: (lp.depth as number) ?? DEFAULTS.depth,
+      length: (lp.length as number) ?? DEFAULTS.length,
+      shelfCount: (lp.shelfCount as number) ?? DEFAULTS.shelfCount,
+      columnCount: (lp.columnCount as number) ?? DEFAULTS.columnCount,
+      roundLeft: (lp.roundLeft as boolean) ?? false,
+      roundRight: (lp.roundRight as boolean) ?? false,
+    });
+    resetToNew();
+  };
+
   // Price
   const price = computePrice(p.isCorner, p.width, p.height, p.depth, p.length, p.shelfCount, p.columnCount);
 
@@ -800,8 +817,9 @@ export default function DesignerPage() {
   const vs = (px: number) => Math.max(px * 0.5, px * vScale);
 
   // Extracted designs grid — used by both desktop right column and mobile panel
-  const renderDesignsGrid = (onLoad?: (design: SavedDesign) => void) => {
+  const renderDesignsGrid = (onLoad?: (design: SavedDesign) => void, onLoadPreset?: (preset: PresetDesign) => void) => {
     const load = onLoad ?? handleLoad;
+    const loadPreset = onLoadPreset ?? handleLoadPreset;
     return (
       <>
         <div className="flex">
@@ -822,7 +840,29 @@ export default function DesignerPage() {
 
         <div className="flex-1 overflow-y-auto min-h-0 pb-4">
           {designTab === 'preset' ? (
-            <p className="text-[14px] font-medium text-neutral-400 mt-1">Coming soon</p>
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              {PRESET_DESIGNS.map((preset) => (
+                <div
+                  key={preset.id}
+                  className="group relative aspect-square border border-neutral-200 hover:border-neutral-400 transition-colors cursor-pointer overflow-hidden bg-white/40"
+                  onClick={() => loadPreset(preset)}
+                >
+                  {preset.svgPreview ? (
+                    <div
+                      className="w-full h-full p-3"
+                      dangerouslySetInnerHTML={{ __html: preset.svgPreview }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-[13px] font-medium text-neutral-400">No preview</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/90 to-transparent px-3 py-1.5">
+                    <span className="text-[13px] font-medium text-squarage-black truncate block">{preset.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : designs.length === 0 ? (
             <p className="text-[14px] font-medium text-neutral-400 mt-1">No saved designs yet</p>
           ) : (
@@ -1191,6 +1231,9 @@ export default function DesignerPage() {
             <div className="flex-1 overflow-y-auto px-5 pb-6 flex flex-col gap-4">
               {renderDesignsGrid((design) => {
                 handleLoad(design);
+                closeDesignsPanel();
+              }, (preset) => {
+                handleLoadPreset(preset);
                 closeDesignsPanel();
               })}
             </div>
