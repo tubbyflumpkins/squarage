@@ -486,7 +486,7 @@ export default function DesignerPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [showSaveInput, setShowSaveInput] = useState(false);
-  const [designTab, setDesignTab] = useState<'custom' | 'preset'>('custom');
+  const [designTab, setDesignTab] = useState<'custom' | 'preset'>('preset');
   const [dimUnit, setDimUnit] = useState<'in' | 'cm'>('in');
   const [showDesignsPanel, setShowDesignsPanel] = useState(false);
   const [closingDesignsPanel, setClosingDesignsPanel] = useState(false);
