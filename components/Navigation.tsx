@@ -163,8 +163,14 @@ export default function Navigation() {
       backgroundColor: '#4A9B4E',
       transition: 'background-color 0.3s ease'
     }
-  } else if (isWarpedPage || isTiledPage || isHomePage) {
-    // For Warped, Tiled, and Home pages, use inline styles for background transition (no shadow)
+  } else if (isHomePage) {
+    // Homepage always shows cream background
+    headerStyle = {
+      backgroundColor: '#fffaf4',
+      transition: 'background-color 0.3s ease'
+    }
+  } else if (isWarpedPage || isTiledPage) {
+    // For Warped and Tiled pages, use inline styles for background transition (no shadow)
     headerStyle = {
       backgroundColor: isScrolled ? '#fffaf4' : 'transparent',
       transition: 'background-color 0.3s ease'
