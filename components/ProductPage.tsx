@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
-import { preloadImages, isImageCached, prefetchOnTouch } from '@/lib/navigationPreloader'
+import { preloadImages, isImageCached } from '@/lib/simplePreloader'
 import FastProductImage from '@/components/FastProductImage'
 import ProductFAQ from '@/components/ProductFAQ'
 import ShippingEstimator from '@/components/ShippingEstimator'
@@ -404,10 +404,7 @@ export default function ProductPage({ product }: ProductPageProps) {
         return
       }
 
-      const results = await preloadImages(uncachedImages, {
-        priority: 'high',
-        maxConcurrent: window.innerWidth < 768 ? 2 : 4
-      })
+      await preloadImages(uncachedImages, window.innerWidth < 768 ? 2 : 4)
 
       setImagesPreloaded(true)
     }

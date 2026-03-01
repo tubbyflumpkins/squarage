@@ -163,6 +163,12 @@ export async function preloadForPage(pathname: string) {
   await preloadImages(images, isMobile ? 2 : 4)
 }
 
+// Check if an image is already in the cache
+export function isImageCached(src: string): boolean {
+  if (typeof window === 'undefined') return false
+  return window.__simpleImageCache?.has(src) ?? false
+}
+
 // Hook to automatically preload on navigation
 export function useSimplePreloader(pathname: string) {
   if (typeof window === 'undefined') return

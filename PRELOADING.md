@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Last Updated: January 2025**
+**Last Updated: February 2026**
 **Status: ✅ Fully Operational**
 
 Squarage Studio uses a **simple, direct preloading system** that ensures instant image loading and color switching across the entire site. This system has been battle-tested and optimized for both desktop and mobile performance.
@@ -249,31 +249,6 @@ All preloading happens client-side. Check browser console (F12) for:
 - ❌ Don't preload everything at once (wastes bandwidth)
 - ❌ Don't forget to update preloader when adding new images
 - ❌ Don't use complex state management for image caching
-
-## Migration from Old System
-
-If migrating from the complex NavigationAwarePreloader:
-
-1. **Replace in layout.tsx**:
-```javascript
-// Old
-import NavigationAwarePreloader from '@/components/NavigationAwarePreloader'
-
-// New
-import SimplePreloader from '@/components/SimplePreloader'
-```
-
-2. **Update product components**:
-```javascript
-// Replace Image with FastProductImage
-import FastProductImage from '@/components/FastProductImage'
-```
-
-3. **Remove old files**:
-- `/components/NavigationAwarePreloader.tsx`
-- `/lib/universalImageRegistry.ts`
-- `/lib/navigationPreloader.ts`
-- `/lib/imageOptimizer.ts`
 
 ## Current Implementation Status
 
