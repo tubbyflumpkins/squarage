@@ -9,7 +9,7 @@ export default function HeroStatic() {
       {/* Static Hero Image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/hero-2-processed.jpg"
+          src="/images/home_hero.png"
           alt="Squarage Studio - Functional Art & Design"
           fill
           className="object-cover object-[center_66%] scale-[1.4] md:scale-150"
