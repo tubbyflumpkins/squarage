@@ -74,6 +74,7 @@ export async function preloadForPage(pathname: string) {
   if (pathname === '/') {
     images.push(
       '/images/home_hero.png',
+      '/images/home_hero_mobile.jpeg',
       '/images/IMG_0961.jpg',
       '/images/IMG_1286.jpg',
       '/images/IMG_6122.jpeg',
