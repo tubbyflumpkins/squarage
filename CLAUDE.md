@@ -1,233 +1,173 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Image Handling Rules
 
-## ⚠️ CRITICAL: Image Handling Instructions
-
-**When working with images in this codebase:**
-
-### MUST DO:
-1. **READ [PRELOADING.md](./PRELOADING.md) FIRST** - Contains complete system documentation
-2. **USE `FastProductImage` component** for ALL product images (never regular `Image`)
+1. **READ [PRELOADING.md](./PRELOADING.md) FIRST** before touching any image code
+2. **USE `FastProductImage`** for ALL product images (never regular `Image` for color-switching)
 3. **UPDATE `/lib/simplePreloader.ts`** when adding new image paths
-4. **TEST on mobile AND desktop** - Different optimizations apply
+4. **TEST on mobile AND desktop** — different optimizations apply
+5. **NEVER remove SimplePreloader** from layout.tsx
 
-### NEVER DO:
-1. **DON'T use Next.js `Image` component** for color-switching images
-2. **DON'T modify desktop functionality** - It's perfect as-is
-3. **DON'T remove SimplePreloader** from layout.tsx
-4. **DON'T skip preloading** - It's critical for <1ms performance
+## Tech Stack
 
-The preloading system is the foundation of the site's performance. Breaking it will cause noticeable delays.
+- **Next.js 15** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS** with custom Neue Haas Grotesk font family
+- **Shopify Buy SDK** (`shopify-buy`) for storefront/checkout
+- **React Three Fiber** + **drei** + **Three.js** for 3D shelf designer
+- **Zustand** for saved designs store; React Context for cart, image cache, cookie consent, email capture
+- **react-hook-form** + **zod** for form validation
+- **Nodemailer** (Zoho SMTP) for contact/quote emails
+- **Swiper.js** for hero slideshow
+- **Google Analytics** with cookie consent gating
 
-## Project Overview
+## Routes
 
-This is **Squarage Studio**, a custom Next.js website for an LA-based design studio creating functional art and design pieces. The project migrated from Webflow to a custom Next.js solution with Shopify integration for e-commerce functionality.
+### Pages
+| Route | Description |
+|-------|-------------|
+| `/` | Homepage (hero slideshow, collections, about, custom CTA) |
+| `/products` | All products grid |
+| `/products/[handle]` | Individual product page (Tiled collection) |
+| `/collections/tiled` | Tiled collection |
+| `/collections/warped` | Warped collection |
+| `/collections/warped/designer` | 3D shelf designer |
+| `/collections/chairs` | Chairs collection |
+| `/collections/objects` | Objects collection |
+| `/custom` | Custom project request flow |
+| `/contact` | Contact page |
+| `/customer-service` | Customer service (shipping, returns, FAQ) |
+| `/coming-soon` | Coming soon placeholder |
+| `/easter-egg-game` | Easter egg game |
 
-## Architecture
+### API Routes
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/contact` | POST | Contact form via Zoho SMTP |
+| `/api/quote` | POST | Quote request via Zoho SMTP |
 
-This is a **modern Next.js 15 application** with the following structure:
+## Project Structure
 
-### Core Framework
-- **Next.js 15** with App Router and TypeScript
-- **Tailwind CSS** for styling with custom font integration
-- **Shopify Buy SDK** for e-commerce functionality
-- **Swiper.js** for hero image slideshow
-- **React Context** for cart state management
-
-### Project Structure
 ```
-├── app/                    # Next.js App Router
-│   ├── layout.tsx         # Root layout with metadata
-│   ├── page.tsx           # Homepage
-│   └── globals.css        # Global styles and font imports
-├── components/            # React components
-│   ├── HeroSlideshow.tsx  # Homepage hero with image slideshow
-│   ├── Navigation.tsx     # Main navigation and mobile menu
-│   ├── CollectionsSection.tsx # Collections showcase
-│   └── AboutSection.tsx   # About section
-├── lib/
-│   └── shopify.ts         # Shopify API integration
-├── context/
-│   ├── CartContext.tsx    # Shopping cart state management
-│   └── ImageCacheContext.tsx # Image preloading and caching
-├── public/
-│   ├── images/            # Product photos, logos, assets
-│   └── fonts/             # Neue Haas Grotesk font family
-├── MIGRATION_PLAN.md      # Detailed migration documentation
-├── PRELOADING.md          # Image preloading system documentation
-└── CACHE_SYSTEM_DOCUMENTATION.md # Cache system details
+app/                          # Next.js App Router
+  layout.tsx                  # Root layout (SimplePreloader, providers, nav, footer)
+  page.tsx                    # Homepage
+  products/                   # Product pages
+  collections/                # Collection pages (tiled, warped, chairs, objects)
+  custom/                     # Custom project flow
+  contact/                    # Contact page
+  customer-service/           # Customer service
+  api/contact/                # Contact API endpoint
+  api/quote/                  # Quote API endpoint
+
+components/                   # React components
+  Navigation.tsx              # Main nav + mobile menu
+  Footer.tsx                  # Site footer
+  HeroSlideshow.tsx           # Homepage hero
+  CollectionsSection.tsx      # Homepage collections grid
+  AboutSection.tsx            # Homepage about
+  CustomProjectSection.tsx    # "Want a Custom Piece?" CTA
+  ProductPage.tsx             # Tiled product detail page
+  WarpedProductPage.tsx       # Warped product detail page
+  ProductGrid.tsx             # Product listing grid
+  FastProductImage.tsx        # Instant-render cached product images
+  SimplePreloader.tsx         # Route-based image preloader (in layout)
+  MobileCollectionPreloader.tsx # Mobile collection image preloader
+  CartDrawer.tsx / CartIcon.tsx / CartItem.tsx / CartSummary.tsx
+  StickyAddToCart.tsx          # Fixed add-to-cart bar on scroll
+  ProductDetailsAccordion.tsx / ProductFAQ.tsx / ProductTrustBadges.tsx
+  ShippingEstimator.tsx        # Shipping cost calculator
+  CookieBanner.tsx / ManageCookiesModal.tsx / CookieConsentWrapper.tsx
+  GoogleAnalytics.tsx / ConsentAwareAnalytics.tsx
+  EmailCapturePopup.tsx        # Email subscription popup
+  AnimatedLogo.tsx             # Animated logo
+  StructuredData.tsx           # JSON-LD SEO data
+  Warped* / Carro*             # Warped & Carro collection components
+
+lib/
+  shopify.ts                  # Shopify Buy SDK client + product serialization
+  simplePreloader.ts          # Core preloading (preloadImage, preloadImages, isImageCached, preloadForPage)
+  shopifyPreloader.ts         # Shopify product image caching
+  cookieCategories.ts         # Cookie consent category definitions
+  emailCapture.ts             # Email capture service
+  policies.ts                 # Legal policy content (privacy, shipping, returns)
+
+context/
+  CartContext.tsx              # Shopping cart state + Shopify checkout
+  ImageCacheContext.tsx        # Image cache context
+  CookieConsentContext.tsx     # Cookie consent state
+  EmailCaptureContext.tsx      # Email capture state
+
+stores/
+  useSavedDesigns.ts          # Zustand store for saved 3D shelf designs
 ```
 
-### Key Features Implemented
-- **Homepage**: Hero slideshow (replaced video), collections showcase, about section
-- **Navigation**: Fixed nav with full-screen overlay menu
-- **Typography**: Complete Neue Haas Grotesk font integration
-- **E-commerce**: Shopify API setup with cart context
-- **Responsive Design**: Mobile-first approach with Tailwind
-- **Product Catalog**: 6+ real products with professional photography
-- **Collection Pages**: Custom-designed pages (Tiled, Warped, Chairs, Objects)
-- **Contact System**: Full email integration via Zoho SMTP
-- **Mobile Optimization**: Complete responsive design across all components
-- **Image Preloading**: Comprehensive multi-strategy preloading system (see [PRELOADING.md](./PRELOADING.md))
+## Design System
+
+- **Cream background**: `#fffaf4` (`bg-cream`)
+- **Orange accent**: `#ff962d` (`squarage-orange`)
+- **Orange light**: `#f7a24d` (`squarage-yellow`)
+- **Green**: `squarage-green`
+- **Blue**: `squarage-blue`
+- **Black text**: `squarage-black`
+- **Typography**: Neue Haas Grotesk (self-hosted, all weights, `font-display: swap`)
+- **Font class**: `font-neue-haas`
+
+## Active Systems
+
+### Image Preloading
+- **SimplePreloader** in layout.tsx preloads images per route
+- **FastProductImage** uses native `<img>` for cached images (<1ms), Next.js Image for uncached
+- **MobileCollectionPreloader** handles mobile collection pages
+- **`window.__simpleImageCache`** is the global cache Set
+- See [PRELOADING.md](./PRELOADING.md) for full details
+
+### E-commerce
+- Shopify Buy SDK for products, collections, and checkout
+- Cart persisted via localStorage (`shopify_checkout_id`)
+- CartContext wraps the app in layout.tsx
+
+### Contact & Quote
+- Forms submit to `/api/contact` and `/api/quote`
+- Server-side Nodemailer sends via Zoho SMTP
+- react-hook-form + zod for client validation
+
+### Cookie Consent
+- CookieConsentContext manages consent state
+- Google Analytics only loads after consent
+- See [COOKIE_CONSENT_DOCUMENTATION.md](./COOKIE_CONSENT_DOCUMENTATION.md)
+
+## Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_SHOPIFY_DOMAIN` | Shopify store domain |
+| `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Shopify Storefront API token |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics measurement ID |
+| `NEXT_PUBLIC_ADMIN_API_URL` | Admin API URL |
+| `NEXT_PUBLIC_EMAIL_API_KEY` | Email service API key |
+| `SMTP_USER` | Zoho SMTP username |
+| `SMTP_PASS` | Zoho SMTP password |
+| `CONTACT_EMAIL` | Recipient for contact/quote forms |
 
 ## Development Commands
 
-### Essential Commands
 ```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Run linting
-npm run lint
+npm install          # Install dependencies
+npm run dev          # Dev server on http://localhost:3000
+npm run build        # Production build
+npm start            # Start production server
+npm run lint         # Run ESLint
 ```
 
-### Development Workflow
-- **Local Development**: `npm run dev` serves on http://localhost:3000
-- **Environment Variables**: Configure Shopify credentials in `.env.local`
-- **Asset Management**: Images stored in `public/images/`, fonts in `public/fonts/`
+## Documentation
 
-## Styling Architecture
+- [PRELOADING.md](./PRELOADING.md) — Image preloading system
+- [CACHE_SYSTEM_DOCUMENTATION.md](./CACHE_SYSTEM_DOCUMENTATION.md) — Cache implementation details
+- [COOKIE_CONSENT_DOCUMENTATION.md](./COOKIE_CONSENT_DOCUMENTATION.md) — Cookie consent system
+- [CONTACT_SETUP.md](./CONTACT_SETUP.md) — Contact form & SMTP setup
+- [WARPED_STYLE_GUIDE.md](./WARPED_STYLE_GUIDE.md) — Warped collection design guide
+- [squarage-design-language.md](./squarage-design-language.md) — Brand design language
 
-### Design System
-- **Colors**: 
-  - Cream background: `#fffaf4` 
-  - Orange accent: `#ff962d`
-  - Orange light: `#f7a24d`
-- **Typography**: Neue Haas Grotesk font family with multiple weights
-- **Layout**: CSS Grid and Flexbox with Tailwind utilities
-- **Animations**: CSS transitions and Swiper.js for slideshow
+## Deployment
 
-### Font Configuration
-- **Local Fonts**: Self-hosted Neue Haas Grotesk (all weights)
-- **Font Display**: `swap` for performance
-- **Tailwind Integration**: Custom font families in `tailwind.config.ts`
-
-## Shopify Integration
-
-### Configuration
-- **Client**: `shopify-buy` SDK with TypeScript support
-- **API Version**: 2024-10
-- **Environment Variables**: 
-  - `NEXT_PUBLIC_SHOPIFY_DOMAIN`
-  - `NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN`
-
-### E-commerce Features
-- Product fetching and display
-- Collection-based navigation (Tables, Shelves, Chairs)
-- Shopping cart with context state management
-- Checkout integration ready
-
-## Content Strategy
-
-### Collections Focus
-The site organizes products into four main collections:
-- **Tiled**: Custom dining and coffee tables (primary collection)
-- **Shelves**: Floating and modular shelving systems  
-- **Chairs**: Ergonomic seating with distinctive design
-- **Objects**: Decorative and functional design pieces
-
-### Real Product Catalog
-**Ready-to-Deploy Products** (with professional photography):
-- **The Matis**: Coffee table with 8 color variants
-- **The Harper**: Dining table with 7 color variants + gallery images
-- **The Chuck**: Coffee table with 7 color variants
-- **The Arielle**: Side table with 7 color variants  
-- **The Saskia**: Accent table with 7 color variants
-- **The Seba**: Modern table with 7 color variants + 3D renders
-
-All products have professional photography stored in `/public/images/products/[product-name]/`
-
-### Brand Messaging
-- **Tagline**: "Functional Art & Design"
-- **Location**: "Made in Los Angeles"
-- **Focus**: Custom furniture, quality craftsmanship, local production
-- **Contact**: hello@squarage.com, @squaragestudio
-
-## Migration Context
-
-### From Webflow
-- **Original**: Static HTML export from Webflow CMS
-- **Current**: Custom Next.js with TypeScript and Shopify
-- **Key Changes**: 
-  - Replaced video background with image slideshow
-  - Removed custom cursor interactions
-  - Integrated Shopify for inventory management
-  - Preserved fonts, content, and visual design approach
-
-### Implementation Status (UPDATED January 2025)
-1. ✅ Homepage with slideshow - **COMPLETED**
-2. ✅ Products page with collection filtering - **COMPLETED**
-3. ✅ Custom projects page (4-step process) - **COMPLETED**
-4. ✅ Individual product pages (dynamic) - **COMPLETED**
-5. ✅ Contact/inquiry forms - **COMPLETED**
-6. ✅ Complete mobile optimization - **COMPLETED**
-7. ✅ Real product catalog (6+ products) - **COMPLETED**
-8. ⏳ Shopify store configuration - **PENDING** (credentials needed)
-9. ⏳ Vercel deployment - **PENDING**
-
-**CURRENT STATUS: ~95% Complete - Ready for deployment**
-
-## External Integrations
-
-- **Analytics**: Google Analytics (to be configured)
-- **Email**: Direct mailto links to hello@squarage.com
-- **Social**: Instagram integration (@squaragestudio)
-- **Shopify**: E-commerce backend for inventory and checkout
-
-## Performance Considerations
-
-- **Image Optimization**: Comprehensive preloading system with WebP/AVIF support
-- **Font Loading**: Self-hosted fonts with `font-display: swap`
-- **Bundle Size**: Tree-shaking and code splitting enabled
-- **SEO**: Proper metadata and semantic HTML structure
-
-### Image Preloading System (Current Implementation)
-
-**⚡ System Status: FULLY OPERATIONAL**
-
-The site uses a battle-tested **simple preloading system** delivering instant performance:
-
-#### Active Components:
-1. **SimplePreloader** (`/components/SimplePreloader.tsx`) - Route-based preloader in layout.tsx
-2. **FastProductImage** (`/components/FastProductImage.tsx`) - **REQUIRED for all product images**
-3. **MobileCollectionPreloader** (`/components/MobileCollectionPreloader.tsx`) - Mobile collection optimization
-4. **simplePreloader.ts** (`/lib/simplePreloader.ts`) - Core preloading with route mappings
-5. **shopifyPreloader.ts** (`/lib/shopifyPreloader.ts`) - Shopify product caching
-
-#### Implementation Checklist:
-- ✅ SimplePreloader active in layout.tsx
-- ✅ FastProductImage used on ProductPage (Tiled)
-- ✅ FastProductImage used on WarpedProductPage
-- ✅ MobileCollectionPreloader on collection pages
-- ✅ All product images preloaded by route
-
-#### Measured Performance:
-- **Color switching**: <1ms (instant with FastProductImage)
-- **Navigation**: <20ms (from cache)
-- **Initial load**: 2-3s (includes preloading)
-- **Mobile collections**: <100ms after fetch
-- **Cache hit rate**: >95%
-
-#### When Adding New Products/Images:
-1. **Add image paths** to `/lib/simplePreloader.ts` under appropriate route
-2. **Use FastProductImage** component (NOT regular Image)
-3. **Test on mobile** - MobileCollectionPreloader should handle it
-4. **Check console** for preloading confirmation messages
-
-## Important Documentation
-
-- **[PRELOADING.md](./PRELOADING.md)**: Complete guide to the image preloading system
-- **[CACHE_SYSTEM_DOCUMENTATION.md](./CACHE_SYSTEM_DOCUMENTATION.md)**: Cache implementation details
-- **[MIGRATION_PLAN.md](./MIGRATION_PLAN.md)**: Migration from Webflow details
-
-When working on this project, prioritize the existing design language, maintain the clean aesthetic, and ensure all new features integrate seamlessly with the Shopify e-commerce flow. For any image-related optimizations or preloading questions, refer to PRELOADING.md.
+Live on Vercel. Pushes to `main` trigger production deploys.
