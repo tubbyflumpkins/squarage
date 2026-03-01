@@ -73,14 +73,15 @@ export async function preloadForPage(pathname: string) {
   // Homepage - preload hero images and collection images
   if (pathname === '/') {
     images.push(
-      '/images/hero-2-processed.jpg',
+      '/images/home_hero.png',
+      '/images/home_hero_mobile.jpeg',
       '/images/IMG_0961.jpg',
       '/images/IMG_1286.jpg',
       '/images/IMG_6122.jpeg',
       '/images/product_5_main_angle_blue.jpg',
       '/images/product_6_main_angle_3d.jpg',
       '/images/collection-tiled.jpg',
-      '/images/collection-warped.jpg',
+      '/images/warped_side.jpg',
       '/images/collection-chairs.jpg',
       '/images/collection-objects.jpg'
     )
@@ -119,7 +120,7 @@ export async function preloadForPage(pathname: string) {
   // Warped collection
   else if (pathname === '/collections/warped') {
     images.push(
-      '/images/collection-warped.jpg',
+      '/images/warped_side.jpg',
       '/images/warped/curved_shelf_light_05.png',
       '/images/warped/curved_shelf_dark_05.png',
       '/images/warped/corner_shelf_light_05.png',

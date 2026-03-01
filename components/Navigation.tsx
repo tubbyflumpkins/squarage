@@ -204,6 +204,7 @@ export default function Navigation() {
               inverted={useSpecialLogo}
               className="h-[36px] lg:h-[42px]"
               instanceId="desktop"
+              textColor="#fffaf4"
             />
           </Link>
 
