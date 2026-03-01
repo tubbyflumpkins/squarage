@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export default function HeroStatic() {
   return (
-    <section className="relative h-[250px] sm:h-[350px] md:h-[calc(75vh-84px)] md:mt-[84px] w-full overflow-hidden">
+    <section className="relative h-[250px] sm:h-[350px] md:h-[75vh] w-full overflow-hidden">
       {/* Static Hero Image */}
       <div className="absolute inset-0 z-0">
         <Image
