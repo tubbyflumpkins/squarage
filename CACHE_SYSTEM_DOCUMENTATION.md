@@ -12,8 +12,7 @@ This document describes the comprehensive image caching and preloading system im
 2. **CartContext** (`/context/CartContext.tsx`) 
 3. **ProductGrid** (`/components/ProductGrid.tsx`)
 4. **ProductPage** (`/components/ProductPage.tsx`)
-5. **Image Optimization Utils** (`/utils/imageOptimizations.ts`)
-6. **Shopify API** (`/lib/shopify.ts`)
+5. **Shopify API** (`/lib/shopify.ts`)
 
 ## Image Cache System (`ImageCacheContext.tsx`)
 
@@ -125,30 +124,6 @@ const initializeCheckout = async () => {
   // Create new checkout only if needed
   const checkout = await shopifyApi.createCheckout()
   // ...
-}
-```
-
-## Image Optimization Utils (`imageOptimizations.ts`)
-
-### Optimizations Applied
-
-#### Cleanup Delays
-- **Before**: 1000ms cleanup delay
-- **After**: 100ms cleanup delay
-- **Impact**: 10x faster DOM cleanup
-
-#### Batch Processing
-- **Before**: 50ms setTimeout delays
-- **After**: `requestAnimationFrame` for smooth batching
-- **Impact**: Non-blocking, frame-aligned processing
-
-#### Performance Monitoring
-```typescript
-export const trackImagePerformance = (imageSrc: string, startTime: number) => {
-  return {
-    markLoaded: () => console.log(`Image loaded in ${loadTime}ms`),
-    markError: () => console.warn(`Image failed after ${failTime}ms`)
-  }
 }
 ```
 
@@ -302,10 +277,10 @@ const { state, addToCart } = useCart()
 ### Version Dependencies
 - Next.js 15+: For app router and Image component
 - Shopify Buy SDK: For checkout management
-- React 18+: For concurrent features
+- React 19+: For concurrent features
 
 ---
 
-**Last Updated**: December 2024  
+**Last Updated**: February 2026
 **System Status**: ✅ Optimized and Production Ready  
 **Performance**: Color switching <10ms, Cart persistence active

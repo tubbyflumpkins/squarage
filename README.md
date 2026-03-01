@@ -1,6 +1,6 @@
 # Squarage Studio
 
-A custom Next.js website for Squarage Studio, an LA-based design studio creating functional art and design pieces. Migrated from Webflow with Shopify integration.
+A custom Next.js website for Squarage Studio, an LA-based design studio creating functional art and design pieces. Live at [squarage.com](https://squarage.com).
 
 ## Development
 
@@ -31,27 +31,37 @@ The dev server will automatically reload when you make changes to the code.
 
 ## Project Structure
 
-- `app/` - Next.js 15 App Router pages and layouts
-- `components/` - Reusable React components
-- `lib/` - Utility functions and Shopify API integration
-- `context/` - React context providers (Cart, etc.)
-- `public/` - Static assets (images, fonts, etc.)
+- `app/` - Next.js 15 App Router pages, layouts, and API routes
+- `components/` - React components (product pages, navigation, cart, preloading, etc.)
+- `lib/` - Shopify API, preloading, cookie categories, email capture, policies
+- `context/` - React context providers (Cart, ImageCache, CookieConsent, EmailCapture)
+- `stores/` - Zustand stores (saved designs)
+- `public/` - Static assets (images, fonts, textures)
 
 ## Features
 
-- ✅ Homepage with hero image slideshow
-- ✅ Collections showcase (Tables, Shelves, Chairs)
-- ✅ Neue Haas Grotesk font integration
-- ✅ Shopify API integration ready
-- ✅ Responsive design
-- 🚧 Product pages (in progress)
-- 🚧 Custom project workflow
-- 🚧 Contact forms
+- Homepage with hero image slideshow
+- Product collections (Tiled, Warped, Chairs, Objects)
+- Individual product pages with instant color switching
+- 3D shelf designer (React Three Fiber)
+- Custom project request flow
+- Shopping cart with Shopify checkout
+- Contact and quote request forms (Nodemailer/Zoho SMTP)
+- Cookie consent system with Google Analytics
+- Email capture popup
+- Customer service page
+- Fully responsive mobile design
+- Image preloading system for instant navigation
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 with TypeScript
+- **Framework:** Next.js 15, React 19, TypeScript
 - **Styling:** Tailwind CSS
 - **E-commerce:** Shopify Buy SDK
+- **3D:** React Three Fiber, drei, Three.js
+- **State:** Zustand, React Context
+- **Forms:** react-hook-form, zod
+- **Email:** Nodemailer (Zoho SMTP)
 - **Slideshow:** Swiper.js
-- **Deployment:** Vercel (planned)
+- **Analytics:** Google Analytics
+- **Deployment:** Vercel
