@@ -12,7 +12,7 @@ export default function HeroStatic() {
           src="/images/home_hero.png"
           alt="Squarage Studio - Functional Art & Design"
           fill
-          className="object-cover object-[center_21%] scale-[1.4] md:scale-150"
+          className="object-cover object-[center_21%]"
           priority
           sizes="100vw"
           quality={85}
