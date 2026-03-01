@@ -131,6 +131,7 @@ export default function CollectionsSection() {
                       alt={collection.title}
                       fill
                       className="object-cover"
+                      style={collection.id === 'warped' ? { objectPosition: '65% center' } : undefined}
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
                     
