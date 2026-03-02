@@ -81,7 +81,7 @@ export async function preloadForPage(pathname: string) {
       '/images/product_5_main_angle_blue.jpg',
       '/images/product_6_main_angle_3d.jpg',
       '/images/collection-tiled.jpg',
-      '/images/warped_side_2.png',
+      '/images/warped_side.jpg',
       '/images/collection-chairs.jpg',
       '/images/collection-objects.jpg'
     )
@@ -120,7 +120,7 @@ export async function preloadForPage(pathname: string) {
   // Warped collection
   else if (pathname === '/collections/warped') {
     images.push(
-      '/images/warped_side_2.png',
+      '/images/warped_side.jpg',
       '/images/warped/curved_shelf_light_05.png',
       '/images/warped/curved_shelf_dark_05.png',
       '/images/warped/corner_shelf_light_05.png',
