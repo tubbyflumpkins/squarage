@@ -10,7 +10,7 @@ const collections = [
     title: 'Warped',
     subtitle: 'Shelving & Storage',
     description: 'Natural wood shelving systems with smooth, wavy lines that add warmth and character to any space. Sculptural storage, custom built.',
-    image: '/images/warped_side.jpg',
+    image: '/images/warped_side_2.png',
     href: '/collections/warped',
     bgColor: 'bg-squarage-yellow',
   },
