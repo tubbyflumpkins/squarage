@@ -114,12 +114,12 @@ export default function CollectionsSection() {
       </section>
 
       {/* Collections Section */}
-      <div className="bg-white">
+      <div className="bg-white flex flex-col">
         {collections.map((collection, index) => (
           <Link
             key={collection.id}
             href={collection.href}
-            className="group block"
+            className={`group block ${index === 0 ? 'order-2 md:order-1' : 'order-1 md:order-2'}`}
           >
             <div className="relative">
               <div className="w-full">
@@ -130,7 +130,7 @@ export default function CollectionsSection() {
                       src={collection.image}
                       alt={collection.title}
                       fill
-                      className="object-cover"
+                      className={`object-cover ${collection.id === 'warped' ? '-scale-x-100 md:scale-x-100' : ''}`}
                       style={collection.id === 'warped' ? { objectPosition: '65% center' } : undefined}
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
