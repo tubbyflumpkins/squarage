@@ -3,8 +3,8 @@ import StructuredData, { generateBreadcrumbSchema } from '@/components/Structure
 
 export const metadata: Metadata = {
   title: '3D Shelf Designer - Design Custom Warped Shelves',
-  description: 'Design your own custom warped shelf with our free interactive 3D tool. Choose dimensions, wood finishes, and shelf count, then request a quote — handcrafted in Los Angeles by Squarage Studio.',
-  keywords: ['squarage designer', 'custom shelf designer', '3D shelf configurator', 'warped shelf builder', 'design custom shelves online', 'custom furniture tool', 'interactive shelf designer'],
+  description: 'Design custom shelving to your exact dimensions with our free 3D tool. Choose height, width, depth, wood finish, and shelf count — modular designs that fit any space. Request a quote, handcrafted in LA.',
+  keywords: ['squarage designer', 'custom shelf designer', '3D shelf configurator', 'warped shelf builder', 'design custom shelves online', 'custom furniture tool', 'interactive shelf designer', 'custom dimension shelving', 'modular shelves', 'shelving for any space', 'made to measure shelves', 'custom size shelf', 'modular wall shelving'],
   openGraph: {
     title: '3D Shelf Designer - Design Custom Warped Shelves | Squarage Studio',
     description: 'Design your own custom warped shelf with our free interactive 3D configurator. Choose dimensions, wood finishes, and request a quote.',

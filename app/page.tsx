@@ -7,6 +7,7 @@ import AboutSection from '@/components/AboutSection'
 export const metadata: Metadata = {
   title: 'Custom Furniture & Design Studio',
   description: 'Squarage Studio creates handcrafted functional art and custom furniture in Los Angeles. Browse our collections of tables, shelves, chairs, and unique design objects.',
+  keywords: ['squarage', 'squarage studio', 'custom furniture LA', 'handmade furniture Los Angeles'],
   alternates: {
     canonical: 'https://squarage.com',
   },

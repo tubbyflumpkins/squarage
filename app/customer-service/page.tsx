@@ -3,8 +3,14 @@ import { Suspense } from 'react'
 import CustomerServicePage from '@/components/CustomerServicePage'
 
 export const metadata: Metadata = {
-  title: 'Customer Service | Squarage Studio',
-  description: 'Customer service policies including returns, warranty, shipping, and more for Squarage Studio custom furniture.',
+  title: 'Customer Service',
+  description: 'Shipping, returns, warranty, and FAQ for Squarage Studio custom furniture. Handcrafted in Los Angeles with premium materials — learn about our policies and care instructions.',
+  alternates: {
+    canonical: 'https://squarage.com/customer-service',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 }
 
 function CustomerServiceContent() {

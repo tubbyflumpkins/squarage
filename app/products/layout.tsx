@@ -2,13 +2,20 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Shop Custom Furniture',
-  description: 'Shop handcrafted tables, shelves, chairs, and design objects from Squarage Studio. Each piece is made to order in Los Angeles with premium materials and attention to detail.',
+  description: 'Shop handcrafted custom furniture from Squarage Studio. Custom-dimension shelving, tables, and design objects — each piece made to order in Los Angeles with premium materials.',
+  keywords: ['shop furniture', 'custom tables', 'handcrafted shelves', 'designer furniture', 'custom dimension shelving', 'modular shelves', 'shelving for any space', 'made to measure shelves', 'custom size shelf', 'modular wall shelving'],
   alternates: {
     canonical: 'https://squarage.com/products',
   },
   openGraph: {
     title: 'Shop Custom Furniture | Squarage Studio',
-    description: 'Discover our collection of handcrafted functional art and furniture. Made in Los Angeles with premium materials.',
+    description: 'Shop handcrafted custom furniture. Custom-dimension shelving, tables, and design objects — made to order in Los Angeles.',
+    images: ['/images/collection-tables.jpg'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Shop Custom Furniture',
+    description: 'Custom-dimension shelving, tables, and design objects — made to order in Los Angeles.',
     images: ['/images/collection-tables.jpg'],
   },
 }

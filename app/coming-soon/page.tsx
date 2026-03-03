@@ -1,14 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Coming Soon | Squarage Studio',
+  title: 'Coming Soon',
   description: 'New collections are coming soon. Stay tuned for handcrafted furniture and distinctive design pieces.',
-  keywords: ['coming soon', 'handcrafted furniture', 'Los Angeles', 'Squarage Studio', 'collections'],
-  openGraph: {
-    title: 'Coming Soon | Squarage Studio',
-    description: 'New collections coming soon from Squarage Studio.',
-    type: 'website',
-  },
+  robots: { index: false, follow: false },
 }
 
 export default function ComingSoonPage() {
