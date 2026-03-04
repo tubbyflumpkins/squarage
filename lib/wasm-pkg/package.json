@@ -1,0 +1,17 @@
+{
+  "name": "wasm-shelf-geometry",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "wasm_shelf_geometry_bg.wasm",
+    "wasm_shelf_geometry.js",
+    "wasm_shelf_geometry_bg.js",
+    "wasm_shelf_geometry.d.ts"
+  ],
+  "main": "wasm_shelf_geometry.js",
+  "types": "wasm_shelf_geometry.d.ts",
+  "sideEffects": [
+    "./wasm_shelf_geometry.js",
+    "./snippets/*"
+  ]
+}

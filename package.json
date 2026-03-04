@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "wasm:build": "cd wasm-shelf-geometry && wasm-pack build --target bundler --release --out-dir ../lib/wasm-pkg",
+    "wasm:dev": "cd wasm-shelf-geometry && wasm-pack build --target bundler --dev --out-dir ../lib/wasm-pkg"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

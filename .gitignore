@@ -37,3 +37,6 @@ next-env.d.ts
 
 # old webflow
 /squarage_webflow_old
+
+# Rust/WASM build artifacts
+wasm-shelf-geometry/target/
