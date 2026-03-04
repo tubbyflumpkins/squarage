@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
-import { generateFlatMeshData, meshDataToGeometry } from '@/lib/shelfGeometryWasm';
+import { useShelfWasm, generateFlatMeshData, meshDataToGeometry } from '@/lib/shelfGeometryWasm';
 import { useWoodMaterial } from './useWoodMaterial';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
@@ -15,8 +15,10 @@ interface FlatShelfMeshesProps {
 
 export default function FlatShelfMeshes({ params, finish, wireframe }: FlatShelfMeshesProps) {
   const material = useWoodMaterial(finish);
+  const wasmReady = useShelfWasm();
 
   const geometries = useMemo(() => {
+    if (!wasmReady) return null;
     const result = generateFlatMeshData({
       width: params.width,
       height: params.height,
@@ -32,7 +34,9 @@ export default function FlatShelfMeshes({ params, finish, wireframe }: FlatShelf
       shelfGeos: result.shelves.map(meshDataToGeometry),
       columnGeos: result.columns.map(meshDataToGeometry),
     };
-  }, [params]);
+  }, [wasmReady, params]);
+
+  if (!geometries) return null;
 
   return (
     <group>

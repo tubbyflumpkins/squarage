@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { useState, useEffect } from 'react';
 
 // Types matching the WASM output (camelCase via serde)
 
@@ -118,20 +119,19 @@ export interface DerivedParamsInput {
 }
 
 // ---------------------------------------------------------------------------
-// Lazy WASM loading
+// Lazy WASM loading (--target bundler: async module via webpack)
 // ---------------------------------------------------------------------------
 
 type WasmModule = typeof import('./wasm-pkg/wasm_shelf_geometry');
 
 let wasmModule: WasmModule | null = null;
-let wasmPromise: Promise<WasmModule> | null = null;
+let wasmPromise: Promise<void> | null = null;
 
 export async function preloadShelfWasm(): Promise<void> {
   if (wasmModule) return;
   if (!wasmPromise) {
     wasmPromise = import('./wasm-pkg/wasm_shelf_geometry').then((mod) => {
       wasmModule = mod;
-      return mod;
     });
   }
   await wasmPromise;
@@ -146,19 +146,18 @@ export function isWasmReady(): boolean {
   return wasmModule !== null;
 }
 
-// React hook
-import { useState, useEffect } from 'react';
-
+// React hook — preloads WASM and returns readiness state
 export function useShelfWasm(): boolean {
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(wasmModule !== null);
   useEffect(() => {
+    if (wasmModule) { setReady(true); return; }
     preloadShelfWasm().then(() => setReady(true));
   }, []);
   return ready;
 }
 
 // ---------------------------------------------------------------------------
-// API functions
+// API functions (sync — must call preloadShelfWasm first)
 // ---------------------------------------------------------------------------
 
 export function generateFlatMeshData(input: FlatMeshInput): FlatMeshResult {

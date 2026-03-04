@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
-import { generateCornerMeshData, meshDataToGeometry } from '@/lib/shelfGeometryWasm';
+import { useShelfWasm, generateCornerMeshData, meshDataToGeometry } from '@/lib/shelfGeometryWasm';
 import { useWoodMaterial } from './useWoodMaterial';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
@@ -15,8 +15,10 @@ interface CornerShelfMeshesProps {
 
 export default function CornerShelfMeshes({ params, finish, wireframe }: CornerShelfMeshesProps) {
   const material = useWoodMaterial(finish);
+  const wasmReady = useShelfWasm();
 
   const geometries = useMemo(() => {
+    if (!wasmReady) return null;
     const result = generateCornerMeshData({
       width: params.width,
       height: params.height,
@@ -31,7 +33,9 @@ export default function CornerShelfMeshes({ params, finish, wireframe }: CornerS
       shelfGeos: result.shelves.map(meshDataToGeometry),
       columnGeos: result.columns.map(meshDataToGeometry),
     };
-  }, [params]);
+  }, [wasmReady, params]);
+
+  if (!geometries) return null;
 
   return (
     <group>
