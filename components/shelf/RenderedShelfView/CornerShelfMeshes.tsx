@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
-import { generateCornerShelfGeometry } from '@/components/shelf/CornerShelfVisualizer/geometry';
-import { buildCornerShelfGeo, buildCornerColumnGeo, offsetUVs } from './buildExtrudedGeometry';
+import { generateCornerMeshData, meshDataToGeometry } from '@/lib/shelfGeometryWasm';
 import { useWoodMaterial } from './useWoodMaterial';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
@@ -18,22 +17,20 @@ export default function CornerShelfMeshes({ params, finish, wireframe }: CornerS
   const material = useWoodMaterial(finish);
 
   const geometries = useMemo(() => {
-    const geo = generateCornerShelfGeometry(params);
-    const { width, length, height, columnAngle } = params;
-    const angleRad = (Math.max(0.01, Math.min(89.99, columnAngle)) * Math.PI) / 180;
-
-    const shelfGeos = geo.shelves.map((piece, i) => {
-      const g = buildCornerShelfGeo(piece, THICKNESS, width, length, height);
-      offsetUVs(g, i);
-      return g;
-    });
-    const columnGeos = geo.columns.map((piece, i) => {
-      const g = buildCornerColumnGeo(piece, THICKNESS, width, length, height, angleRad);
-      offsetUVs(g, i + geo.shelves.length);
-      return g;
+    const result = generateCornerMeshData({
+      width: params.width,
+      height: params.height,
+      depth: params.depth,
+      length: params.length,
+      shelfCount: params.shelfCount,
+      columnCount: params.columnCount,
+      thickness: THICKNESS,
     });
 
-    return { shelfGeos, columnGeos };
+    return {
+      shelfGeos: result.shelves.map(meshDataToGeometry),
+      columnGeos: result.columns.map(meshDataToGeometry),
+    };
   }, [params]);
 
   return (

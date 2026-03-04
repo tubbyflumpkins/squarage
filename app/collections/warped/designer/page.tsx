@@ -6,17 +6,11 @@ import { useSavedDesigns, type SavedDesign } from '@/stores/useSavedDesigns';
 import { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 import {
-  generateShelfGeometry,
-  projectGeometryWithRotation,
-  calculateBounds as calculateFlatBounds,
-  pointsToPath,
-} from '@/components/shelf/ShelfVisualizer/geometry';
-import {
-  generateCornerShelfGeometry,
-  projectCornerGeometryWithRotation,
-  calculateBounds as calculateCornerBounds,
-  pointsToPath as cornerPointsToPath,
-} from '@/components/shelf/CornerShelfVisualizer/geometry';
+  useShelfWasm,
+  computeDerivedParams,
+  generateSvgProjection,
+  type SvgResult,
+} from '@/lib/shelfGeometryWasm';
 
 const RenderedShelfView = dynamic(
   () => import('@/components/shelf/RenderedShelfView'),
@@ -376,53 +370,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 // ---------------------------------------------------------------------------
-// Amplitude / Price
-// ---------------------------------------------------------------------------
-
-function computeAmplitude(isCorner: boolean, height: number): number {
-  const minH = 24, maxH = 76;
-  const minAmp = isCorner ? 2 : 1.5, maxAmp = 3;
-  const t = Math.max(0, Math.min(1, (height - minH) / (maxH - minH)));
-  return minAmp + t * (maxAmp - minAmp);
-}
-
-function computeColumnAngle(width: number, length: number): number {
-  const ratio = width / length;
-  const capRatio = 1.5; // 48/32
-  if (ratio >= 1) {
-    const t = Math.min((ratio - 1) / (capRatio - 1), 1);
-    return 45 + t * 15;
-  } else {
-    const t = Math.min((1 / ratio - 1) / (capRatio - 1), 1);
-    return 45 - t * 15;
-  }
-}
-
-const COST_PER_SQFT = 40; // $/sq ft
-
-function computePrice(
-  isCorner: boolean,
-  width: number,
-  height: number,
-  depth: number,
-  length: number,
-  shelfCount: number,
-  columnCount: number,
-): number {
-  let totalSqIn: number;
-  if (isCorner) {
-    const shelfArea = shelfCount * (width + length - depth) * depth;
-    const colArea = columnCount * height * depth;
-    totalSqIn = shelfArea + colArea;
-  } else {
-    const shelfArea = shelfCount * width * depth;
-    const colArea = columnCount * height * depth;
-    totalSqIn = shelfArea + colArea;
-  }
-  return (totalSqIn / 144) * COST_PER_SQFT;
-}
-
-// ---------------------------------------------------------------------------
 // Main Page
 // ---------------------------------------------------------------------------
 
@@ -449,30 +396,6 @@ const DEFAULTS: DesignParams = {
   roundLeft: false,
   roundRight: false,
 };
-
-// Auto-compute shelf/column offsets from dimensions
-function computeShelfOffset(isCorner: boolean, height: number): number {
-  if (isCorner) {
-    // Corner: lerp 2–6 based on height (24–76)
-    const t = Math.max(0, Math.min(1, (height - 24) / (76 - 24)));
-    return Math.round(2 + t * 4);
-  }
-  // Standard: lerp 2–6 based on height (24–76)
-  const t = Math.max(0, Math.min(1, (height - 24) / (76 - 24)));
-  return Math.round(2 + t * 4);
-}
-
-function computeColumnOffset(isCorner: boolean, width: number, length: number): number {
-  if (isCorner) {
-    // Corner: lerp 6–10 based on max(width, length) (10–76)
-    const dim = Math.max(width, length);
-    const t = Math.max(0, Math.min(1, (dim - 10) / (76 - 10)));
-    return Math.round(6 + t * 4);
-  }
-  // Standard: lerp 2–6 based on width (24–76)
-  const t = Math.max(0, Math.min(1, (width - 24) / (76 - 24)));
-  return Math.round(2 + t * 4);
-}
 
 export default function DesignerPage() {
   const [p, setP] = useState<DesignParams>(DEFAULTS);
@@ -508,10 +431,22 @@ export default function DesignerPage() {
   const set = <K extends keyof DesignParams>(key: K, value: DesignParams[K]) =>
     setP((prev) => ({ ...prev, [key]: value }));
 
-  const amplitude = computeAmplitude(p.isCorner, p.height);
-  const columnAngle = computeColumnAngle(p.width, p.length);
-  const shelfOffset = computeShelfOffset(p.isCorner, p.height);
-  const columnOffset = computeColumnOffset(p.isCorner, p.width, p.length);
+  const wasmReady = useShelfWasm();
+
+  const derived = useMemo(() => {
+    if (!wasmReady) return { amplitude: 2, shelfOffset: 2, columnOffset: 6, columnAngle: 45, price: 0 };
+    return computeDerivedParams({
+      isCorner: p.isCorner,
+      width: p.width,
+      height: p.height,
+      depth: p.depth,
+      length: p.length,
+      shelfCount: p.shelfCount,
+      columnCount: p.columnCount,
+    });
+  }, [wasmReady, p]);
+
+  const { amplitude, shelfOffset, columnOffset, columnAngle } = derived;
 
   const flatParams: ShelfParams = useMemo(() => ({
     width: p.width, height: p.height, depth: p.depth, length: p.length,
@@ -652,25 +587,33 @@ export default function DesignerPage() {
     }
   }, [isDragging]);
 
+  // SVG input for WASM
+  const svgInput = useMemo(() => ({
+    isCorner: p.isCorner,
+    width: p.width,
+    height: p.height,
+    depth: p.depth,
+    length: p.length,
+    shelfCount: p.shelfCount,
+    columnCount: p.columnCount,
+    roundLeft: p.roundLeft,
+    roundRight: p.roundRight,
+    rotation: 0, // placeholder, overridden per call
+    tilt,
+  }), [p, tilt]);
+
   // Stable viewBox across all rotations
   const viewBox = useMemo(() => {
+    if (!wasmReady) return '0 0 100 100';
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (let i = 0; i < 12; i++) {
       const angle = (i / 12) * Math.PI * 2;
-      let bounds;
-      if (p.isCorner) {
-        const geo = generateCornerShelfGeometry(cornerParams);
-        const proj = projectCornerGeometryWithRotation(geo, angle, p.width, p.length, tilt);
-        bounds = calculateCornerBounds(proj);
-      } else {
-        const geo = generateShelfGeometry(flatParams);
-        const proj = projectGeometryWithRotation(geo, angle, p.width, p.depth, tilt);
-        bounds = calculateFlatBounds(proj);
-      }
-      minX = Math.min(minX, bounds.minX);
-      maxX = Math.max(maxX, bounds.maxX);
-      minY = Math.min(minY, bounds.minY);
-      maxY = Math.max(maxY, bounds.maxY);
+      const result = generateSvgProjection({ ...svgInput, rotation: angle });
+      const b = result.bounds;
+      minX = Math.min(minX, b.minX);
+      maxX = Math.max(maxX, b.maxX);
+      minY = Math.min(minY, b.minY);
+      maxY = Math.max(maxY, b.maxY);
     }
     const pad = 8;
     const w = maxX - minX + pad * 2;
@@ -678,71 +621,58 @@ export default function DesignerPage() {
     const scale = 1 / 1.1;
     const sw = w * scale, sh = h * scale;
     return `${minX - pad + (w - sw) / 2} ${minY - pad + (h - sh) / 2} ${sw} ${sh}`;
-  }, [p.isCorner, flatParams, cornerParams, p.width, p.depth, p.length, tilt]);
+  }, [wasmReady, svgInput]);
 
   // Project current rotation
-  const svgPaths = useMemo(() => {
-    if (p.isCorner) {
-      const geo = generateCornerShelfGeometry(cornerParams);
-      const proj = projectCornerGeometryWithRotation(geo, rotation, p.width, p.length, tilt);
-      return { type: 'corner' as const, proj };
-    } else {
-      const geo = generateShelfGeometry(flatParams);
-      const proj = projectGeometryWithRotation(geo, rotation, p.width, p.depth, tilt);
-      return { type: 'flat' as const, proj };
-    }
-  }, [p.isCorner, flatParams, cornerParams, rotation, p.width, p.depth, p.length, tilt]);
+  const svgPaths = useMemo((): SvgResult | null => {
+    if (!wasmReady) return null;
+    return generateSvgProjection({ ...svgInput, rotation });
+  }, [wasmReady, svgInput, rotation]);
 
   // SVG preview string for saving
   const getSvgPreview = useCallback((): string => {
+    if (!wasmReady) return '';
     const sw = '0.4';
     const stroke = '#2C2C2C';
-    const line = (a: { x: number; y: number }, b: { x: number; y: number }) =>
-      `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${stroke}" stroke-width="${sw}"/>`;
+    const line = (pts: number[], offset: number) =>
+      `<line x1="${pts[offset]}" y1="${pts[offset + 1]}" x2="${pts[offset + 2]}" y2="${pts[offset + 3]}" stroke="${stroke}" stroke-width="${sw}"/>`;
 
-    if (p.isCorner) {
-      const geo = generateCornerShelfGeometry(cornerParams);
-      const proj = projectCornerGeometryWithRotation(geo, rotation, p.width, p.length, tilt);
-      const bounds = calculateCornerBounds(proj);
-      const pad = 6;
-      const vb = `${bounds.minX - pad} ${bounds.minY - pad} ${bounds.maxX - bounds.minX + pad * 2} ${bounds.maxY - bounds.minY + pad * 2}`;
-      let paths = '';
-      proj.shelves.forEach((s) => {
-        paths += `<path d="${cornerPointsToPath(s.frontEdge)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += `<path d="${cornerPointsToPath(s.backEdgeX)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += `<path d="${cornerPointsToPath(s.backEdgeY)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += line(s.widthSide[0], s.widthSide[1]);
-        paths += line(s.lengthSide[0], s.lengthSide[1]);
+    const result = generateSvgProjection({ ...svgInput, rotation });
+    const b = result.bounds;
+    const pad = 6;
+    const vb = `${b.minX - pad} ${b.minY - pad} ${b.maxX - b.minX + pad * 2} ${b.maxY - b.minY + pad * 2}`;
+    let paths = '';
+
+    if (result.type === 'corner') {
+      result.shelves.forEach((s) => {
+        paths += `<path d="${s.frontPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += `<path d="${s.backXPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += `<path d="${s.backYPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += line(s.widthSide, 0);
+        paths += line(s.lengthSide, 0);
       });
-      proj.columns.forEach((c) => {
-        paths += `<path d="${cornerPointsToPath(c.frontEdge)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += `<path d="${cornerPointsToPath(c.backEdge)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += line(c.topSide[0], c.topSide[1]);
-        paths += line(c.bottomSide[0], c.bottomSide[1]);
+      result.columns.forEach((c) => {
+        paths += `<path d="${c.frontPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += `<path d="${c.backPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += line(c.sidePoints, 0);
+        paths += line(c.sidePoints, 4);
       });
-      return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">${paths}</svg>`;
     } else {
-      const geo = generateShelfGeometry(flatParams);
-      const proj = projectGeometryWithRotation(geo, rotation, p.width, p.depth, tilt);
-      const bounds = calculateFlatBounds(proj);
-      const pad = 6;
-      const vb = `${bounds.minX - pad} ${bounds.minY - pad} ${bounds.maxX - bounds.minX + pad * 2} ${bounds.maxY - bounds.minY + pad * 2}`;
-      let paths = '';
-      proj.shelves.forEach((s) => {
-        paths += `<path d="${pointsToPath(s.frontEdge)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += `<path d="${pointsToPath(s.backEdge)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += line(s.leftSide[0], s.leftSide[1]);
-        paths += line(s.rightSide[0], s.rightSide[1]);
+      result.shelves.forEach((s) => {
+        paths += `<path d="${s.frontPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += `<path d="${s.backPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += line(s.sidePoints, 0);
+        paths += line(s.sidePoints, 4);
       });
-      proj.columns.forEach((c) => {
-        paths += `<path d="${pointsToPath(c.frontEdge)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += `<path d="${pointsToPath(c.backEdge)}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
-        paths += line(c.topSide[0], c.topSide[1]);
-        paths += line(c.bottomSide[0], c.bottomSide[1]);
+      result.columns.forEach((c) => {
+        paths += `<path d="${c.frontPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += `<path d="${c.backPath}" fill="none" stroke="${stroke}" stroke-width="${sw}"/>`;
+        paths += line(c.sidePoints, 0);
+        paths += line(c.sidePoints, 4);
       });
-      return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">${paths}</svg>`;
     }
-  }, [p.isCorner, flatParams, cornerParams, rotation, p.width, p.depth, p.length, tilt]);
+    return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">${paths}</svg>`;
+  }, [wasmReady, svgInput, rotation]);
 
   // Save / Load
   const handleSave = () => {
@@ -776,7 +706,7 @@ export default function DesignerPage() {
   };
 
   // Price
-  const price = computePrice(p.isCorner, p.width, p.height, p.depth, p.length, p.shelfCount, p.columnCount);
+  const price = derived.price;
 
   // Dimensions display
   const dimStr = p.isCorner
