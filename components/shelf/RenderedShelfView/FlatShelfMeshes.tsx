@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
-import { generateShelfGeometry } from '@/components/shelf/ShelfVisualizer/geometry';
-import { buildFlatShelfGeo, buildFlatColumnGeo, offsetUVs } from './buildExtrudedGeometry';
+import { useShelfWasm, generateFlatMeshData, meshDataToGeometry } from '@/lib/shelfGeometryWasm';
 import { useWoodMaterial } from './useWoodMaterial';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
@@ -16,24 +15,28 @@ interface FlatShelfMeshesProps {
 
 export default function FlatShelfMeshes({ params, finish, wireframe }: FlatShelfMeshesProps) {
   const material = useWoodMaterial(finish);
+  const wasmReady = useShelfWasm();
 
   const geometries = useMemo(() => {
-    const geo = generateShelfGeometry(params);
-    const { width, height, depth } = params;
-
-    const shelfGeos = geo.shelves.map((piece, i) => {
-      const g = buildFlatShelfGeo(piece, THICKNESS, width, height, depth);
-      offsetUVs(g, i);
-      return g;
-    });
-    const columnGeos = geo.columns.map((piece, i) => {
-      const g = buildFlatColumnGeo(piece, THICKNESS, width, height, depth);
-      offsetUVs(g, i + geo.shelves.length);
-      return g;
+    if (!wasmReady) return null;
+    const result = generateFlatMeshData({
+      width: params.width,
+      height: params.height,
+      depth: params.depth,
+      shelfCount: params.shelfCount,
+      columnCount: params.columnCount,
+      roundLeft: params.roundLeft ?? false,
+      roundRight: params.roundRight ?? false,
+      thickness: THICKNESS,
     });
 
-    return { shelfGeos, columnGeos };
-  }, [params]);
+    return {
+      shelfGeos: result.shelves.map(meshDataToGeometry),
+      columnGeos: result.columns.map(meshDataToGeometry),
+    };
+  }, [wasmReady, params]);
+
+  if (!geometries) return null;
 
   return (
     <group>
