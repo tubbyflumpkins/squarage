@@ -14,6 +14,7 @@
 - **Tailwind CSS** with custom Neue Haas Grotesk font family
 - **Shopify Buy SDK** (`shopify-buy`) for storefront/checkout
 - **React Three Fiber** + **drei** + **Three.js** for 3D shelf designer
+- **Rust/WASM** (`wasm-shelf-geometry` crate) for shelf geometry algorithms
 - **Zustand** for saved designs store; React Context for cart, image cache, cookie consent, email capture
 - **react-hook-form** + **zod** for form validation
 - **Nodemailer** (Zoho SMTP) for contact/quote emails
@@ -85,11 +86,24 @@ components/                   # React components
 
 lib/
   shopify.ts                  # Shopify Buy SDK client + product serialization
+  shelfGeometryWasm.ts        # WASM wrapper — lazy loading, React hook, THREE.js helpers
+  wasm-pkg/                   # Compiled WASM output (committed, built from wasm-shelf-geometry/)
   simplePreloader.ts          # Core preloading (preloadImage, preloadImages, isImageCached, preloadForPage)
   shopifyPreloader.ts         # Shopify product image caching
   cookieCategories.ts         # Cookie consent category definitions
   emailCapture.ts             # Email capture service
   policies.ts                 # Legal policy content (privacy, shipping, returns)
+
+wasm-shelf-geometry/            # Rust crate → compiled to WASM
+  src/
+    lib.rs                    # wasm_bindgen exports (4 functions)
+    types.rs                  # Vec2, Vec3, input/output structs
+    catmull_rom.rs            # Barry-Goldman centripetal interpolation
+    flat.rs                   # Flat shelf surface eval + geometry
+    corner.rs                 # Corner shelf surface eval + geometry
+    mesh_builder.rs           # Triangle-strip extrusion, UVs, golden-ratio offset
+    projection.rs             # Isometric projection, SVG path generation
+    derived_params.rs         # Amplitude, offsets, angle, price (COST_PER_SQFT lives here)
 
 context/
   CartContext.tsx              # Shopping cart state + Shopify checkout
@@ -131,6 +145,15 @@ stores/
 - Server-side Nodemailer sends via Zoho SMTP
 - react-hook-form + zod for client validation
 
+### Shelf Geometry (WASM)
+- All geometry algorithms (Catmull-Rom, surface eval, mesh extrusion, projection, pricing) live in `wasm-shelf-geometry/` Rust crate
+- Compiled to `.wasm` binary — no geometry source in JS bundle
+- **`lib/shelfGeometryWasm.ts`** is the TS wrapper with lazy loading and `useShelfWasm()` hook
+- **`lib/wasm-pkg/`** contains committed build output (avoids needing Rust on Vercel)
+- To rebuild: `npm run wasm:build` (release) or `npm run wasm:dev` (debug) — requires Rust + wasm-pack
+- Consumers (`FlatShelfMeshes`, `CornerShelfMeshes`, `page.tsx`) must gate on `useShelfWasm()` before calling WASM functions
+- WASM exports: `generate_flat_mesh_data`, `generate_corner_mesh_data`, `generate_svg_projection`, `compute_derived_params`
+
 ### Cookie Consent
 - CookieConsentContext manages consent state
 - Google Analytics only loads after consent
@@ -157,6 +180,8 @@ npm run dev          # Dev server on http://localhost:3000
 npm run build        # Production build
 npm start            # Start production server
 npm run lint         # Run ESLint
+npm run wasm:build   # Rebuild WASM (release, requires Rust + wasm-pack)
+npm run wasm:dev     # Rebuild WASM (debug, requires Rust + wasm-pack)
 ```
 
 ## Documentation
