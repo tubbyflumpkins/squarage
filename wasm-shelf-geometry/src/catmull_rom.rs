@@ -36,12 +36,11 @@ pub fn barry_goldman(
 }
 
 /// Centripetal Catmull-Rom through 5 points for flat shelf.
-/// Ghost point direction depends on whether the endpoint is rounded.
+/// Ghost points extrapolate the curve's own trajectory by reflecting the nearest
+/// interior point across the endpoint, so curves naturally taper to edges.
 pub fn centripetal_interpolate_5_flat(
     points: &[Vec2; 5],
     u: f64,
-    round_left: bool,
-    round_right: bool,
 ) -> Vec2 {
     let mut raw = [0.0_f64; 5];
     for i in 1..5 {
@@ -59,21 +58,17 @@ pub fn centripetal_interpolate_5_flat(
         raw[4] / total,
     ];
 
-    // Ghost point BEFORE P0
-    let d01 = dist(points[0], points[1]).max(1.0);
-    let ghost_before = if round_left {
-        Vec2 { x: points[0].x, y: points[0].y - d01 } // Perpendicular to back wall
-    } else {
-        Vec2 { x: points[0].x - d01, y: points[0].y } // Horizontal arrival at edge
+    // Ghost point BEFORE P0 — reflect P1 across P0 to continue the curve naturally
+    let ghost_before = Vec2 {
+        x: 2.0 * points[0].x - points[1].x,
+        y: 2.0 * points[0].y - points[1].y,
     };
     let k_before = k[0] - dist(ghost_before, points[0]).powf(ALPHA) / total;
 
-    // Ghost point AFTER P4
-    let d34 = dist(points[3], points[4]).max(1.0);
-    let ghost_after = if round_right {
-        Vec2 { x: points[4].x, y: points[4].y - d34 } // Perpendicular to back wall
-    } else {
-        Vec2 { x: points[4].x + d34, y: points[4].y } // Horizontal arrival at edge
+    // Ghost point AFTER P4 — reflect P3 across P4 to continue the curve naturally
+    let ghost_after = Vec2 {
+        x: 2.0 * points[4].x - points[3].x,
+        y: 2.0 * points[4].y - points[3].y,
     };
     let k_after = k[4] + dist(points[4], ghost_after).powf(ALPHA) / total;
 

@@ -25,7 +25,7 @@ pub fn evaluate_flat_surface(
         Vec2 { x: width,           y: if round_right { 0.0 } else { depth } },
     ];
 
-    centripetal_interpolate_5_flat(&points, u, round_left, round_right)
+    centripetal_interpolate_5_flat(&points, u)
 }
 
 /// Generate the full flat shelf geometry (shelves + columns).
