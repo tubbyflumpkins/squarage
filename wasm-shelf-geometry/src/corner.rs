@@ -4,8 +4,22 @@ use crate::types::{Vec2, Vec3, CornerShelfPiece, CornerColumnPiece, CornerShelfG
 const MIN: f64 = 0.0001;
 const DIAG: f64 = std::f64::consts::FRAC_1_SQRT_2; // 1/√2
 
-/// Evaluate corner front surface at parameter u (0..1) and height z.
-pub fn get_corner_front_surface(
+/// Cosine interpolation for C1 continuity at segment boundaries.
+fn smooth_lerp(a: f64, b: f64, t: f64) -> f64 {
+    let s = (1.0 - (std::f64::consts::PI * t).cos()) / 2.0;
+    a + (b - a) * s
+}
+
+/// Distance between two 2D points.
+fn dist(a: Vec2, b: Vec2) -> f64 {
+    ((a.x - b.x).powi(2) + (a.y - b.y).powi(2)).sqrt()
+}
+
+const ALPHA: f64 = 0.5;
+
+/// Loft-based surface evaluator — sine offsets baked into control points.
+/// Used for shelves and surface contours (no near-wall pinch).
+pub fn get_corner_front_surface_loft(
     u: f64,
     z: f64,
     width: f64,
@@ -19,13 +33,134 @@ pub fn get_corner_front_surface(
 
     let points: [Vec2; 5] = [
         Vec2 { x: width, y: 0.0 },
-        Vec2 { x: width - depth * 2.0 / 3.0 + wave * DIAG, y: depth + wave * DIAG },
-        Vec2 { x: depth - wave * DIAG, y: depth - wave * DIAG },
-        Vec2 { x: depth + wave * DIAG, y: length - depth * 2.0 / 3.0 + wave * DIAG },
+        Vec2 { x: width - 3.0 * depth / 8.0, y: 3.0 * depth / 4.0 + wave },
+        Vec2 { x: 5.0 * depth / 4.0 - wave * DIAG, y: 5.0 * depth / 4.0 - wave * DIAG },
+        Vec2 { x: 3.0 * depth / 4.0 + wave, y: length - 3.0 * depth / 8.0 },
         Vec2 { x: 0.0, y: length },
     ];
 
     centripetal_interpolate_5(&points, u)
+}
+
+/// Normal-based surface evaluator — for columns.
+/// Evaluates base path (no wave), computes outward normal from tangent,
+/// interpolates amplitude [0, +A, -A, +A, 0] via smoothLerp with wingWeight=1.5.
+/// Returns basePos + interpAmplitude * sin(2πz/h) * normal.
+pub fn get_corner_front_surface(
+    u: f64,
+    z: f64,
+    width: f64,
+    length: f64,
+    depth: f64,
+    height: f64,
+    amplitude: f64,
+) -> Vec2 {
+    let wing_weight: f64 = 1.5;
+
+    // 5 base positions at zero amplitude
+    let bases: [Vec2; 5] = [
+        Vec2 { x: width, y: 0.0 },
+        Vec2 { x: width - 3.0 * depth / 8.0, y: 3.0 * depth / 4.0 },
+        Vec2 { x: 5.0 * depth / 4.0, y: 5.0 * depth / 4.0 },
+        Vec2 { x: 3.0 * depth / 4.0, y: length - 3.0 * depth / 8.0 },
+        Vec2 { x: 0.0, y: length },
+    ];
+
+    // Centripetal knots from base positions
+    let mut raw = [0.0_f64; 5];
+    for i in 1..5 {
+        raw[i] = raw[i - 1] + dist(bases[i], bases[i - 1]).powf(ALPHA);
+    }
+    let total = raw[4];
+    if total < 1e-10 {
+        return bases[2];
+    }
+    let k: [f64; 5] = [
+        raw[0] / total,
+        raw[1] / total,
+        raw[2] / total,
+        raw[3] / total,
+        raw[4] / total,
+    ];
+
+    // Ghost points for perpendicular wall arrival
+    let d01 = dist(bases[0], bases[1]).max(1.0);
+    let ghost_base0 = Vec2 { x: bases[0].x, y: bases[0].y - d01 };
+    let k_before = k[0] - dist(ghost_base0, bases[0]).powf(ALPHA) / total;
+
+    let d34 = dist(bases[3], bases[4]).max(1.0);
+    let ghost_base4 = Vec2 { x: bases[4].x - d34, y: bases[4].y };
+    let k_after = k[4] + dist(bases[4], ghost_base4).powf(ALPHA) / total;
+
+    let t = u.clamp(0.0, 1.0);
+
+    // Helper closure to evaluate base path at parameter t
+    let eval_base = |t: f64| -> Vec2 {
+        if t <= k[1] {
+            crate::catmull_rom::barry_goldman(ghost_base0, bases[0], bases[1], bases[2], k_before, k[0], k[1], k[2], t)
+        } else if t <= k[2] {
+            crate::catmull_rom::barry_goldman(bases[0], bases[1], bases[2], bases[3], k[0], k[1], k[2], k[3], t)
+        } else if t <= k[3] {
+            crate::catmull_rom::barry_goldman(bases[1], bases[2], bases[3], bases[4], k[1], k[2], k[3], k[4], t)
+        } else {
+            crate::catmull_rom::barry_goldman(bases[2], bases[3], bases[4], ghost_base4, k[2], k[3], k[4], k_after, t)
+        }
+    };
+
+    // Step 1: Evaluate baseXY(u)
+    let base_pos = eval_base(t);
+
+    // Step 2: Compute outward normal from base path tangent
+    let eps = 0.001;
+    let t_a = (t - eps).max(0.0);
+    let t_b = (t + eps).min(1.0);
+    let pos_a = eval_base(t_a);
+    let pos_b = eval_base(t_b);
+
+    let tx = pos_b.x - pos_a.x;
+    let ty = pos_b.y - pos_a.y;
+    let mut nx = -ty;
+    let mut ny = tx;
+
+    let len = (nx * nx + ny * ny).sqrt();
+    if len > 1e-10 {
+        nx /= len;
+        ny /= len;
+    }
+
+    // Ensure outward (away from origin/corner)
+    if nx + ny < 0.0 {
+        nx = -nx;
+        ny = -ny;
+    }
+
+    // Step 3: Interpolate amplitude
+    let amp_values = [0.0, amplitude, -amplitude, amplitude, 0.0];
+    let interp_amplitude = if t <= k[0] {
+        amp_values[0]
+    } else if t <= k[1] {
+        let seg = (t - k[0]) / (k[1] - k[0]);
+        smooth_lerp(amp_values[0], amp_values[1], seg)
+    } else if t <= k[2] {
+        let seg = (t - k[1]) / (k[2] - k[1]);
+        smooth_lerp(amp_values[1], amp_values[2], seg.powf(wing_weight))
+    } else if t <= k[3] {
+        let seg = (t - k[2]) / (k[3] - k[2]);
+        smooth_lerp(amp_values[2], amp_values[3], 1.0 - (1.0 - seg).powf(wing_weight))
+    } else if t <= k[4] {
+        let seg = (t - k[3]) / (k[4] - k[3]);
+        smooth_lerp(amp_values[3], amp_values[4], seg)
+    } else {
+        amp_values[4]
+    };
+
+    // Step 4: Combine
+    let sine_value = (z / height * std::f64::consts::PI * 2.0).sin();
+
+    Vec2 {
+        x: base_pos.x + interp_amplitude * sine_value * nx,
+        y: base_pos.y + interp_amplitude * sine_value * ny,
+    }
 }
 
 /// Get back point for column slice — line-rectangle intersection.
@@ -88,7 +223,7 @@ pub fn generate_corner_shelf_geometry(
         let mut front_edge = Vec::with_capacity(segments + 1);
         for j in 0..=segments {
             let t = j as f64 / segments as f64;
-            let pos = get_corner_front_surface(t, z, width, length, depth, height, amplitude);
+            let pos = get_corner_front_surface_loft(t, z, width, length, depth, height, amplitude);
             front_edge.push(Vec3 { x: pos.x, y: pos.y, z });
         }
 
@@ -114,7 +249,7 @@ pub fn generate_corner_shelf_geometry(
         shelves.push(CornerShelfPiece { front_edge, back_edge_x, back_edge_y, width_side, length_side });
     }
 
-    // Columns
+    // Columns — use normal-based evaluator
     let mut columns = Vec::with_capacity(column_count as usize);
     let clamped_angle = column_angle.clamp(0.01, 89.99);
     let angle_rad = clamped_angle.to_radians();

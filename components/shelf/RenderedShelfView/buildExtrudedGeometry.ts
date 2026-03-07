@@ -1,0 +1,376 @@
+import * as THREE from 'three';
+import type { Point3D } from '@/components/shelf/ShelfVisualizer/types';
+
+/**
+ * Builds extruded 3D BufferGeometry from the 2D shelf/column pieces.
+ *
+ * Coordinate mapping (shelf → Three.js Y-up):
+ *   Three.js X = shelf x (width)
+ *   Three.js Y = shelf z (height, now up)
+ *   Three.js Z = shelf y (depth, toward camera)
+ *
+ * UVs are computed from the vertex's actual world position so the texture
+ * tiles uniformly ("always on") with no pinching or stretching.
+ */
+
+export type V3 = [number, number, number];
+
+// UV projection: takes a Three.js-space vertex, returns [u, v].
+export type UVFn = (v: V3) => [number, number];
+
+// ---------------------------------------------------------------------------
+// Triangle-strip / quad builders with position-based UVs
+// ---------------------------------------------------------------------------
+
+function addStrip(
+  pos: number[],
+  uvs: number[],
+  edge1: V3[],
+  edge2: V3[],
+  uv: UVFn,
+) {
+  const n = edge1.length;
+  for (let i = 0; i < n - 1; i++) {
+    pos.push(...edge1[i], ...edge2[i], ...edge1[i + 1]);
+    uvs.push(...uv(edge1[i]), ...uv(edge2[i]), ...uv(edge1[i + 1]));
+
+    pos.push(...edge1[i + 1], ...edge2[i], ...edge2[i + 1]);
+    uvs.push(...uv(edge1[i + 1]), ...uv(edge2[i]), ...uv(edge2[i + 1]));
+  }
+}
+
+/** Returns the number of vertices added by addStrip for n-point edges */
+function stripVertexCount(n: number): number {
+  return (n - 1) * 6; // 2 triangles × 3 vertices per segment
+}
+
+function addQuad(
+  pos: number[],
+  uvs: number[],
+  a: V3, b: V3, c: V3, d: V3,
+  uv: UVFn,
+) {
+  pos.push(...a, ...b, ...c);
+  uvs.push(...uv(a), ...uv(b), ...uv(c));
+  pos.push(...c, ...b, ...d);
+  uvs.push(...uv(c), ...uv(b), ...uv(d));
+}
+
+function makeGeo(pos: number[], uvs: number[]): THREE.BufferGeometry {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// ---------------------------------------------------------------------------
+// UV helpers — project vertex position onto 2 axes, scale by 1/22 (inches)
+// ---------------------------------------------------------------------------
+export const S = 1 / 22; // 1 repeat per 22" — larger grain scale
+export const SE = S / 3; // edge along-length: 3x zoomed in vs wood grain
+export const ST = 1 / 3; // edge across-thickness: 3x zoomed in
+
+// ---------------------------------------------------------------------------
+// Wood grain UVs (group 0) — for flat faces (top/bottom of shelves, sides of columns)
+// ---------------------------------------------------------------------------
+
+// Shelf top/bottom: grain along width (X), across depth (Z)
+const uvShelfFlat: UVFn = (v) => [v[0] * S, v[2] * S];
+// Column left/right faces: grain along height (Y), across depth (Z)
+const uvColFlat: UVFn = (v) => [v[1] * S, v[2] * S];
+
+// ---------------------------------------------------------------------------
+// Plywood edge UVs (group 1) — for cut edges (front/back walls, side caps)
+// ---------------------------------------------------------------------------
+
+// Shelf front/back walls: plywood lines along width (X), layers across height (Y)
+const uvShelfWallEdge: UVFn = (v) => [v[0] * SE, v[1] * ST];
+// Shelf side caps: plywood lines across depth (Z), layers across height (Y)
+const uvShelfSideEdge: UVFn = (v) => [v[2] * SE, v[1] * ST];
+
+// Column front/back walls: plywood lines along height (Y), layers across width (X)
+const uvColWallEdge: UVFn = (v) => [v[1] * SE, v[0] * ST];
+// Column top/bottom caps: plywood lines along depth (Z), layers across width (X)
+const uvColCapEdge: UVFn = (v) => [v[2] * SE, v[0] * ST];
+
+// Corner shelf walls: combined X+Z for L-shape continuity
+const uvCornerWallEdge: UVFn = (v) => [(v[0] + v[2]) * SE, v[1] * ST];
+// Corner shelf side caps
+const uvCornerSideEdge: UVFn = (v) => [v[2] * SE, v[1] * ST];
+
+// ---------------------------------------------------------------------------
+// Flat shelf piece
+// ---------------------------------------------------------------------------
+
+interface FlatShelfPiece {
+  frontEdge: Point3D[];
+  backEdge: Point3D[];
+  leftSide: [Point3D, Point3D];
+  rightSide: [Point3D, Point3D];
+}
+
+export function buildFlatShelfGeo(
+  piece: FlatShelfPiece,
+  thickness: number,
+  width: number,
+  height: number,
+  depth: number,
+  center = true,
+): THREE.BufferGeometry {
+  const cx = center ? width / 2 : 0, cy = center ? depth / 2 : 0, cz = center ? height / 2 : 0;
+  const ht = thickness / 2;
+  const n = piece.frontEdge.length;
+
+  const topF: V3[] = [], topB: V3[] = [];
+  const botF: V3[] = [], botB: V3[] = [];
+
+  for (let i = 0; i < n; i++) {
+    const f = piece.frontEdge[i], b = piece.backEdge[i];
+    topF.push([f.x - cx, f.z + ht - cz, f.y - cy]);
+    topB.push([b.x - cx, b.z + ht - cz, b.y - cy]);
+    botF.push([f.x - cx, f.z - ht - cz, f.y - cy]);
+    botB.push([b.x - cx, b.z - ht - cz, b.y - cy]);
+  }
+
+  const pos: number[] = [], uvs: number[] = [];
+
+  // Group 0: wood grain faces (top + bottom)
+  addStrip(pos, uvs, topB, topF, uvShelfFlat);
+  addStrip(pos, uvs, botF, botB, uvShelfFlat);
+  const woodVerts = stripVertexCount(n) * 2;
+
+  // Group 1: plywood edge faces (front wall + back wall + 2 side caps)
+  addStrip(pos, uvs, topF, botF, uvShelfWallEdge);
+  addStrip(pos, uvs, botB, topB, uvShelfWallEdge);
+  addQuad(pos, uvs, topB[0], topF[0], botB[0], botF[0], uvShelfSideEdge);
+  addQuad(pos, uvs, topF[n - 1], topB[n - 1], botF[n - 1], botB[n - 1], uvShelfSideEdge);
+  const edgeVerts = stripVertexCount(n) * 2 + 12;
+
+  const geo = makeGeo(pos, uvs);
+  geo.addGroup(0, woodVerts, 0);
+  geo.addGroup(woodVerts, edgeVerts, 1);
+  return geo;
+}
+
+// ---------------------------------------------------------------------------
+// Flat column piece
+// ---------------------------------------------------------------------------
+
+interface FlatColumnPiece {
+  frontEdge: Point3D[];
+  backEdge: Point3D[];
+  topSide: [Point3D, Point3D];
+  bottomSide: [Point3D, Point3D];
+}
+
+export function buildFlatColumnGeo(
+  piece: FlatColumnPiece,
+  thickness: number,
+  width: number,
+  height: number,
+  depth: number,
+  center = true,
+): THREE.BufferGeometry {
+  const cx = center ? width / 2 : 0, cy = center ? depth / 2 : 0, cz = center ? height / 2 : 0;
+  const ht = thickness / 2;
+  const n = piece.frontEdge.length;
+
+  const rF: V3[] = [], rB: V3[] = [];
+  const lF: V3[] = [], lB: V3[] = [];
+
+  for (let i = 0; i < n; i++) {
+    const f = piece.frontEdge[i], b = piece.backEdge[i];
+    rF.push([f.x + ht - cx, f.z - cz, f.y - cy]);
+    rB.push([b.x + ht - cx, b.z - cz, b.y - cy]);
+    lF.push([f.x - ht - cx, f.z - cz, f.y - cy]);
+    lB.push([b.x - ht - cx, b.z - cz, b.y - cy]);
+  }
+
+  const pos: number[] = [], uvs: number[] = [];
+
+  // Group 0: wood grain faces (right + left)
+  addStrip(pos, uvs, rB, rF, uvColFlat);
+  addStrip(pos, uvs, lF, lB, uvColFlat);
+  const woodVerts = stripVertexCount(n) * 2;
+
+  // Group 1: plywood edge faces (front wall + back wall + 2 caps)
+  addStrip(pos, uvs, rF, lF, uvColWallEdge);
+  addStrip(pos, uvs, lB, rB, uvColWallEdge);
+  addQuad(pos, uvs, rF[n - 1], rB[n - 1], lF[n - 1], lB[n - 1], uvColCapEdge);
+  addQuad(pos, uvs, lF[0], lB[0], rF[0], rB[0], uvColCapEdge);
+  const edgeVerts = stripVertexCount(n) * 2 + 12;
+
+  const geo = makeGeo(pos, uvs);
+  geo.addGroup(0, woodVerts, 0);
+  geo.addGroup(woodVerts, edgeVerts, 1);
+  return geo;
+}
+
+// ---------------------------------------------------------------------------
+// Corner shelf piece (L-shaped slab)
+// ---------------------------------------------------------------------------
+
+interface CornerShelfPieceInput {
+  frontEdge: Point3D[];
+  backEdgeX: Point3D[];
+  backEdgeY: Point3D[];
+  widthSide: [Point3D, Point3D];
+  lengthSide: [Point3D, Point3D];
+}
+
+export function buildCornerShelfGeo(
+  piece: CornerShelfPieceInput,
+  thickness: number,
+  width: number,
+  length: number,
+  height: number,
+  angleRad: number,
+  center = true,
+): THREE.BufferGeometry {
+  const cx = center ? width / 2 : 0, cy = center ? length / 2 : 0, cz = center ? height / 2 : 0;
+  const ht = thickness / 2;
+  const n = piece.frontEdge.length;
+  const z = piece.frontEdge[0].z;
+
+  // Back edge: project each front point onto the L-wall via column-angle slice.
+  const sinA = Math.sin(angleRad);
+  const cosA = Math.cos(angleRad);
+  const backPts: Point3D[] = [];
+  for (let i = 0; i < n; i++) {
+    const f = piece.frontEdge[i];
+    const k = f.x * sinA - f.y * cosA;
+    let bx: number, by: number;
+    if (sinA > 1e-10) {
+      const x = k / sinA;
+      if (x >= -1e-10 && x <= width + 1e-10) {
+        bx = Math.max(0, Math.min(x, width)); by = 0;
+      } else {
+        by = cosA > 1e-10 ? Math.max(0, Math.min(-k / cosA, length)) : 0;
+        bx = 0;
+      }
+    } else {
+      by = cosA > 1e-10 ? Math.max(0, Math.min(-k / cosA, length)) : 0;
+      bx = 0;
+    }
+    backPts.push({ x: bx, y: by, z });
+  }
+
+  const topF: V3[] = [], topBk: V3[] = [];
+  const botF: V3[] = [], botBk: V3[] = [];
+
+  for (let i = 0; i < n; i++) {
+    const f = piece.frontEdge[i], b = backPts[i];
+    topF.push([f.x - cx, f.z + ht - cz, f.y - cy]);
+    topBk.push([b.x - cx, b.z + ht - cz, b.y - cy]);
+    botF.push([f.x - cx, f.z - ht - cz, f.y - cy]);
+    botBk.push([b.x - cx, b.z - ht - cz, b.y - cy]);
+  }
+
+  // Corner shelf UVs: use XZ plane for top/bottom (covers the L shape)
+  const uvFlat: UVFn = (v) => [v[0] * S, v[2] * S];
+
+  const pos: number[] = [], uvs: number[] = [];
+
+  // Group 0: wood grain faces (top + bottom)
+  addStrip(pos, uvs, topBk, topF, uvFlat);
+  addStrip(pos, uvs, botF, botBk, uvFlat);
+  const woodVerts = stripVertexCount(n) * 2;
+
+  // Group 1: plywood edge faces (front wall + back wall + 2 side caps)
+  addStrip(pos, uvs, topF, botF, uvCornerWallEdge);
+  addStrip(pos, uvs, botBk, topBk, uvCornerWallEdge);
+  addQuad(pos, uvs, topBk[0], topF[0], botBk[0], botF[0], uvCornerSideEdge);
+  addQuad(pos, uvs, topF[n - 1], topBk[n - 1], botF[n - 1], botBk[n - 1], uvCornerSideEdge);
+  const edgeVerts = stripVertexCount(n) * 2 + 12;
+
+  const geo = makeGeo(pos, uvs);
+  geo.addGroup(0, woodVerts, 0);
+  geo.addGroup(woodVerts, edgeVerts, 1);
+  return geo;
+}
+
+// ---------------------------------------------------------------------------
+// Corner column piece (perpendicular to slice angle)
+// ---------------------------------------------------------------------------
+
+interface CornerColumnPieceInput {
+  frontEdge: Point3D[];
+  backEdge: Point3D[];
+  topSide: [Point3D, Point3D];
+  bottomSide: [Point3D, Point3D];
+}
+
+export function buildCornerColumnGeo(
+  piece: CornerColumnPieceInput,
+  thickness: number,
+  width: number,
+  length: number,
+  height: number,
+  angleRad: number,
+  center = true,
+): THREE.BufferGeometry {
+  const cx = center ? width / 2 : 0, cy = center ? length / 2 : 0, cz = center ? height / 2 : 0;
+  const ht = thickness / 2;
+  const n = piece.frontEdge.length;
+
+  // Perpendicular to slice: gradient of (x·sinA - y·cosA)
+  const perpX = Math.sin(angleRad);
+  const perpY = -Math.cos(angleRad);
+  const dx = ht * perpX;
+  const dy = ht * perpY;
+
+  const rF: V3[] = [], rB: V3[] = [];
+  const lF: V3[] = [], lB: V3[] = [];
+
+  for (let i = 0; i < n; i++) {
+    const f = piece.frontEdge[i], b = piece.backEdge[i];
+    rF.push([f.x + dx - cx, f.z - cz, f.y + dy - cy]);
+    rB.push([b.x + dx - cx, b.z - cz, b.y + dy - cy]);
+    lF.push([f.x - dx - cx, f.z - cz, f.y - dy - cy]);
+    lB.push([b.x - dx - cx, b.z - cz, b.y - dy - cy]);
+  }
+
+  const pos: number[] = [], uvs: number[] = [];
+
+  // Angle-aware UV projections
+  const sinA = Math.sin(angleRad);
+  const cosA = Math.cos(angleRad);
+  const uvWall: UVFn = (v) => [v[1] * SE, (v[0] * sinA - v[2] * cosA) * ST];
+  const uvCap: UVFn = (v) => [(v[0] * cosA + v[2] * sinA) * SE, (v[0] * sinA - v[2] * cosA) * ST];
+
+  // Group 0: wood grain faces (right + left)
+  addStrip(pos, uvs, rB, rF, uvColFlat);
+  addStrip(pos, uvs, lF, lB, uvColFlat);
+  const woodVerts = stripVertexCount(n) * 2;
+
+  // Group 1: plywood edge faces (front wall + back wall + 2 caps)
+  addStrip(pos, uvs, rF, lF, uvWall);
+  addStrip(pos, uvs, lB, rB, uvWall);
+  addQuad(pos, uvs, rF[n - 1], rB[n - 1], lF[n - 1], lB[n - 1], uvCap);
+  addQuad(pos, uvs, lF[0], lB[0], rF[0], rB[0], uvCap);
+  const edgeVerts = stripVertexCount(n) * 2 + 12;
+
+  const geo = makeGeo(pos, uvs);
+  geo.addGroup(0, woodVerts, 0);
+  geo.addGroup(woodVerts, edgeVerts, 1);
+  return geo;
+}
+
+// ---------------------------------------------------------------------------
+// UV offset — deterministic per-piece shift to break visible tiling.
+// Uses golden ratio spacing so adjacent pieces look distinct.
+// ---------------------------------------------------------------------------
+
+const PHI = 0.6180339887;
+
+export function offsetUVs(geo: THREE.BufferGeometry, index: number): void {
+  const uv = geo.getAttribute('uv');
+  if (!uv) return;
+  const offU = (index * PHI) % 1;
+  const offV = (index * PHI * 1.7) % 1;
+  for (let i = 0; i < uv.count; i++) {
+    uv.setXY(i, uv.getX(i) + offU, uv.getY(i) + offV);
+  }
+  uv.needsUpdate = true;
+}

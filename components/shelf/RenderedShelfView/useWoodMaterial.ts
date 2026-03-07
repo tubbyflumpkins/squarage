@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
+import { preloadAllEdgeTextures } from './useEdgeMaterial';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
@@ -86,41 +87,63 @@ function preloadAllTextures(): Promise<void> {
   return preloadPromise;
 }
 
+// ---------------------------------------------------------------------------
+// Material cache — one base material per finish, reused across all components
+// ---------------------------------------------------------------------------
+
+const materialCache: Record<string, THREE.MeshStandardMaterial> = {};
+const EMPTY_TEX: TexSet = { color: null, roughness: null, normal: null };
+
+function buildMaterial(finish: WoodFinish, textures: TexSet): THREE.MeshStandardMaterial {
+  const hasTexture = textures.color !== null;
+  const tint = COLOR_TINTS[finish];
+  const opts: THREE.MeshStandardMaterialParameters = {
+    color: hasTexture
+      ? new THREE.Color(tint[0], tint[1], tint[2])
+      : new THREE.Color(FALLBACK_COLORS[finish]),
+    normalScale: new THREE.Vector2(0.5, 0.5),
+    roughness: 1.0,
+    metalness: 0.0,
+    side: THREE.DoubleSide,
+    envMapIntensity: 0,
+  };
+  if (textures.color) opts.map = textures.color;
+  if (textures.roughness) opts.roughnessMap = textures.roughness;
+  if (textures.normal) opts.normalMap = textures.normal;
+  const mat = new THREE.MeshStandardMaterial(opts);
+  if (hasTexture) materialCache[finish] = mat;
+  return mat;
+}
+
 /**
  * Loads PBR wood textures (color, roughness, normal) and builds a
  * MeshStandardMaterial. All finishes are preloaded on first mount so
  * switching between them is instant.
+ *
+ * Reads from the module-level texture/material caches synchronously to
+ * avoid the one-frame stale-state flash that useState + useEffect caused
+ * when the finish prop changed mid-animation.
  */
 export function useWoodMaterial(finish: WoodFinish): THREE.MeshStandardMaterial {
-  const [textures, setTextures] = useState<TexSet>(
-    () => textureCache[finish] ?? { color: null, roughness: null, normal: null },
-  );
+  // Trigger one re-render when textures first finish loading
+  const [, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    preloadAllTextures().then(() => {
-      if (!cancelled && textureCache[finish]) setTextures(textureCache[finish]);
+    Promise.all([preloadAllTextures(), preloadAllEdgeTextures()]).then(() => {
+      if (!cancelled) setReady(true);
     });
     return () => { cancelled = true; };
-  }, [finish]);
+  }, []);
 
-  return useMemo(() => {
-    const hasTexture = textures.color !== null;
+  // Read directly from the module-level cache — synchronous, no stale state
+  const textures = textureCache[finish] ?? EMPTY_TEX;
 
-    const tint = COLOR_TINTS[finish];
-    const opts: THREE.MeshStandardMaterialParameters = {
-      color: hasTexture
-        ? new THREE.Color(tint[0], tint[1], tint[2])
-        : new THREE.Color(FALLBACK_COLORS[finish]),
-      normalScale: new THREE.Vector2(0.5, 0.5),
-      roughness: 0.75,
-      metalness: 0.0,
-      side: THREE.DoubleSide,
-      envMapIntensity: 0.18,
-    };
-    if (textures.color) opts.map = textures.color;
-    if (textures.roughness) opts.roughnessMap = textures.roughness;
-    if (textures.normal) opts.normalMap = textures.normal;
-    return new THREE.MeshStandardMaterial(opts);
+  const material = useMemo(() => {
+    // Reuse cached material if already built with textures loaded
+    if (textures.color && materialCache[finish]) return materialCache[finish];
+    return buildMaterial(finish, textures);
   }, [textures, finish]);
+
+  return material;
 }

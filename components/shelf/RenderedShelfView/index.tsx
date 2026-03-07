@@ -25,7 +25,6 @@ interface RenderedShelfViewProps {
   height: number;
   depth: number;
   length: number;
-  wireframe?: boolean;
 }
 
 export default function RenderedShelfView({
@@ -39,7 +38,6 @@ export default function RenderedShelfView({
   height,
   depth,
   length,
-  wireframe,
 }: RenderedShelfViewProps) {
   return (
     <Canvas
@@ -60,9 +58,9 @@ export default function RenderedShelfView({
 
         {/* Shelf geometry */}
         {isCorner ? (
-          <CornerShelfMeshes params={cornerParams} finish={finish} wireframe={wireframe} />
+          <CornerShelfMeshes params={cornerParams} finish={finish} />
         ) : (
-          <FlatShelfMeshes params={flatParams} finish={finish} wireframe={wireframe} />
+          <FlatShelfMeshes params={flatParams} finish={finish} />
         )}
       </Suspense>
 
