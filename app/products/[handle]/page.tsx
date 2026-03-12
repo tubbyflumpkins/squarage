@@ -118,7 +118,7 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
     images: product.images?.filter((image: any) => image && image.id && image.src).map((image: any) => ({
       id: String(image.id),
       src: String(image.src),
-      altText: String(image.altText || ''),
+      altText: String(image.altText || product.title || 'Product image'),
       width: Number(image.width) || 800,
       height: Number(image.height) || 800
     })) || [],
