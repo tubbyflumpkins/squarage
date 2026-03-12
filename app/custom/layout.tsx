@@ -10,9 +10,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Custom Furniture & Modular Shelf Designer',
     description: 'Commission custom furniture or design modular shelving to your exact dimensions. Every piece handcrafted in Los Angeles.',
+    images: ['/images/hero-main.jpg'],
   },
   twitter: {
     card: 'summary_large_image',
+    title: 'Custom Furniture & Modular Shelf Designer',
+    description: 'Commission custom furniture or design modular shelving to your exact dimensions. Every piece handcrafted in Los Angeles.',
+    images: ['/images/hero-main.jpg'],
   },
 }
 
