@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 export default function CarroHeroSection() {
   const [isMobile, setIsMobile] = useState(false)
@@ -18,11 +19,16 @@ export default function CarroHeroSection() {
     <section className="relative h-[58vh] md:h-[86vh] w-full overflow-visible bg-cream">
       {/* Hero Background Image */}
       <div className="absolute inset-0 z-0">
-        <div 
-          className="absolute inset-0 bg-cover bg-no-repeat"
+        <Image
+          src="/images/carro/header.jpg"
+          alt="Tiled Collection — Handcrafted custom tables with vibrant mosaic tile surfaces"
+          fill
+          priority
+          quality={90}
+          sizes="100vw"
+          className="object-cover"
           style={{
-            backgroundImage: 'url(/images/carro/header.jpg)',
-            backgroundPosition: isMobile ? 'center top' : 'center 25%',
+            objectPosition: isMobile ? 'center top' : 'center 25%',
             transform: 'scaleX(-1)'
           }}
         />

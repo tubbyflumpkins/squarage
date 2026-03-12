@@ -22,7 +22,7 @@ export default function WarpedHeroSection() {
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/collection-warped.jpg"
-          alt="Warped Collection Hero"
+          alt="Warped Collection — Custom organic curved wood shelving by Squarage Studio"
           fill
           priority
           quality={90}

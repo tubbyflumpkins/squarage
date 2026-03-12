@@ -28,7 +28,7 @@ export default function WarpedContentSection() {
           <div className="relative w-full">
             <Image
               src="/images/warped/curved_shelf_light_05.png"
-              alt="Warped Collection - Natural Wood Shelving"
+              alt="Warped Collection — Natural wood shelving with organic curved lines, handcrafted in Los Angeles"
               width={600}
               height={800}
               className="w-full h-auto"

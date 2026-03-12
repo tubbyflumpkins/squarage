@@ -28,7 +28,7 @@ export default function CarroContentSection() {
           <div className="max-w-sm mx-auto border-squarage-red lg:order-1" style={{ borderWidth: '40px' }}>
             <Image
               src="/images/carro/yellow-table-styled.jpg"
-              alt="Tiled Collection - Yellow Styled Tables"
+              alt="Tiled Collection — Handcrafted table with vibrant yellow mosaic tile surface"
               width={320}
               height={427}
               className="w-full h-auto"

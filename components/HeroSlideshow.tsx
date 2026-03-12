@@ -10,27 +10,27 @@ const SLIDE_INTERVAL = 4000
 const heroImages = [
   {
     src: '/images/hero-2-processed.jpg',
-    alt: 'Squarage Studio Design',
+    alt: 'Squarage Studio custom furniture and functional art pieces',
   },
   {
     src: '/images/IMG_0961.jpg',
-    alt: 'Custom Furniture Design',
+    alt: 'Handcrafted custom furniture made in our Los Angeles workshop',
   },
   {
     src: '/images/IMG_1286.jpg',
-    alt: 'Handcrafted Pieces',
+    alt: 'Detail of handcrafted wood furniture by Squarage Studio',
   },
   {
     src: '/images/IMG_6122.jpeg',
-    alt: 'Los Angeles Studio',
+    alt: 'Inside the Squarage Studio woodworking workshop in Los Angeles',
   },
   {
     src: '/images/product_5_main_angle_blue.jpg',
-    alt: 'Featured Product',
+    alt: 'Custom tiled table with blue mosaic surface by Squarage Studio',
   },
   {
     src: '/images/product_6_main_angle_3d.jpg',
-    alt: 'Design Process',
+    alt: 'Squarage Studio furniture design and craftsmanship process',
   },
 ]
 
