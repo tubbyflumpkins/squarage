@@ -31,9 +31,12 @@ export default function HeroStatic() {
         />
       </div>
       
+      {/* Visually-hidden h1 for SEO — homepage needs a primary heading */}
+      <h1 className="sr-only">Squarage Studio — Custom Furniture & Functional Art, Made in Los Angeles</h1>
+
       {/* Clickable overlay */}
-      <Link 
-        href="/products" 
+      <Link
+        href="/products"
         className="absolute inset-0 z-10 block cursor-pointer"
         aria-label="View all products"
       />

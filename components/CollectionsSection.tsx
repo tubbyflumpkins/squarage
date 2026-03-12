@@ -11,6 +11,7 @@ const collections = [
     subtitle: 'Shelving & Storage',
     description: 'Natural wood shelving systems with smooth, wavy lines that add warmth and character to any space. Sculptural storage, custom built.',
     image: '/images/warped_side.jpg',
+    imageAlt: 'Warped Collection — Organic curved wood shelving handcrafted in Los Angeles',
     href: '/collections/warped',
     bgColor: 'bg-squarage-yellow',
   },
@@ -20,6 +21,7 @@ const collections = [
     subtitle: 'Tables & Surfaces',
     description: 'Vibrant tiled surfaces that bring energy, texture, and a playful sense of style to your space.',
     image: '/images/collection-tiled.jpg',
+    imageAlt: 'Tiled Collection — Handcrafted custom tables with vibrant tiled surfaces',
     href: '/collections/tiled',
     bgColor: 'bg-squarage-yellow',
   },
@@ -128,7 +130,7 @@ export default function CollectionsSection() {
                   <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
                     <Image
                       src={collection.image}
-                      alt={collection.title}
+                      alt={collection.imageAlt}
                       fill
                       className={`object-cover ${collection.id === 'warped' ? '-scale-x-100 md:scale-x-100' : ''}`}
                       style={collection.id === 'warped' ? { objectPosition: '65% center' } : undefined}
@@ -155,9 +157,9 @@ export default function CollectionsSection() {
                           />
                           {/* Text content - normal scale */}
                           <div className="relative z-10" style={{ padding: '0.9rem 2.2rem' }}>
-                            <h1 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
+                            <h2 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
                               Warped
-                            </h1>
+                            </h2>
                           </div>
                         </div>
                       </div>
@@ -179,9 +181,9 @@ export default function CollectionsSection() {
                           />
                           {/* Text content - normal scale */}
                           <div className="relative z-10" style={{ padding: '0.9rem 2.5rem' }}>
-                            <h1 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
+                            <h2 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
                               Tiled
-                            </h1>
+                            </h2>
                           </div>
                         </div>
                       </div>
@@ -204,14 +206,14 @@ export default function CollectionsSection() {
                             }}
                           >
                             <div className="text-center">
-                              <h1 
+                              <h2
                                 className="font-bold font-neue-haas text-squarage-white"
                                 style={{
                                   fontSize: 'clamp(4rem, 8vw, 8rem)'
                                 }}
                               >
                                 Warped
-                              </h1>
+                              </h2>
                             </div>
                           </div>
                         </div>
@@ -226,14 +228,14 @@ export default function CollectionsSection() {
                             }}
                           >
                             <div className="text-center">
-                              <h1 
+                              <h2
                                 className="font-bold font-neue-haas text-white"
                                 style={{
                                   fontSize: 'clamp(4rem, 8vw, 8rem)'
                                 }}
                               >
                                 Tiled
-                              </h1>
+                              </h2>
                             </div>
                           </div>
                         </div>
