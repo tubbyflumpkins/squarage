@@ -271,7 +271,7 @@ export default function QuoteFlow({
             shelfType, width, height, depth, length,
             shelfCount, columnCount, roundLeft, roundRight,
             finish, amplitude, shelfOffset, columnOffset,
-            columnAngle, estimatedPrice: price,
+            columnAngle, estimatedPrice: Math.round(price / 50) * 50,
           },
           savedDesignJson: JSON.stringify(savedDesignObj, null, 2),
         }),
@@ -420,7 +420,7 @@ export default function QuoteFlow({
                 <div className="border-b border-dashed border-squarage-black/20 my-3" />
                 <div className="flex justify-between items-baseline">
                   <span className="text-[16px] font-bold font-neue-haas text-squarage-black">Estimated Total</span>
-                  <span className="text-2xl font-bold font-neue-haas text-squarage-black tabular-nums">${Math.round(price)}</span>
+                  <span className="text-2xl font-bold font-neue-haas text-squarage-black tabular-nums">${Math.round(price / 50) * 50}</span>
                 </div>
                 <div className="border-b border-dashed border-squarage-black/20 my-3" />
                 <div className="space-y-1">

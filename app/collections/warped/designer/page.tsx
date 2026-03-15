@@ -1073,7 +1073,7 @@ export default function DesignerPage() {
             <SectionLabel>Estimated Price</SectionLabel>
             <div className="mt-4">
               <span className="text-[42px] font-bold text-squarage-black tabular-nums leading-none">
-                ${Math.round(price)}
+                ${Math.round(price / 50) * 50}
               </span>
             </div>
           </div>
@@ -1117,7 +1117,7 @@ export default function DesignerPage() {
       >
         <div className="flex flex-col">
           <span className="text-[28px] font-bold text-squarage-black tabular-nums leading-none">
-            ${Math.round(price)}
+            ${Math.round(price / 50) * 50}
           </span>
           <span className="text-[12px] font-medium tracking-[0.01em] text-squarage-black/60 mt-1 tabular-nums">
             {dimStr} &middot; {finish}
