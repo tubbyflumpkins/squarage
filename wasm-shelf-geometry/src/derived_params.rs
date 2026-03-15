@@ -5,8 +5,8 @@ const COST_PER_SQFT: f64 = 40.0;
 pub fn compute_amplitude(is_corner: bool, height: f64) -> f64 {
     let min_h = 24.0_f64;
     let max_h = 76.0_f64;
-    let min_amp = if is_corner { 2.0 } else { 1.5 };
-    let max_amp = 3.0_f64;
+    let min_amp = if is_corner { 1.0 } else { 1.5 };
+    let max_amp = if is_corner { 1.5 } else { 2.5 };
     let t = ((height - min_h) / (max_h - min_h)).clamp(0.0, 1.0);
     min_amp + t * (max_amp - min_amp)
 }
@@ -23,24 +23,19 @@ pub fn compute_column_angle(width: f64, length: f64) -> f64 {
     }
 }
 
-pub fn compute_shelf_offset(is_corner: bool, height: f64) -> f64 {
-    if is_corner {
-        let t = ((height - 24.0) / (76.0 - 24.0)).clamp(0.0, 1.0);
-        (2.0 + t * 4.0).round()
-    } else {
-        let t = ((height - 24.0) / (76.0 - 24.0)).clamp(0.0, 1.0);
-        (2.0 + t * 4.0).round()
-    }
+pub fn compute_shelf_offset(_is_corner: bool, height: f64) -> f64 {
+    let t = ((height - 24.0) / (76.0 - 24.0)).clamp(0.0, 1.0);
+    2.0 + t * 4.0
 }
 
 pub fn compute_column_offset(is_corner: bool, width: f64, length: f64) -> f64 {
     if is_corner {
         let dim = width.max(length);
-        let t = ((dim - 10.0) / (76.0 - 10.0)).clamp(0.0, 1.0);
-        (6.0 + t * 4.0).round()
+        let t = ((dim - 24.0) / (76.0 - 24.0)).clamp(0.0, 1.0);
+        4.0 + t * 4.0
     } else {
         let t = ((width - 24.0) / (76.0 - 24.0)).clamp(0.0, 1.0);
-        (2.0 + t * 4.0).round()
+        2.0 + t * 4.0
     }
 }
 
