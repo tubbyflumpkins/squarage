@@ -657,7 +657,7 @@ export default function ProductPage({ product }: ProductPageProps) {
                       >
                         <div
                           style={{
-                            transform: isZoomed ? 'scale(2)' : 'scale(1)',
+                            transform: isZoomed ? 'scale(1.5)' : 'scale(1)',
                             transformOrigin: zoomOrigin,
                             transition: 'transform 0.3s ease',
                           }}
