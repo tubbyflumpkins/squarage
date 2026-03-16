@@ -83,6 +83,8 @@ export default function ProductPage({ product }: ProductPageProps) {
   const [imagesPreloaded, setImagesPreloaded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [showStickyCart, setShowStickyCart] = useState(false)
+  const [isZoomed, setIsZoomed] = useState(false)
+  const [zoomOrigin, setZoomOrigin] = useState('50% 50%')
   const addToCartRef = useRef<HTMLDivElement>(null)
   
   // Use cart context
@@ -426,6 +428,23 @@ export default function ProductPage({ product }: ProductPageProps) {
     }
   }
 
+  // Desktop image zoom handlers
+  const handleZoomMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setZoomOrigin(`${x}% ${y}%`)
+  }, [])
+
+  const handleZoomMouseEnter = useCallback(() => {
+    setIsZoomed(true)
+  }, [])
+
+  const handleZoomMouseLeave = useCallback(() => {
+    setIsZoomed(false)
+    setZoomOrigin('50% 50%')
+  }, [])
+
   // Get collection info
   const collection = product.collections?.[0] || { handle: 'tiled', title: 'Tiled Collection' }
 
@@ -627,16 +646,31 @@ export default function ProductPage({ product }: ProductPageProps) {
               {/* Image Gallery - Left */}
               <div className="w-1/2 pr-8">
                 <div className="sticky top-32">
-                  {/* Main Image - Shows only current variant image */}
+                  {/* Main Image - Shows only current variant image (with hover zoom) */}
                   <div className="relative mb-4">
                     {currentVariantImages && currentVariantImages.length > 0 ? (
-                      <FastProductImage
-                        src={currentVariantImages[0].src}
-                        alt={currentVariantImages[0].altText || product.title}
-                        width={600}
-                        height={600}
-                        className="w-full h-auto object-contain"
-                      />
+                      <div
+                        className="overflow-hidden cursor-zoom-in"
+                        onMouseMove={handleZoomMouseMove}
+                        onMouseEnter={handleZoomMouseEnter}
+                        onMouseLeave={handleZoomMouseLeave}
+                      >
+                        <div
+                          style={{
+                            transform: isZoomed ? 'scale(2)' : 'scale(1)',
+                            transformOrigin: zoomOrigin,
+                            transition: 'transform 0.3s ease',
+                          }}
+                        >
+                          <FastProductImage
+                            src={currentVariantImages[0].src}
+                            alt={currentVariantImages[0].altText || product.title}
+                            width={600}
+                            height={600}
+                            className="w-full h-auto object-contain"
+                          />
+                        </div>
+                      </div>
                     ) : (
                       <div className="w-full h-96 flex items-center justify-center bg-gray-100">
                         <span className="text-gray-400 font-neue-haas text-lg">No Image Available</span>

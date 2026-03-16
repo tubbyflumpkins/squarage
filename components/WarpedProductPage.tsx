@@ -92,6 +92,8 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [showStickyCart, setShowStickyCart] = useState(false)
+  const [isZoomed, setIsZoomed] = useState(false)
+  const [zoomOrigin, setZoomOrigin] = useState('50% 50%')
   const addToCartRef = useRef<HTMLDivElement>(null)
   
   // Use cart context
@@ -333,6 +335,23 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     }
   }
 
+  // Desktop image zoom handlers
+  const handleZoomMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setZoomOrigin(`${x}% ${y}%`)
+  }, [])
+
+  const handleZoomMouseEnter = useCallback(() => {
+    setIsZoomed(true)
+  }, [])
+
+  const handleZoomMouseLeave = useCallback(() => {
+    setIsZoomed(false)
+    setZoomOrigin('50% 50%')
+  }, [])
+
   // Get collection info
   const collection = product.collections?.[0] || { handle: 'warped', title: 'Warped Collection' }
 
@@ -528,14 +547,27 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   >
                     {filteredImages.map((image, index) => (
                       <SwiperSlide key={index}>
-                        <div className="relative w-full">
-                          <FastProductImage
-                            src={image.src}
-                            alt={image.altText || `${product.title} - ${selectedFinish} - View ${index + 1}`}
-                            width={600}
-                            height={600}
-                            className="w-full h-auto object-contain"
-                          />
+                        <div
+                          className="relative w-full overflow-hidden cursor-zoom-in"
+                          onMouseMove={handleZoomMouseMove}
+                          onMouseEnter={handleZoomMouseEnter}
+                          onMouseLeave={handleZoomMouseLeave}
+                        >
+                          <div
+                            style={{
+                              transform: isZoomed ? 'scale(2)' : 'scale(1)',
+                              transformOrigin: zoomOrigin,
+                              transition: 'transform 0.3s ease',
+                            }}
+                          >
+                            <FastProductImage
+                              src={image.src}
+                              alt={image.altText || `${product.title} - ${selectedFinish} - View ${index + 1}`}
+                              width={600}
+                              height={600}
+                              className="w-full h-auto object-contain"
+                            />
+                          </div>
                         </div>
                       </SwiperSlide>
                     ))}
