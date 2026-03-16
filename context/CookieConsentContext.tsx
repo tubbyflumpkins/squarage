@@ -10,6 +10,7 @@ interface CookieConsentContextType {
   showModal: boolean
   updateConsent: (category: keyof ConsentState, value: boolean) => void
   acceptAll: () => void
+  rejectAll: () => void
   savePreferences: (newConsent: ConsentState) => void
   openModal: () => void
   closeModal: () => void
@@ -118,6 +119,16 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
     saveConsent(allAccepted)
   }, [saveConsent])
 
+  const rejectAll = useCallback(() => {
+    const allRejected: ConsentState = {
+      necessary: true,
+      functional: false,
+      analytics: false,
+      marketing: false
+    }
+    saveConsent(allRejected)
+  }, [saveConsent])
+
   const savePreferences = useCallback((newConsent: ConsentState) => {
     saveConsent({
       ...newConsent,
@@ -170,6 +181,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
         showModal,
         updateConsent,
         acceptAll,
+        rejectAll,
         savePreferences,
         openModal,
         closeModal,

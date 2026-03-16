@@ -3,7 +3,7 @@
 import { useCookieConsent } from '@/context/CookieConsentContext'
 
 export default function CookieBanner() {
-  const { showBanner, acceptAll, openModal, closeBanner } = useCookieConsent()
+  const { showBanner, acceptAll, rejectAll, openModal, closeBanner } = useCookieConsent()
 
   if (!showBanner) return null
 
@@ -19,7 +19,7 @@ export default function CookieBanner() {
               </h3>
               <p className="text-base sm:text-lg font-neue-haas text-squarage-black">
                 We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. 
-                By clicking &ldquo;Accept All&rdquo;, you consent to our use of cookies.
+                You can accept or reject non-essential cookies below.
               </p>
               <a 
                 href="/customer-service?doc=privacy-policy" 
@@ -43,8 +43,14 @@ export default function CookieBanner() {
                 Accept All
               </button>
               <button
+                onClick={rejectAll}
+                className="px-6 py-3 bg-white/90 backdrop-blur text-squarage-black font-bold font-neue-haas text-base hover:bg-white transition-all duration-200 rounded-full shadow-sm hover:shadow-md hover:scale-105 order-2"
+              >
+                Reject All
+              </button>
+              <button
                 onClick={openModal}
-                className="px-6 py-3 bg-white/90 backdrop-blur text-squarage-black font-medium font-neue-haas text-base hover:bg-white transition-all duration-200 rounded-full shadow-sm hover:shadow-md order-2"
+                className="px-6 py-3 text-squarage-black/70 font-medium font-neue-haas text-sm hover:text-squarage-black transition-all duration-200 underline order-3"
               >
                 Manage Cookies
               </button>
