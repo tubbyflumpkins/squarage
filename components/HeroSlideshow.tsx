@@ -1,83 +1,27 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-// Simple slideshow without Swiper for now
-const SLIDE_INTERVAL = 4000
-
-const heroImages = [
-  {
-    src: '/images/hero-2-processed.jpg',
-    alt: 'Squarage Studio custom furniture and functional art pieces',
-  },
-  {
-    src: '/images/IMG_0961.jpg',
-    alt: 'Handcrafted custom furniture made in our Los Angeles workshop',
-  },
-  {
-    src: '/images/IMG_1286.jpg',
-    alt: 'Detail of handcrafted wood furniture by Squarage Studio',
-  },
-  {
-    src: '/images/IMG_6122.jpeg',
-    alt: 'Inside the Squarage Studio woodworking workshop in Los Angeles',
-  },
-  {
-    src: '/images/product_5_main_angle_blue.jpg',
-    alt: 'Custom tiled table with blue mosaic surface by Squarage Studio',
-  },
-  {
-    src: '/images/product_6_main_angle_3d.jpg',
-    alt: 'Squarage Studio furniture design and craftsmanship process',
-  },
-]
-
 export default function HeroSlideshow() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length)
-    }, SLIDE_INTERVAL)
-
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <section className="relative h-[300px] sm:h-[350px] md:h-[85vh] w-full overflow-hidden">
-      {/* Slideshow Background */}
       <div className="absolute inset-0 z-0">
-        {heroImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{
-              willChange: index === currentSlide || index === (currentSlide + 1) % heroImages.length ? 'opacity' : 'auto'
-            }}
-          >
-            <Image
-              src={image.src}
-              alt={image.alt}
-              fill
-              className="object-cover object-center"
-              priority={index === 0}
-              loading={index < 2 ? 'eager' : 'lazy'}
-              sizes="100vw"
-              quality={90}
-            />
-          </div>
-        ))}
+        <Image
+          src="/images/hero-2-processed.jpg"
+          alt="Squarage Studio custom furniture and functional art pieces"
+          fill
+          className="object-cover object-center"
+          priority
+          sizes="100vw"
+          quality={90}
+        />
       </div>
-      
-      {/* Clickable overlay - ensure it's on top */}
-      <Link 
-        href="/products" 
+
+      {/* Clickable overlay */}
+      <Link
+        href="/products"
         className="absolute inset-0 z-50 block cursor-pointer"
-        style={{ display: 'block' }}
         aria-label="View all products"
       >
         <span className="sr-only">View all products</span>
