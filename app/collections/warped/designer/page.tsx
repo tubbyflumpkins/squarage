@@ -999,7 +999,7 @@ export default function DesignerPage() {
                   {p.isCorner && (
                     <CompactSlider label="Length" value={p.length} min={10} max={76} unit={'"'} onChange={(v) => set('length', v)} />
                   )}
-                  <CompactSlider label="Height" value={p.height} min={24} max={76} unit={'"'} onChange={(v) => set('height', v)} />
+                  <CompactSlider label="Height" value={p.height} min={24} max={p.isCorner ? 96 : 76} unit={'"'} onChange={(v) => set('height', v)} />
                   <CompactSlider label="Depth" value={p.depth} min={8} max={14} unit={'"'} onChange={(v) => set('depth', v)} />
                 </>
               ) : (
@@ -1008,7 +1008,7 @@ export default function DesignerPage() {
                   {p.isCorner && (
                     <CompactSlider label="Length" value={Math.round(p.length * 2.54)} min={Math.round(10 * 2.54)} max={Math.round(76 * 2.54)} unit="" onChange={(v) => set('length', Math.round(v / 2.54))} />
                   )}
-                  <CompactSlider label="Height" value={Math.round(p.height * 2.54)} min={Math.round(24 * 2.54)} max={Math.round(76 * 2.54)} unit="" onChange={(v) => set('height', Math.round(v / 2.54))} />
+                  <CompactSlider label="Height" value={Math.round(p.height * 2.54)} min={Math.round(24 * 2.54)} max={Math.round((p.isCorner ? 96 : 76) * 2.54)} unit="" onChange={(v) => set('height', Math.round(v / 2.54))} />
                   <CompactSlider label="Depth" value={Math.round(p.depth * 2.54)} min={Math.round(8 * 2.54)} max={Math.round(14 * 2.54)} unit="" onChange={(v) => set('depth', Math.round(v / 2.54))} />
                 </>
               )}
