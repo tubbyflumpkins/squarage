@@ -15,6 +15,7 @@ type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 interface RenderedChairViewProps {
   preset: PoseVariantId;
   finish?: WoodFinish;
+  color?: string;
   autoRotate?: boolean;
   autoRotateSpeed?: number;
   tilt?: number;
@@ -24,8 +25,9 @@ interface RenderedChairViewProps {
 export default function RenderedChairView({
   preset,
   finish = 'Walnut',
+  color,
   autoRotate = true,
-  autoRotateSpeed = 0.4,
+  autoRotateSpeed = 0.2,
   tilt = 12,
   className,
 }: RenderedChairViewProps) {
@@ -69,7 +71,7 @@ export default function RenderedChairView({
           environmentIntensity={0.25}
           environmentRotation={[0, Math.PI + 0.4, 0]}
         />
-        <ChairMeshes params={params} finish={finish} />
+        <ChairMeshes params={params} finish={finish} color={color} />
       </Suspense>
 
       <directionalLight

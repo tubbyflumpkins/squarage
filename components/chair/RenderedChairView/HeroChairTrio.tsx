@@ -14,6 +14,7 @@ type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
 interface HeroChairTrioProps {
   finish?: WoodFinish;
+  colors?: (string | undefined)[];
   autoRotateSpeed?: number;
   tilt?: number;
   className?: string;
@@ -23,7 +24,8 @@ const GAP = 6;
 
 export default function HeroChairTrio({
   finish = 'Walnut',
-  autoRotateSpeed = 0.25,
+  colors,
+  autoRotateSpeed = 0.12,
   tilt = 8,
   className,
 }: HeroChairTrioProps) {
@@ -73,9 +75,14 @@ export default function HeroChairTrio({
 
         {/* Center the trio at world origin so the camera orbits around the whole group */}
         <group position={[-totalWidth / 2, -maxHeight / 2, 0]}>
-          {placements.map(({ id, params, xOffset }) => (
+          {placements.map(({ id, params, xOffset }, i) => (
             <group key={id} position={[xOffset, 0, 0]}>
-              <ChairMeshes params={params} finish={finish} center={false} />
+              <ChairMeshes
+                params={params}
+                finish={finish}
+                color={colors?.[i]}
+                center={false}
+              />
             </group>
           ))}
         </group>
