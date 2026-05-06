@@ -10,7 +10,7 @@ import {
   ST,
 } from '@/components/shelf/RenderedShelfView/buildExtrudedGeometry';
 import type { V3 } from '@/components/shelf/RenderedShelfView/buildExtrudedGeometry';
-import { useWoodMaterial } from '@/components/shelf/RenderedShelfView/useWoodMaterial';
+import { useWoodMaterial, useColorChairMaterial } from '@/components/shelf/RenderedShelfView/useWoodMaterial';
 import { useEdgeMaterial } from '@/components/shelf/RenderedShelfView/useEdgeMaterial';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
@@ -93,14 +93,26 @@ function getPieceUVs(piece: ChairPiece, params: ChairParams): { uvFlat: UVFnType
 
 interface ChairMeshesProps {
   params: ChairParams;
-  finish: WoodFinish;
+  finish?: WoodFinish;
+  color?: string;
   center?: boolean;
 }
 
-export default function ChairMeshes({ params, finish, center = true }: ChairMeshesProps) {
+export default function ChairMeshes({ params, finish = 'Walnut', color, center = true }: ChairMeshesProps) {
+  // Always invoke all four hooks — color finishes pair the tinted face
+  // material with Birch's plywood edge so the cut edges still read as ply.
   const woodMaterial = useWoodMaterial(finish);
-  const edgeMaterial = useEdgeMaterial(finish);
-  const materials = useMemo(() => [woodMaterial, edgeMaterial], [woodMaterial, edgeMaterial]);
+  const woodEdgeMaterial = useEdgeMaterial(finish);
+  const colorMaterial = useColorChairMaterial(color ?? '#888888');
+  const birchEdgeMaterial = useEdgeMaterial('Birch');
+
+  const materials = useMemo(
+    () =>
+      color
+        ? [colorMaterial, birchEdgeMaterial]
+        : [woodMaterial, woodEdgeMaterial],
+    [color, colorMaterial, birchEdgeMaterial, woodMaterial, woodEdgeMaterial],
+  );
 
   const geometries = useMemo(() => {
     const { pieces } = generateChairGeometry(params, center);

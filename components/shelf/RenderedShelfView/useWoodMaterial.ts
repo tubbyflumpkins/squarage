@@ -115,6 +115,59 @@ function buildMaterial(finish: WoodFinish, textures: TexSet): THREE.MeshStandard
   return mat;
 }
 
+// ---------------------------------------------------------------------------
+// Color finish — solid color riding on the Birch plywood grain.
+// Used for chairs that get tinted with a non-wood color but should still feel
+// like painted plywood (subtle grain through the paint, edges still show ply
+// layers via useEdgeMaterial('Birch')).
+// ---------------------------------------------------------------------------
+
+const colorMaterialCache: Record<string, THREE.MeshStandardMaterial> = {};
+
+function buildColorMaterial(color: string, birchTextures: TexSet): THREE.MeshStandardMaterial {
+  const opts: THREE.MeshStandardMaterialParameters = {
+    color: new THREE.Color(color),
+    normalScale: new THREE.Vector2(0.15, 0.15),
+    roughness: 1.0,
+    metalness: 0.0,
+    side: THREE.DoubleSide,
+    envMapIntensity: 0,
+  };
+  // No diffuse map — solid color paints over the grain. Roughness + normal
+  // maps from Birch retain the plywood surface microstructure.
+  if (birchTextures.roughness) opts.roughnessMap = birchTextures.roughness;
+  if (birchTextures.normal) opts.normalMap = birchTextures.normal;
+  return new THREE.MeshStandardMaterial(opts);
+}
+
+/**
+ * Build a color-tinted plywood material. Same texture preload pipeline as
+ * useWoodMaterial — Birch maps are reused as the grain layer.
+ */
+export function useColorChairMaterial(color: string): THREE.MeshStandardMaterial {
+  const [, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([preloadAllTextures(), preloadAllEdgeTextures()]).then(() => {
+      if (!cancelled) setReady(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const birchTextures = textureCache['Birch'] ?? EMPTY_TEX;
+
+  return useMemo(() => {
+    const cacheKey = color.toLowerCase();
+    if (birchTextures.roughness && colorMaterialCache[cacheKey]) {
+      return colorMaterialCache[cacheKey];
+    }
+    const mat = buildColorMaterial(color, birchTextures);
+    if (birchTextures.roughness) colorMaterialCache[cacheKey] = mat;
+    return mat;
+  }, [birchTextures, color]);
+}
+
 /**
  * Loads PBR wood textures (color, roughness, normal) and builds a
  * MeshStandardMaterial. All finishes are preloaded on first mount so
