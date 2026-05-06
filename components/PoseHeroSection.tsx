@@ -50,14 +50,14 @@ export default function PoseHeroSection() {
             className="text-center"
             style={{
               padding: isMobile
-                ? '1.3rem 2.5rem'
-                : 'clamp(1.1rem, 1.7vw, 1.9rem) clamp(3rem, 4vw, 4rem)',
+                ? '1rem 1.9rem'
+                : 'clamp(0.85rem, 1.3vw, 1.5rem) clamp(2.25rem, 3vw, 3rem)',
             }}
           >
             <h1
               className="font-bold font-neue-haas text-squarage-white leading-none"
               style={{
-                fontSize: isMobile ? '3.5rem' : 'clamp(4rem, 8vw, 8rem)',
+                fontSize: isMobile ? '2.75rem' : 'clamp(3rem, 6vw, 6rem)',
               }}
             >
               Posé
