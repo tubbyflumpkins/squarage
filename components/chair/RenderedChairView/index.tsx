@@ -6,6 +6,7 @@ import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import BoomerangCamera from '@/components/shelf/RenderedShelfView/BoomerangCamera';
 import ChairMeshes from './ChairMeshes';
+import ChairFloor from './ChairFloor';
 import { posePresets, type PoseVariantId } from '@/lib/posePresets';
 
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -20,6 +21,8 @@ interface RenderedChairViewProps {
   autoRotateSpeed?: number;
   tilt?: number;
   className?: string;
+  showFloor?: boolean;
+  floorColor?: string;
 }
 
 export default function RenderedChairView({
@@ -30,6 +33,8 @@ export default function RenderedChairView({
   autoRotateSpeed = 0.2,
   tilt = 12,
   className,
+  showFloor = true,
+  floorColor = '#fffaf4',
 }: RenderedChairViewProps) {
   const params = posePresets[preset].params;
 
@@ -72,6 +77,13 @@ export default function RenderedChairView({
           environmentRotation={[0, Math.PI + 0.4, 0]}
         />
         <ChairMeshes params={params} finish={finish} color={color} />
+        {showFloor && (
+          <ChairFloor
+            y={-height / 2}
+            radius={Math.max(width, depth) * 1.6}
+            color={floorColor}
+          />
+        )}
       </Suspense>
 
       <directionalLight
