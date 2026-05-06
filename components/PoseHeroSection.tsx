@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import PoseBlob from '@/components/PoseBlob';
 
 const HeroChairTrio = dynamic(() => import('@/components/chair/RenderedChairView/HeroChairTrio'), {
   ssr: false,
@@ -35,18 +36,17 @@ export default function PoseHeroSection() {
             : 'translateY(calc(50% - 2vw)) translateX(-50%) scale(clamp(1, 1.1, 1.2))',
         }}
       >
-        <div
-          style={{
-            backgroundColor: '#E2692E',
-            borderRadius: '60% 40% 50% 70% / 50% 65% 35% 50%',
-            padding: isMobile
-              ? '1.5rem 2.5rem'
-              : 'clamp(1.2rem, 1.8vw, 1.8rem) clamp(3rem, 4vw, 4rem)',
-          }}
-        >
-          <div className="text-center">
+        <PoseBlob>
+          <div
+            className="text-center"
+            style={{
+              padding: isMobile
+                ? '0.6rem 2.5rem'
+                : 'clamp(0.4rem, 0.8vw, 1rem) clamp(3rem, 4vw, 4rem)',
+            }}
+          >
             <h1
-              className="font-bold font-neue-haas text-squarage-white"
+              className="font-bold font-neue-haas text-squarage-white leading-none"
               style={{
                 fontSize: isMobile ? '3.5rem' : 'clamp(4rem, 8vw, 8rem)',
               }}
@@ -54,7 +54,7 @@ export default function PoseHeroSection() {
               Posé
             </h1>
           </div>
-        </div>
+        </PoseBlob>
       </div>
     </section>
   );

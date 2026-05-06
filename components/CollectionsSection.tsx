@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import PoseBlob from '@/components/PoseBlob'
 
 interface Collection {
   id: string
@@ -31,8 +32,8 @@ const collections: Collection[] = [
     imageAlt: 'Posé Collection — Sculptural plywood chairs handcrafted in Los Angeles',
     href: '/collections/pose',
     bgColor: 'bg-squarage-yellow',
-    blobColor: '#E2692E',
-    borderRadius: '60% 40% 50% 70% / 50% 65% 35% 50%',
+    blobColor: '#4A9B4E',
+    borderRadius: '55% 65% 70% 60% / 70% 55% 60% 65%',
     mobileBlobAlign: 'right',
     mobileBlobScaleY: 0.875,
   },
@@ -174,46 +175,75 @@ export default function CollectionsSection() {
                         className={`absolute bottom-0 ${collection.mobileBlobAlign === 'right' ? 'right-0' : 'left-0'} z-50 md:hidden`}
                         style={{ transform: 'translateY(32%) scale(0.9)' }}
                       >
-                        <div className="relative">
-                          <div
-                            className="absolute inset-0"
-                            style={{
-                              backgroundColor: collection.blobColor,
-                              borderRadius: collection.borderRadius,
-                              transform: `scaleY(${collection.mobileBlobScaleY})`,
-                            }}
-                          />
-                          <div className="relative z-10" style={{ padding: '0.9rem 2.4rem' }}>
-                            <h2 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
-                              {collection.title}
-                            </h2>
+                        {collection.id === 'pose' ? (
+                          <PoseBlob color={collection.blobColor}>
+                            <div style={{ padding: '0.5rem 2.4rem' }}>
+                              <h2 className="font-bold font-neue-haas text-white leading-none" style={{ fontSize: '2.75rem' }}>
+                                {collection.title}
+                              </h2>
+                            </div>
+                          </PoseBlob>
+                        ) : (
+                          <div className="relative">
+                            <div
+                              className="absolute inset-0"
+                              style={{
+                                backgroundColor: collection.blobColor,
+                                borderRadius: collection.borderRadius,
+                                transform: `scaleY(${collection.mobileBlobScaleY})`,
+                              }}
+                            />
+                            <div className="relative z-10" style={{ padding: '0.9rem 2.4rem' }}>
+                              <h2 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
+                                {collection.title}
+                              </h2>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
 
                     {/* Text/blob side — mobile shows compact yellow banner, desktop shows blob */}
                     <div className={`bg-squarage-yellow md:${collection.bgColor} relative flex items-center justify-center py-3 px-4 md:p-0 md:w-1/2`}>
                       <div className="hidden md:flex md:items-center md:justify-center md:w-full md:h-full">
-                        <div className="relative group/blob">
-                          <div
-                            className="transition-transform duration-300 ease-out group-hover/blob:scale-110"
-                            style={{
-                              backgroundColor: collection.blobColor,
-                              borderRadius: collection.borderRadius,
-                              padding: 'clamp(1rem, 1.6vw, 1.8rem) clamp(2.5rem, 4vw, 4rem)',
-                            }}
+                        {collection.id === 'pose' ? (
+                          <PoseBlob
+                            color={collection.blobColor}
+                            className="transition-transform duration-300 ease-out group-hover:scale-110"
                           >
-                            <div className="text-center">
+                            <div
+                              className="text-center"
+                              style={{ padding: 'clamp(0.4rem, 0.9vw, 1.1rem) clamp(2.5rem, 4vw, 4rem)' }}
+                            >
                               <h2
-                                className="font-bold font-neue-haas text-squarage-white"
+                                className="font-bold font-neue-haas text-squarage-white leading-none"
                                 style={{ fontSize: 'clamp(4rem, 8vw, 8rem)' }}
                               >
                                 {collection.title}
                               </h2>
                             </div>
+                          </PoseBlob>
+                        ) : (
+                          <div className="relative group/blob">
+                            <div
+                              className="transition-transform duration-300 ease-out group-hover/blob:scale-110"
+                              style={{
+                                backgroundColor: collection.blobColor,
+                                borderRadius: collection.borderRadius,
+                                padding: 'clamp(1rem, 1.6vw, 1.8rem) clamp(2.5rem, 4vw, 4rem)',
+                              }}
+                            >
+                              <div className="text-center">
+                                <h2
+                                  className="font-bold font-neue-haas text-squarage-white"
+                                  style={{ fontSize: 'clamp(4rem, 8vw, 8rem)' }}
+                                >
+                                  {collection.title}
+                                </h2>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
