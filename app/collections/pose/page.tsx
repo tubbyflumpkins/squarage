@@ -24,10 +24,10 @@ export default function PosePage() {
 
       <section className="py-16 md:py-24 text-center px-4">
         <h2
-          className="font-bold font-neue-haas text-squarage-green"
+          className="font-bold font-neue-haas text-squarage-black"
           style={{ fontSize: 'clamp(2.5rem, 5vw, 5rem)' }}
         >
-          Meet the <span className="font-soap font-normal">Mateo</span> chair
+          Meet the <span className="font-soap font-normal text-squarage-green">Mateo</span> chair
         </h2>
       </section>
 
