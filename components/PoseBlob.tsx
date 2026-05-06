@@ -4,11 +4,14 @@ import type { ReactNode } from 'react';
 // every anchor — guarantees C1 continuity, so there are no curvature kinks
 // the way CSS border-radius produces at the midpoint of each edge.
 //
-// Anchors (clockwise from top): (52,8) → (92,42) → (48,92) → (8,58)
-// Tangent magnitudes: 32 at top/bottom (broader shoulders so wide text fits
-// inside the blob's narrowing curves) and 28 at sides for fuller cheeks.
+// Anchors (clockwise from top): (54,5) → (94,52) → (46,95) → (6,48)
+// Anchors hug the viewBox edges so the curve stays high (or low) at the
+// leftmost/rightmost text x positions. Tangent magnitudes are 38 at top
+// and bottom for broad shoulders so wide capital letters clear the curve;
+// 28 at the sides for slightly fuller cheeks. Slight diagonal asymmetry
+// (top biased right, bottom biased left) gives a hand-drawn pebble feel.
 const POSE_BLOB_PATH =
-  'M 52,8 C 84,8 92,14 92,42 C 92,70 80,92 48,92 C 16,92 8,86 8,58 C 8,30 20,8 52,8 Z';
+  'M 54,5 C 92,5 94,24 94,52 C 94,80 84,95 46,95 C 8,95 6,76 6,48 C 6,20 16,5 54,5 Z';
 
 interface PoseBlobProps {
   children: ReactNode;
