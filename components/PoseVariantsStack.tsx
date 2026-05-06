@@ -22,8 +22,10 @@ export default function PoseVariantsStack() {
                 reversed ? 'md:flex-row-reverse' : ''
               } items-center gap-4 md:gap-12 py-2 md:py-4`}
             >
-              <div className="w-full md:w-1/2 aspect-[4/3]">
-                <RenderedChairView preset={id} autoRotate />
+              <div className="w-full md:w-1/2 aspect-[4/3] relative">
+                <div className="absolute inset-0 md:-inset-12 z-10 pointer-events-none">
+                  <RenderedChairView preset={id} autoRotate />
+                </div>
               </div>
               <div className="w-full md:w-1/2 text-center md:text-left">
                 <h3
