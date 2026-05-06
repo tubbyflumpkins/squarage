@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import BoomerangCamera from '@/components/shelf/RenderedShelfView/BoomerangCamera';
 import ChairMeshes from './ChairMeshes';
 import ChairFloor from './ChairFloor';
+import CameraOrbitingLight from './CameraOrbitingLight';
 import { posePresets } from '@/lib/posePresets';
 import { pickDistinctRandomColors } from '@/lib/poseColors';
 
@@ -130,8 +131,8 @@ export default function HeroChairTrio({ className }: HeroChairTrioProps) {
         </group>
       </Suspense>
 
-      <directionalLight
-        position={[-60, 100, 80]}
+      <CameraOrbitingLight
+        basePosition={[-60, 100, 80]}
         intensity={2.5}
         castShadow
         shadow-radius={8}

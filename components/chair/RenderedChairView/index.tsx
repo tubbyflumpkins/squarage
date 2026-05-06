@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import BoomerangCamera from '@/components/shelf/RenderedShelfView/BoomerangCamera';
 import ChairMeshes from './ChairMeshes';
 import ChairFloor from './ChairFloor';
+import CameraOrbitingLight from './CameraOrbitingLight';
 import { posePresets, type PoseVariantId } from '@/lib/posePresets';
 
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -99,8 +100,8 @@ export default function RenderedChairView({
         </group>
       </Suspense>
 
-      <directionalLight
-        position={[-40, 60, 50]}
+      <CameraOrbitingLight
+        basePosition={[-40, 60, 50]}
         intensity={2.5}
         castShadow
         shadow-radius={8}
