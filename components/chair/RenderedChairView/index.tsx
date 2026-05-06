@@ -30,7 +30,7 @@ export default function RenderedChairView({
   finish = 'Walnut',
   color,
   autoRotate = true,
-  autoRotateSpeed = 0.2,
+  autoRotateSpeed = 0.1,
   tilt = 12,
   className,
   showFloor = true,

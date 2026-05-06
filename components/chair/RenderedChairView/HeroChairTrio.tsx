@@ -25,7 +25,7 @@ const GAP = 6;
 export default function HeroChairTrio({
   finish = 'Walnut',
   colors,
-  autoRotateSpeed = 0.12,
+  autoRotateSpeed = 0.06,
   tilt = 8,
   className,
 }: HeroChairTrioProps) {
