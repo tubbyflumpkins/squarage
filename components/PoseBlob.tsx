@@ -1,17 +1,20 @@
 import type { ReactNode } from 'react';
 
-// Smooth, asymmetric pebble. Cubic Béziers with matched tangent vectors at
-// every anchor — guarantees C1 continuity, so there are no curvature kinks
-// the way CSS border-radius produces at the midpoint of each edge.
+// Hand-drawn pebble. Cubic Béziers with matched tangent vectors at every
+// anchor — C1 continuity guarantees no curvature kinks the way CSS
+// border-radius produces at the midpoint of each edge.
 //
-// Anchors (clockwise from top): (54,5) → (94,52) → (46,95) → (6,48)
-// Anchors hug the viewBox edges so the curve stays high (or low) at the
-// leftmost/rightmost text x positions. Tangent magnitudes are 38 at top
-// and bottom for broad shoulders so wide capital letters clear the curve;
-// 28 at the sides for slightly fuller cheeks. Slight diagonal asymmetry
-// (top biased right, bottom biased left) gives a hand-drawn pebble feel.
+// Anchors (clockwise from top): (54,4) → (96,40) → (46,96) → (4,60)
+//   - Top apex pulled right of center, bottom apex pulled left.
+//   - Right side rides 10 units above middle; left side rides 10 below.
+//     This is the dominant "tilt" that makes the blob feel like it's
+//     leaning, not symmetrical.
+// Tangent magnitudes per anchor: top=40, right=28, bottom=34, left=36.
+//   Asymmetric L values produce different curvature on each side — the
+//   right side is more compressed; the left side fuller — so even the
+//   four arcs themselves don't mirror each other.
 const POSE_BLOB_PATH =
-  'M 54,5 C 92,5 94,24 94,52 C 94,80 84,95 46,95 C 8,95 6,76 6,48 C 6,20 16,5 54,5 Z';
+  'M 54,4 C 94,4 96,12 96,40 C 96,68 80,96 46,96 C 12,96 4,96 4,60 C 4,24 14,4 54,4 Z';
 
 interface PoseBlobProps {
   children: ReactNode;
