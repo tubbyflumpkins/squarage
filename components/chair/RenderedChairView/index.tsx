@@ -40,11 +40,11 @@ export default function RenderedChairView({
 
   const alpha = (params.backAngle * Math.PI) / 180;
   const beta = (params.benchAngle * Math.PI) / 180;
-  const width = params.seatWidth + 2 * params.frameWidth;
-  // Tight chair height — matches what generateChairGeometry's bbox produces
-  // (back leg foot at z=0, backrest top at sH + bH·cosα, plywood half-
-  // thickness extruded along the backrest normal). The geometry centers on
-  // this bbox, so the chair's bottom lands at y = -chairHeight/2 in three.js.
+  // Side frames sit inside the seat (x = fw/2 and sW-fw/2); seat slats span
+  // 0..sW. Real bbox width is just seatWidth — adding frame width on top
+  // would over-pull the camera back.
+  const width = params.seatWidth;
+  // Tight chair height — matches what generateChairGeometry's bbox produces.
   const chairHeight =
     params.seatHeight +
     params.backHeight * Math.cos(alpha) +
@@ -55,20 +55,21 @@ export default function RenderedChairView({
     params.seatHeight * Math.tan(beta) +
     params.backHeight * Math.sin(alpha);
 
-  // Floor sizing + viewport adjustment. The disc lives at the chair's
-  // bottom (y = -chairHeight/2) and extends ±floorRadius in X/Z. Viewed at
-  // the camera tilt it projects to a screen-space ellipse with vertical
-  // extent 2·floorRadius·sin(tilt), all below the chair bbox. Inflate the
-  // height passed to BoomerangCamera so the camera pulls back to include
-  // the disc, and shift the chair+floor group up by half so chair-top and
-  // floor-bottom sit symmetric around the camera target.
-  const floorRadius = showFloor ? Math.max(width, depth) * 0.6 : 0;
+  // Floor disc, sized to comfortably cover the chair's feet at all four
+  // corners. Projected onto the screen at the camera tilt it becomes an
+  // ellipse with vertical screen extent 2·radius·sin(tilt); inflate ONLY
+  // the height passed to BoomerangCamera by that amount — horizontal
+  // viewport at aspect>1.2 is already much larger than the disc needs, so
+  // inflating w/d would only over-pull the camera. Shift the chair group
+  // up by floorVisualHeight/4 so chair-top and floor-bottom land symmetric
+  // around the camera target (geometry center = -fvh/4 before the shift).
+  const floorRadius = showFloor ? Math.max(width, depth) * 0.7 : 0;
   const tiltRad = (tilt * Math.PI) / 180;
   const floorVisualHeight = 2 * floorRadius * Math.sin(Math.abs(tiltRad));
-  const yShift = floorVisualHeight / 2;
+  const yShift = floorVisualHeight / 4;
   const effectiveHeight = chairHeight + floorVisualHeight;
-  const effectiveWidth = Math.max(width, 2 * floorRadius);
-  const effectiveDepth = Math.max(depth, 2 * floorRadius);
+  const effectiveWidth = width;
+  const effectiveDepth = depth;
   const chairBottomY = -chairHeight / 2;
 
   return (

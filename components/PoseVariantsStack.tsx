@@ -28,7 +28,7 @@ export default function PoseVariantsStack() {
               } items-center gap-2 md:gap-8 py-1 md:py-2`}
             >
               <div className="w-full md:w-1/2 aspect-[4/3] relative">
-                <div className="absolute inset-0 md:-inset-12 z-10 pointer-events-none">
+                <div className="absolute inset-0 md:-inset-20 z-10 pointer-events-none">
                   <RenderedChairView preset={id} color={colors[index]} autoRotate />
                 </div>
               </div>
