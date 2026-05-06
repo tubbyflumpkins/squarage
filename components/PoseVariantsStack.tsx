@@ -34,7 +34,7 @@ export default function PoseVariantsStack() {
               </div>
               <div
                 className={`w-full md:w-1/2 text-center ${
-                  reversed ? 'md:text-right md:pr-16' : 'md:text-left'
+                  reversed ? 'md:text-right md:pr-24' : 'md:text-left'
                 }`}
               >
                 <h3
