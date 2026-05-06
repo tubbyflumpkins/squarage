@@ -38,24 +38,38 @@ export default function RenderedChairView({
 }: RenderedChairViewProps) {
   const params = posePresets[preset].params;
 
-  // Approximate axis-aligned bounding box for camera fitting. Slight overshoot
-  // is fine — BoomerangCamera's 0.45 padding factor keeps the chair in frame.
   const alpha = (params.backAngle * Math.PI) / 180;
   const beta = (params.benchAngle * Math.PI) / 180;
   const width = params.seatWidth + 2 * params.frameWidth;
-  // Top of backrest reaches sH + bH*cos(alpha); the topmost back slat plus the
-  // plywood thickness add another (slatHeight/2 + thickness/2) above that.
-  // Include both so tall variants like the Tabouret don't clip vertically.
-  const height =
+  // Tight chair height — matches what generateChairGeometry's bbox produces
+  // (back leg foot at z=0, backrest top at sH + bH·cosα, plywood half-
+  // thickness extruded along the backrest normal). The geometry centers on
+  // this bbox, so the chair's bottom lands at y = -chairHeight/2 in three.js.
+  const chairHeight =
     params.seatHeight +
     params.backHeight * Math.cos(alpha) +
-    (params.slatHeight / 2 + params.thickness / 2) * Math.cos(alpha) +
-    2;
+    (params.thickness / 2) * Math.cos(alpha);
   const depth =
     params.seatDepth +
     params.seatHeight * Math.tan(alpha) +
     params.seatHeight * Math.tan(beta) +
     params.backHeight * Math.sin(alpha);
+
+  // Floor sizing + viewport adjustment. The disc lives at the chair's
+  // bottom (y = -chairHeight/2) and extends ±floorRadius in X/Z. Viewed at
+  // the camera tilt it projects to a screen-space ellipse with vertical
+  // extent 2·floorRadius·sin(tilt), all below the chair bbox. Inflate the
+  // height passed to BoomerangCamera so the camera pulls back to include
+  // the disc, and shift the chair+floor group up by half so chair-top and
+  // floor-bottom sit symmetric around the camera target.
+  const floorRadius = showFloor ? Math.max(width, depth) * 0.6 : 0;
+  const tiltRad = (tilt * Math.PI) / 180;
+  const floorVisualHeight = 2 * floorRadius * Math.sin(Math.abs(tiltRad));
+  const yShift = floorVisualHeight / 2;
+  const effectiveHeight = chairHeight + floorVisualHeight;
+  const effectiveWidth = Math.max(width, 2 * floorRadius);
+  const effectiveDepth = Math.max(depth, 2 * floorRadius);
+  const chairBottomY = -chairHeight / 2;
 
   return (
     <Canvas
@@ -76,14 +90,12 @@ export default function RenderedChairView({
           environmentIntensity={0.25}
           environmentRotation={[0, Math.PI + 0.4, 0]}
         />
-        <ChairMeshes params={params} finish={finish} color={color} />
-        {showFloor && (
-          <ChairFloor
-            y={-height / 2}
-            radius={Math.max(width, depth) * 1.6}
-            color={floorColor}
-          />
-        )}
+        <group position={[0, yShift, 0]}>
+          <ChairMeshes params={params} finish={finish} color={color} />
+          {showFloor && (
+            <ChairFloor y={chairBottomY} radius={floorRadius} color={floorColor} />
+          )}
+        </group>
       </Suspense>
 
       <directionalLight
@@ -107,9 +119,9 @@ export default function RenderedChairView({
       <BoomerangCamera
         rotation={0}
         tilt={tilt}
-        width={width}
-        height={height}
-        depthOrLength={depth}
+        width={effectiveWidth}
+        height={effectiveHeight}
+        depthOrLength={effectiveDepth}
         autoRotate={autoRotate}
         autoRotateSpeed={autoRotateSpeed}
       />
