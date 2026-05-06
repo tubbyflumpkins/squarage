@@ -177,7 +177,7 @@ export default function CollectionsSection() {
                       >
                         {collection.id === 'pose' ? (
                           <PoseBlob color={collection.blobColor}>
-                            <div style={{ padding: '0.9rem 2.4rem' }}>
+                            <div style={{ padding: '1.2rem 2.4rem' }}>
                               <h2 className="font-bold font-neue-haas text-white leading-none" style={{ fontSize: '2.75rem' }}>
                                 {collection.title}
                               </h2>
@@ -213,7 +213,7 @@ export default function CollectionsSection() {
                           >
                             <div
                               className="text-center"
-                              style={{ padding: 'clamp(0.7rem, 1.2vw, 1.4rem) clamp(2.5rem, 4vw, 4rem)' }}
+                              style={{ padding: 'clamp(1.1rem, 1.6vw, 1.8rem) clamp(2.5rem, 4vw, 4rem)' }}
                             >
                               <h2
                                 className="font-bold font-neue-haas text-squarage-white leading-none"

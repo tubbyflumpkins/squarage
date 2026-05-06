@@ -5,11 +5,10 @@ import type { ReactNode } from 'react';
 // the way CSS border-radius produces at the midpoint of each edge.
 //
 // Anchors (clockwise from top): (52,8) → (92,42) → (48,92) → (8,58)
-// Tangent magnitude is 24 at top/bottom and 28 at sides — slightly less than
-// the magic-circle constant (~27.6) at top/bottom for a flatter horizontal
-// silhouette and slightly more at the sides for fuller cheeks.
+// Tangent magnitudes: 32 at top/bottom (broader shoulders so wide text fits
+// inside the blob's narrowing curves) and 28 at sides for fuller cheeks.
 const POSE_BLOB_PATH =
-  'M 52,8 C 76,8 92,14 92,42 C 92,70 72,92 48,92 C 24,92 8,86 8,58 C 8,30 28,8 52,8 Z';
+  'M 52,8 C 84,8 92,14 92,42 C 92,70 80,92 48,92 C 16,92 8,86 8,58 C 8,30 20,8 52,8 Z';
 
 interface PoseBlobProps {
   children: ReactNode;
