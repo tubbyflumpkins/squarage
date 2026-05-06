@@ -10,7 +10,7 @@ const RenderedChairView = dynamic(() => import('@/components/chair/RenderedChair
 
 export default function PoseVariantsStack() {
   return (
-    <section className="bg-cream py-12 md:py-20">
+    <section className="bg-cream py-4 md:py-8">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {poseVariantOrder.map((id, index) => {
           const { name } = posePresets[id];
@@ -20,9 +20,9 @@ export default function PoseVariantsStack() {
               key={id}
               className={`flex flex-col md:flex-row ${
                 reversed ? 'md:flex-row-reverse' : ''
-              } items-center gap-8 md:gap-16 py-12 md:py-20`}
+              } items-center gap-4 md:gap-12 py-2 md:py-4`}
             >
-              <div className="w-full md:w-1/2 aspect-square">
+              <div className="w-full md:w-1/2 aspect-[4/3]">
                 <RenderedChairView preset={id} autoRotate />
               </div>
               <div className="w-full md:w-1/2 text-center md:text-left">
