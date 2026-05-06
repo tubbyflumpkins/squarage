@@ -358,6 +358,128 @@ export function buildCornerColumnGeo(
 }
 
 // ---------------------------------------------------------------------------
+// Closed polygon extrusion — for chair pieces (arbitrary non-convex polygons)
+// ---------------------------------------------------------------------------
+
+/**
+ * Extrudes a closed polygon into a 3D plank of given thickness.
+ *
+ * Works with non-convex polygons (like side frame "<" profile) by using
+ * THREE.ShapeGeometry for triangulation. Handles slightly non-planar outlines
+ * (curved seat slats, bent back slats) by projecting to 2D for triangulation
+ * but keeping 3D vertex positions for faithful curvature.
+ *
+ * @param outline  Closed polygon in Three.js coords (last point = first point)
+ * @param normalDir  Unit normal to polygon plane (extrusion direction)
+ * @param thickness  Plank thickness
+ * @param uvFlatFn  UV function for flat faces (material group 0 — wood grain)
+ * @param uvWallFn  UV function for wall faces (material group 1 — plywood edge)
+ */
+export function buildClosedPolygonGeo(
+  outline: V3[],
+  normalDir: V3,
+  thickness: number,
+  uvFlatFn: (v: V3) => [number, number],
+  uvWallFn: (v: V3) => [number, number],
+  holes?: V3[][],
+): THREE.BufferGeometry {
+  const dedup = (path: V3[]) =>
+    (path.length > 1 &&
+      Math.abs(path[0][0] - path[path.length - 1][0]) < 1e-6 &&
+      Math.abs(path[0][1] - path[path.length - 1][1]) < 1e-6 &&
+      Math.abs(path[0][2] - path[path.length - 1][2]) < 1e-6)
+      ? path.slice(0, -1) : path;
+
+  const pts = dedup(outline);
+  const holePts: V3[][] = (holes ?? []).map(dedup);
+
+  const N = pts.length;
+  const ht = thickness / 2;
+
+  const allPts: V3[] = [...pts];
+  for (const h of holePts) allPts.push(...h);
+
+  const faceA: V3[] = [];
+  const faceB: V3[] = [];
+  for (const p of allPts) {
+    faceA.push([
+      p[0] + normalDir[0] * ht,
+      p[1] + normalDir[1] * ht,
+      p[2] + normalDir[2] * ht,
+    ]);
+    faceB.push([
+      p[0] - normalDir[0] * ht,
+      p[1] - normalDir[1] * ht,
+      p[2] - normalDir[2] * ht,
+    ]);
+  }
+
+  // Project to 2D for triangulation using orthonormal basis of the polygon plane.
+  const [nx, ny, nz] = normalDir;
+  const seed: V3 = (Math.abs(nx) < 0.9) ? [1, 0, 0] : [0, 1, 0];
+  let t1x = seed[1] * nz - seed[2] * ny;
+  let t1y = seed[2] * nx - seed[0] * nz;
+  let t1z = seed[0] * ny - seed[1] * nx;
+  const t1Len = Math.sqrt(t1x * t1x + t1y * t1y + t1z * t1z);
+  t1x /= t1Len; t1y /= t1Len; t1z /= t1Len;
+  const t2x = ny * t1z - nz * t1y;
+  const t2y = nz * t1x - nx * t1z;
+  const t2z = nx * t1y - ny * t1x;
+
+  const projectTo2D = (p: V3) => new THREE.Vector2(
+    p[0] * t1x + p[1] * t1y + p[2] * t1z,
+    p[0] * t2x + p[1] * t2y + p[2] * t2z,
+  );
+
+  const contour = pts.map(projectTo2D);
+  const holes2D = holePts.map(h => h.map(projectTo2D));
+  const faces = THREE.ShapeUtils.triangulateShape(contour, holes2D);
+  const indices: number[] = [];
+  for (const [a, b, c] of faces) {
+    indices.push(a, b, c);
+  }
+
+  const pos: number[] = [];
+  const uvs: number[] = [];
+
+  // Group 0: flat faces (wood grain)
+  for (let i = 0; i < indices.length; i += 3) {
+    const a = faceA[indices[i]], b = faceA[indices[i + 1]], c = faceA[indices[i + 2]];
+    pos.push(...a, ...b, ...c);
+    uvs.push(...uvFlatFn(a), ...uvFlatFn(b), ...uvFlatFn(c));
+  }
+  for (let i = 0; i < indices.length; i += 3) {
+    const a = faceB[indices[i]], b = faceB[indices[i + 2]], c = faceB[indices[i + 1]];
+    pos.push(...a, ...b, ...c);
+    uvs.push(...uvFlatFn(a), ...uvFlatFn(b), ...uvFlatFn(c));
+  }
+  const woodVerts = indices.length * 2;
+
+  // Group 1: wall strips (plywood edge)
+  for (let i = 0; i < N; i++) {
+    const next = (i + 1) % N;
+    addQuad(pos, uvs, faceA[i], faceA[next], faceB[i], faceB[next], uvWallFn);
+  }
+  let holeOffset = N;
+  for (const h of holePts) {
+    const hLen = h.length;
+    for (let i = 0; i < hLen; i++) {
+      const curr = holeOffset + i;
+      const next = holeOffset + (i + 1) % hLen;
+      addQuad(pos, uvs, faceB[curr], faceB[next], faceA[curr], faceA[next], uvWallFn);
+    }
+    holeOffset += hLen;
+  }
+  const totalWallQuads = N + holePts.reduce((sum, h) => sum + h.length, 0);
+  const edgeVerts = totalWallQuads * 6;
+
+  const geo = makeGeo(pos, uvs);
+  geo.addGroup(0, woodVerts, 0);
+  geo.addGroup(woodVerts, edgeVerts, 1);
+  return geo;
+}
+
+// ---------------------------------------------------------------------------
 // UV offset — deterministic per-piece shift to break visible tiling.
 // Uses golden ratio spacing so adjacent pieces look distinct.
 // ---------------------------------------------------------------------------

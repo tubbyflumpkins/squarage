@@ -1,0 +1,92 @@
+import type { ChairParams } from '@/components/chair/ChairVisualizer/types';
+
+const POSE: ChairParams = {
+  seatWidth: 18,
+  seatDepth: 16,
+  seatHeight: 12,
+  backHeight: 17,
+  backAngle: 27,
+  benchAngle: 13,
+  frameWidth: 2.5,
+  thickness: 0.5,
+  slatHeight: 2.5,
+  seatSlatCount: 11,
+  seatSlatCountFB: 14,
+  backSlatCount: 11,
+  backStart: 4,
+  benchStart: 2.75,
+  seatScoop: 0.8,
+  backCurve: 0,
+  scoopOffset: 1,
+  scoopSpread: 1,
+  cornerRadius: 0.7,
+  innerRadius: 1.75,
+  backLegRadius: 5,
+  frontBar: false,
+  sideBar: false,
+  footrestHeight: 8,
+};
+
+const TABOURET: ChairParams = {
+  seatWidth: 16,
+  seatDepth: 14,
+  seatHeight: 30,
+  backHeight: 9,
+  backAngle: 5,
+  benchAngle: 2,
+  frameWidth: 2.5,
+  thickness: 0.5,
+  slatHeight: 2,
+  seatSlatCount: 9,
+  seatSlatCountFB: 12,
+  backSlatCount: 6,
+  backStart: 2,
+  benchStart: 2.5,
+  seatScoop: 0.6,
+  backCurve: 0,
+  scoopOffset: 1,
+  scoopSpread: 1,
+  cornerRadius: 0.5,
+  innerRadius: 1.5,
+  backLegRadius: 1.5,
+  frontBar: true,
+  sideBar: true,
+  footrestHeight: 8,
+};
+
+const DINE: ChairParams = {
+  seatWidth: 16,
+  seatDepth: 16,
+  seatHeight: 17.5,
+  backHeight: 15,
+  backAngle: 10,
+  benchAngle: 3,
+  frameWidth: 2.5,
+  thickness: 0.5,
+  slatHeight: 2,
+  seatSlatCount: 11,
+  seatSlatCountFB: 11,
+  backSlatCount: 9,
+  backStart: 4,
+  benchStart: 2.5,
+  seatScoop: 0.6,
+  backCurve: 0,
+  scoopOffset: 1,
+  scoopSpread: 1,
+  cornerRadius: 0.5,
+  innerRadius: 1.5,
+  backLegRadius: 1.5,
+  frontBar: false,
+  sideBar: false,
+  footrestHeight: 8,
+};
+
+export const posePresets = {
+  pose: { name: 'Posé', params: POSE },
+  tabouret: { name: 'Tabouret', params: TABOURET },
+  dine: { name: 'Diné', params: DINE },
+} as const;
+
+export type PoseVariantId = keyof typeof posePresets;
+
+export const poseVariantOrder: PoseVariantId[] = ['pose', 'tabouret', 'dine'];
