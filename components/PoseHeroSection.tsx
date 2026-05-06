@@ -24,17 +24,7 @@ export default function PoseHeroSection() {
       className="relative w-full overflow-visible bg-cream"
       style={{ height: isMobile ? '35vh' : 'clamp(40vh, 30vh + 15vw, 60vh)' }}
     >
-      {/* Canvas is taller than the section itself so the chair render keeps
-          the pixel real estate it had with the original tall hero. The
-          overflow lands behind the Posé blob (which sits at z-50) and
-          inside the next section's top padding. pointer-events-none lets
-          clicks fall through to the heading below. */}
-      <div
-        className="absolute left-0 right-0 top-0 z-0 pointer-events-none"
-        style={{
-          height: isMobile ? '50vh' : 'clamp(60vh, 50vh + 22vw, 85vh)',
-        }}
-      >
+      <div className="absolute inset-0 z-0">
         <HeroChairTrio />
       </div>
 
