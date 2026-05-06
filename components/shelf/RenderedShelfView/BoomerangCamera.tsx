@@ -1,4 +1,5 @@
 import { useFrame, useThree } from '@react-three/fiber';
+import { useRef } from 'react';
 import * as THREE from 'three';
 
 interface BoomerangCameraProps {
@@ -7,6 +8,8 @@ interface BoomerangCameraProps {
   width: number;
   height: number;
   depthOrLength: number;
+  autoRotate?: boolean;
+  autoRotateSpeed?: number; // radians per second
 }
 
 const _target = new THREE.Vector3();
@@ -14,6 +17,9 @@ const _target = new THREE.Vector3();
 /**
  * Positions the camera on a spherical orbit around the origin each frame.
  * Distance is computed from the bounding diagonal + FOV so the shelf always fits.
+ *
+ * When autoRotate is true, the rotation prop is ignored and the camera spins
+ * continuously around the Y axis at autoRotateSpeed (default 0.4 rad/s).
  */
 export default function BoomerangCamera({
   rotation,
@@ -21,10 +27,13 @@ export default function BoomerangCamera({
   width,
   height,
   depthOrLength,
+  autoRotate = false,
+  autoRotateSpeed = 0.4,
 }: BoomerangCameraProps) {
   const { camera, size } = useThree();
+  const autoRotRef = useRef(0);
 
-  useFrame(() => {
+  useFrame((_state, delta) => {
     const tiltRad = (tilt * Math.PI) / 180;
 
     // Bounding sphere diagonal with generous padding
@@ -41,10 +50,16 @@ export default function BoomerangCamera({
     const cosT = Math.cos(tiltRad);
     const sinT = Math.sin(tiltRad);
 
+    let rot = rotation;
+    if (autoRotate) {
+      autoRotRef.current += delta * autoRotateSpeed;
+      rot = autoRotRef.current;
+    }
+
     camera.position.set(
-      dist * cosT * Math.sin(rotation),
+      dist * cosT * Math.sin(rot),
       dist * sinT,
-      dist * cosT * Math.cos(rotation),
+      dist * cosT * Math.cos(rot),
     );
     _target.set(0, 0, 0);
     camera.lookAt(_target);
