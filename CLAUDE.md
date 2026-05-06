@@ -13,8 +13,8 @@
 - **Next.js 15** (App Router) + **React 19** + **TypeScript**
 - **Tailwind CSS** with custom Neue Haas Grotesk font family
 - **Shopify Buy SDK** (`shopify-buy`) for storefront/checkout
-- **React Three Fiber** + **drei** + **Three.js** for 3D shelf designer
-- **Rust/WASM** (`wasm-shelf-geometry` crate) for shelf geometry algorithms
+- **React Three Fiber** + **drei** + **Three.js** for 3D shelf designer + Posé chairs
+- **Rust/WASM** (`wasm-shelf-geometry` crate) for shelf geometry algorithms; chair geometry is pure TypeScript
 - **Zustand** for saved designs store; React Context for cart, image cache, cookie consent, email capture
 - **react-hook-form** + **zod** for form validation
 - **Nodemailer** (Zoho SMTP) for contact/quote emails
@@ -32,8 +32,7 @@
 | `/collections/tiled` | Tiled collection |
 | `/collections/warped` | Warped collection |
 | `/collections/warped/designer` | 3D shelf designer |
-| `/collections/chairs` | Chairs collection |
-| `/collections/objects` | Objects collection |
+| `/collections/pose` | Posé collection (Mateo chair — Posé / Tabouret / Diné variants, real-time 3D) |
 | `/custom` | Custom project request flow |
 | `/contact` | Contact page |
 | `/customer-service` | Customer service (shipping, returns, FAQ) |
@@ -53,7 +52,8 @@ app/                          # Next.js App Router
   layout.tsx                  # Root layout (SimplePreloader, providers, nav, footer)
   page.tsx                    # Homepage
   products/                   # Product pages
-  collections/                # Collection pages (tiled, warped, chairs, objects)
+  collections/                # Collection pages (tiled, warped, pose)
+    pose/                     # Posé chair collection (real-time 3D hero + variant stack)
   custom/                     # Custom project flow
   contact/                    # Contact page
   customer-service/           # Customer service
@@ -83,6 +83,13 @@ components/                   # React components
   AnimatedLogo.tsx             # Animated logo
   StructuredData.tsx           # JSON-LD SEO data
   Warped* / Carro*             # Warped & Carro collection components
+  PoseHeroSection.tsx          # Posé hero (orbiting 5-chair circle + title blob)
+  PoseVariantsStack.tsx        # Posé variant rows (Posé / Tabouret / Diné, alternating)
+  PoseBlob.tsx                 # SVG-path organic title blob (used by Posé)
+  chair/                       # Posé chair geometry + rendering (parallel to shelf/)
+    ChairVisualizer/           # Pure TS: types + generateChairGeometry()
+    RenderedChairView/         # R3F Canvas wrapper, ChairMeshes, ChairFloor,
+                               #   CameraOrbitingLight (key light follows camera)
 
 lib/
   shopify.ts                  # Shopify Buy SDK client + product serialization
@@ -93,6 +100,8 @@ lib/
   cookieCategories.ts         # Cookie consent category definitions
   emailCapture.ts             # Email capture service
   policies.ts                 # Legal policy content (privacy, shipping, returns)
+  posePresets.ts              # Posé chair preset params (Posé / Tabouret / Diné)
+  poseColors.ts               # Labs COLOR_FINISH_HEX palette + random picker
 
 wasm-shelf-geometry/            # Rust crate → compiled to WASM
   src/
@@ -158,6 +167,18 @@ stores/
 - CookieConsentContext manages consent state
 - Google Analytics only loads after consent
 - See [COOKIE_CONSENT_DOCUMENTATION.md](./COOKIE_CONSENT_DOCUMENTATION.md)
+
+### Posé Chair Rendering (R3F, no WASM)
+- Pure-TypeScript parametric chair geometry in `components/chair/ChairVisualizer/geometry.ts` (ported from sister labs project). Generates closed-polygon outlines for sideFrame×2, front/rear crosspieces, seat slats LR + FB, back slats; centered on actual bbox.
+- `components/chair/RenderedChairView/`:
+  - `ChairMeshes.tsx` extrudes pieces via `buildClosedPolygonGeo` (lives in `components/shelf/RenderedShelfView/buildExtrudedGeometry.ts`) and applies wood + edge PBR materials.
+  - For colored finishes, `useColorChairMaterial(color)` (in `useWoodMaterial.ts`) tints over Birch's roughness + normal maps so the plywood grain still reads through the paint; cut edges use `useEdgeMaterial('Birch')`.
+  - `ChairFloor.tsx` is a circular shadow-receiving disc with a radial alpha fade so the shadow blends into bg-cream.
+  - `CameraOrbitingLight.tsx` re-derives the key light's position from the camera's azimuth each frame so the chair appears lit from a constant on-screen direction during orbit.
+  - `BoomerangCamera` (in shelf/) takes optional `autoRotate` + `autoRotateSpeed` for the slow camera orbits.
+- Hero scene `HeroChairTrio.tsx`: 5 Posé chairs on a circle, each in a different palette color, facing radially outward, slow camera orbit. Used in `PoseHeroSection` (collection page hero) and the Posé tile in `CollectionsSection` (homepage).
+- Variant scene `RenderedChairView/index.tsx`: a single chair (Posé / Tabouret / Diné) auto-rotating with its own floor disc.
+- Wood textures (`.webp` for color/roughness, `.png` for normal) are loaded; chairs share the same `useWoodMaterial` / `useEdgeMaterial` hooks as shelves.
 
 ## Environment Variables
 
