@@ -10,7 +10,7 @@ const RenderedChairView = dynamic(() => import('@/components/chair/RenderedChair
 
 export default function PoseVariantsStack() {
   return (
-    <section className="bg-cream py-4 md:py-8">
+    <section className="bg-cream pt-4 pb-16 md:pt-8 md:pb-24">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {poseVariantOrder.map((id, index) => {
           const { name } = posePresets[id];

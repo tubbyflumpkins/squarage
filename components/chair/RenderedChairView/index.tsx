@@ -36,7 +36,14 @@ export default function RenderedChairView({
   const alpha = (params.backAngle * Math.PI) / 180;
   const beta = (params.benchAngle * Math.PI) / 180;
   const width = params.seatWidth + 2 * params.frameWidth;
-  const height = params.seatHeight + params.backHeight * Math.cos(alpha);
+  // Top of backrest reaches sH + bH*cos(alpha); the topmost back slat plus the
+  // plywood thickness add another (slatHeight/2 + thickness/2) above that.
+  // Include both so tall variants like the Tabouret don't clip vertically.
+  const height =
+    params.seatHeight +
+    params.backHeight * Math.cos(alpha) +
+    (params.slatHeight / 2 + params.thickness / 2) * Math.cos(alpha) +
+    2;
   const depth =
     params.seatDepth +
     params.seatHeight * Math.tan(alpha) +
