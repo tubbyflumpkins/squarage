@@ -4,7 +4,38 @@ import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const collections = [
+interface Collection {
+  id: string
+  title: string
+  subtitle: string
+  description: string
+  image: string
+  imageAlt: string
+  href: string
+  bgColor: string         // tailwind class for the right-side panel on desktop
+  blobColor: string       // hex color for the title blob
+  borderRadius: string    // organic blob shape
+  // Mobile blob alignment relative to the image
+  mobileBlobAlign: 'left' | 'right'
+  // Mobile-only vertical compression for the blob (matches existing visual feel)
+  mobileBlobScaleY: number
+}
+
+const collections: Collection[] = [
+  {
+    id: 'pose',
+    title: 'Posé',
+    subtitle: 'Chairs',
+    description: 'The Mateo chair, three ways. Sculptural plywood seating handcrafted in Los Angeles.',
+    image: '/images/collection-warped.jpg',
+    imageAlt: 'Posé Collection — Sculptural plywood chairs handcrafted in Los Angeles',
+    href: '/collections/pose',
+    bgColor: 'bg-squarage-yellow',
+    blobColor: '#E2692E',
+    borderRadius: '60% 40% 50% 70% / 50% 65% 35% 50%',
+    mobileBlobAlign: 'right',
+    mobileBlobScaleY: 0.875,
+  },
   {
     id: 'warped',
     title: 'Warped',
@@ -14,6 +45,10 @@ const collections = [
     imageAlt: 'Warped Collection — Organic curved wood shelving handcrafted in Los Angeles',
     href: '/collections/warped',
     bgColor: 'bg-squarage-yellow',
+    blobColor: '#4A9B4E',
+    borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%',
+    mobileBlobAlign: 'right',
+    mobileBlobScaleY: 0.875,
   },
   {
     id: 'tiled',
@@ -24,14 +59,18 @@ const collections = [
     imageAlt: 'Tiled Collection — Handcrafted custom tables with vibrant tiled surfaces',
     href: '/collections/tiled',
     bgColor: 'bg-squarage-yellow',
+    blobColor: '#4A9B4E',
+    borderRadius: '35% 65% 55% 45% / 60% 40% 65% 35%',
+    mobileBlobAlign: 'left',
+    mobileBlobScaleY: 0.75,
   },
 ]
 
 export default function CollectionsSection() {
   const [hoverAnimatingLetters, setHoverAnimatingLetters] = useState<Set<number>>(new Set())
-  const [initialAnimationStarted, setInitialAnimationStarted] = useState(false)
+  const [initialAnimationStarted] = useState(false)
   const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
-  
+
   const randomDelays = useMemo(() => [
     0.1, 0.3, 0.6, 0.2, // MADE
     0.0, // space
@@ -62,21 +101,10 @@ export default function CollectionsSection() {
       })
     }
   }
-  
+
   // Initial bounce animation disabled — keep code for later re-enable
   useEffect(() => {
-    // Skip the bounce animation, just mark as completed so hover still works
     setInitialAnimationCompleted(true)
-
-    // Original animation code:
-    // const timer = setTimeout(() => {
-    //   setInitialAnimationStarted(true)
-    //   const maxDelay = Math.max(...randomDelays)
-    //   setTimeout(() => {
-    //     setInitialAnimationCompleted(true)
-    //   }, maxDelay * 1000 + 1000)
-    // }, 100)
-    // return () => clearTimeout(timer)
   }, [randomDelays])
 
   return (
@@ -104,7 +132,7 @@ export default function CollectionsSection() {
                       onAnimationEnd={() => letter !== ' ' && handleAnimationEnd(index, !initialAnimationCompleted)}
                     >
                       <span className="text-white">
-                        {letter === ' ' ? '\u00A0' : letter}
+                        {letter === ' ' ? ' ' : letter}
                       </span>
                     </span>
                   ))}
@@ -117,138 +145,84 @@ export default function CollectionsSection() {
 
       {/* Collections Section */}
       <div className="bg-white flex flex-col">
-        {collections.map((collection, index) => (
-          <Link
-            key={collection.id}
-            href={collection.href}
-            className={`group block ${index === 0 ? 'order-2 md:order-1' : 'order-1 md:order-2'}`}
-          >
-            <div className="relative">
-              <div className="w-full">
-                <div className={`grid grid-cols-1 md:flex ${index % 2 === 0 ? '' : 'md:flex-row-reverse'} items-stretch`}>
-                  {/* Image - same on desktop, modified mobile */}
-                  <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
-                    <Image
-                      src={collection.image}
-                      alt={collection.imageAlt}
-                      fill
-                      className={`object-cover ${collection.id === 'warped' ? '-scale-x-100 md:scale-x-100' : ''}`}
-                      style={collection.id === 'warped' ? { objectPosition: '65% center' } : undefined}
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                    
-                    {/* Title Blob - Mobile Only */}
-                    {index === 0 ? (
-                      // Warped Blob - aligned right
-                      <div className="absolute bottom-0 right-0 z-50 md:hidden"
-                        style={{ 
-                          transform: 'translateY(30%) scale(0.9)'
-                        }}
+        {collections.map((collection, index) => {
+          const reverseRow = index % 2 === 1
+          // Warped image was originally horizontally flipped on desktop only
+          const flipImage = collection.id === 'warped'
+          return (
+            <Link
+              key={collection.id}
+              href={collection.href}
+              className="group block"
+            >
+              <div className="relative">
+                <div className="w-full">
+                  <div className={`grid grid-cols-1 md:flex ${reverseRow ? 'md:flex-row-reverse' : ''} items-stretch`}>
+                    {/* Image side */}
+                    <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
+                      <Image
+                        src={collection.image}
+                        alt={collection.imageAlt}
+                        fill
+                        className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''}`}
+                        style={flipImage ? { objectPosition: '65% center' } : undefined}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+
+                      {/* Mobile blob overlay */}
+                      <div
+                        className={`absolute bottom-0 ${collection.mobileBlobAlign === 'right' ? 'right-0' : 'left-0'} z-50 md:hidden`}
+                        style={{ transform: 'translateY(32%) scale(0.9)' }}
                       >
                         <div className="relative">
-                          {/* Blob background - compressed vertically */}
                           <div
                             className="absolute inset-0"
                             style={{
-                              backgroundColor: '#4A9B4E',
-                              borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%',
-                              transform: 'scaleY(0.875)'
+                              backgroundColor: collection.blobColor,
+                              borderRadius: collection.borderRadius,
+                              transform: `scaleY(${collection.mobileBlobScaleY})`,
                             }}
                           />
-                          {/* Text content - normal scale */}
-                          <div className="relative z-10" style={{ padding: '0.9rem 2.2rem' }}>
+                          <div className="relative z-10" style={{ padding: '0.9rem 2.4rem' }}>
                             <h2 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
-                              Warped
+                              {collection.title}
                             </h2>
                           </div>
                         </div>
                       </div>
-                    ) : (
-                      // Tiled Blob - aligned left
-                      <div className="absolute bottom-0 left-0 z-50 md:hidden"
-                        style={{ 
-                          transform: 'translateY(35%) scale(0.9)'
-                        }}
-                      >
-                        <div className="relative">
-                          {/* Blob background - compressed vertically */}
-                          <div 
-                            className="bg-squarage-green absolute inset-0"
-                            style={{
-                              borderRadius: '35% 65% 55% 45% / 60% 40% 65% 35%',
-                              transform: 'scaleY(0.75)'
-                            }}
-                          />
-                          {/* Text content - normal scale */}
-                          <div className="relative z-10" style={{ padding: '0.9rem 2.5rem' }}>
-                            <h2 className="font-bold font-neue-haas text-white" style={{ fontSize: '2.75rem' }}>
-                              Tiled
-                            </h2>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Text Side - Mobile: Empty yellow banner, Desktop: Full content */}
-                  <div className={`bg-squarage-yellow md:${collection.bgColor} relative flex items-center justify-center py-3 px-4 md:p-0 md:w-1/2`}>
-                    {/* Desktop only - Title Blobs from collection pages */}
-                    <div className="hidden md:flex md:items-center md:justify-center md:w-full md:h-full">
-                      {index === 0 ? (
-                        // Warped Blob - Desktop
+                    </div>
+
+                    {/* Text/blob side — mobile shows compact yellow banner, desktop shows blob */}
+                    <div className={`bg-squarage-yellow md:${collection.bgColor} relative flex items-center justify-center py-3 px-4 md:p-0 md:w-1/2`}>
+                      <div className="hidden md:flex md:items-center md:justify-center md:w-full md:h-full">
                         <div className="relative group/blob">
                           <div
                             className="transition-transform duration-300 ease-out group-hover/blob:scale-110"
                             style={{
-                              backgroundColor: '#4A9B4E',
-                              borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%',
-                              padding: 'clamp(1.2rem, 1.8vw, 1.8rem) clamp(3rem, 4vw, 4rem)'
+                              backgroundColor: collection.blobColor,
+                              borderRadius: collection.borderRadius,
+                              padding: 'clamp(1rem, 1.6vw, 1.8rem) clamp(2.5rem, 4vw, 4rem)',
                             }}
                           >
                             <div className="text-center">
                               <h2
                                 className="font-bold font-neue-haas text-squarage-white"
-                                style={{
-                                  fontSize: 'clamp(4rem, 8vw, 8rem)'
-                                }}
+                                style={{ fontSize: 'clamp(4rem, 8vw, 8rem)' }}
                               >
-                                Warped
+                                {collection.title}
                               </h2>
                             </div>
                           </div>
                         </div>
-                      ) : (
-                        // Tiled Blob - Desktop
-                        <div className="relative group/blob">
-                          <div 
-                            className="bg-squarage-green transition-transform duration-300 ease-out group-hover/blob:scale-110"
-                            style={{
-                              borderRadius: '35% 65% 55% 45% / 60% 40% 65% 35%',
-                              padding: 'clamp(0.5rem, 1vw, 0.9rem) clamp(2rem, 3.2vw, 3rem)'
-                            }}
-                          >
-                            <div className="text-center">
-                              <h2
-                                className="font-bold font-neue-haas text-white"
-                                style={{
-                                  fontSize: 'clamp(4rem, 8vw, 8rem)'
-                                }}
-                              >
-                                Tiled
-                              </h2>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          )
+        })}
       </div>
     </>
   )
 }
-
