@@ -24,7 +24,16 @@ export default function PoseHeroSection() {
       className="relative w-full overflow-visible bg-cream"
       style={{ height: isMobile ? '35vh' : 'clamp(40vh, 30vh + 15vw, 60vh)' }}
     >
-      <div className="absolute inset-0 z-0">
+      {/* Canvas extends past the section bottom, all the way down to where
+          the Posé blob's bottom edge lands (the blob is half in / half
+          below the section, so we drop the canvas by ~half-blob-height).
+          Chairs are still composed to render at section center via the
+          yShift prop inside HeroChairTrio, but they're no longer clipped
+          at the bottom of their viewport. */}
+      <div
+        className="absolute left-0 right-0 top-0 z-0 pointer-events-none"
+        style={{ bottom: isMobile ? '-2.5rem' : '-4.5rem' }}
+      >
         <HeroChairTrio />
       </div>
 

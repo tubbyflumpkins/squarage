@@ -72,11 +72,12 @@ export default function HeroChairTrio({ className }: HeroChairTrioProps) {
   const arrangementRadius = CIRCLE_RADIUS + chairCornerReach;
   const tiltRad = (CAMERA_TILT * Math.PI) / 180;
   const floorVisualHeight = 2 * floorRadius * Math.sin(tiltRad);
-  // yShift = 0 puts the chair circle's geometric center at world origin
-  // (camera target), which renders the chairs at canvas vertical center
-  // while the floor sweeps out below them — a touch lower on screen than
-  // when we shifted the whole group up by floorVisualHeight/4.
-  const yShift = 0;
+  // The canvas wrapper extends ~4.5rem past the section bottom so chairs
+  // aren't clipped at the viewport's lower edge. We shift the chair
+  // group up in world space by a few units so the on-screen center of
+  // the arrangement still lands inside the section visually (rather than
+  // sliding down with the canvas's new center).
+  const yShift = 4;
   // Tighter framing — passing 0.48× the actual arrangement diameter pulls
   // the camera in much closer than the bounding box would suggest. The
   // arrangement is rotationally symmetric and aspect > 1.2 always (hero is
