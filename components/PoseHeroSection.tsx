@@ -41,8 +41,8 @@ export default function PoseHeroSection() {
             className="text-center"
             style={{
               padding: isMobile
-                ? '0.6rem 2.5rem'
-                : 'clamp(0.4rem, 0.8vw, 1rem) clamp(3rem, 4vw, 4rem)',
+                ? '1rem 2.5rem'
+                : 'clamp(0.8rem, 1.3vw, 1.5rem) clamp(3rem, 4vw, 4rem)',
             }}
           >
             <h1
