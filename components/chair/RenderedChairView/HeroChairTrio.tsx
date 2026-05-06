@@ -15,7 +15,7 @@ const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 // Five Posé chairs arranged on a circle, each facing radially outward,
 // with the camera slowly orbiting the whole arrangement.
 const CHAIR_COUNT = 5;
-const CIRCLE_RADIUS = 34; // distance from arrangement center to each chair's center
+const CIRCLE_RADIUS = 50; // distance from arrangement center to each chair's center
 const CAMERA_TILT = 14;
 const CAMERA_AUTO_ROTATE_SPEED = 0.06;
 
