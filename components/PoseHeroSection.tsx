@@ -22,7 +22,7 @@ export default function PoseHeroSection() {
   return (
     <section
       className="relative w-full overflow-visible bg-cream"
-      style={{ height: isMobile ? '45vh' : 'clamp(55vh, 50vh + 25vw, 90vh)' }}
+      style={{ height: isMobile ? '35vh' : 'clamp(40vh, 30vh + 15vw, 60vh)' }}
     >
       <div className="absolute inset-0 z-0">
         <HeroChairTrio />
