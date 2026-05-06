@@ -32,11 +32,7 @@ export default function PoseVariantsStack() {
                   <RenderedChairView preset={id} color={colors[index]} autoRotate />
                 </div>
               </div>
-              <div
-                className={`w-full md:w-1/2 text-center ${
-                  reversed ? 'md:text-right md:pr-24' : 'md:text-left'
-                }`}
-              >
+              <div className="w-full md:w-1/2 text-center">
                 <h3
                   className="font-bold font-neue-haas text-squarage-black"
                   style={{ fontSize: 'clamp(3rem, 6vw, 6rem)' }}
