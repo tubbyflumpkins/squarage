@@ -33,7 +33,10 @@ export default function HeroChairTrio({ className }: HeroChairTrioProps) {
   const chairHeight =
     params.seatHeight +
     params.backHeight * Math.cos(alpha) +
-    (params.thickness / 2) * Math.cos(alpha);
+    Math.max(
+      params.frameWidth * Math.sin(alpha),
+      (params.thickness / 2) * Math.cos(alpha),
+    );
 
   // 5 of the 10 labs palette colors, randomized per mount so the page
   // looks slightly different each visit.

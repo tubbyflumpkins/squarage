@@ -46,10 +46,17 @@ export default function RenderedChairView({
   // would over-pull the camera back.
   const width = params.seatWidth;
   // Tight chair height — matches what generateChairGeometry's bbox produces.
+  // Top of chair = max(side-frame inner-top corner z, top-back-slat extruded z)
+  //              = sH + bH·cosα + max(frameWidth·sinα, thickness/2·cosα).
+  // Missing the frameWidth·sinα term (the dominant one for tilted backrests
+  // like Posé) puts the floor slightly above the chair's real feet.
   const chairHeight =
     params.seatHeight +
     params.backHeight * Math.cos(alpha) +
-    (params.thickness / 2) * Math.cos(alpha);
+    Math.max(
+      params.frameWidth * Math.sin(alpha),
+      (params.thickness / 2) * Math.cos(alpha),
+    );
   const depth =
     params.seatDepth +
     params.seatHeight * Math.tan(alpha) +
