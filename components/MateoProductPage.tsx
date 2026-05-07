@@ -251,6 +251,8 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
         params={morphedParams}
         color={selectedColorHex}
         autoRotate
+        interactive
+        cameraPadding={0.32}
       />
     </div>
   );
