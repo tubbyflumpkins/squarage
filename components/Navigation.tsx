@@ -219,6 +219,14 @@ export default function Navigation() {
               Catalog
             </Link>
             <Link
+              href="/collections/pose"
+              className={`font-neue-haas font-medium text-xl lg:text-2xl ${
+                isContactPage ? 'text-white hover:text-squarage-orange' : 'text-squarage-green hover:text-squarage-orange'
+              } transition-colors duration-200`}
+            >
+              Posé
+            </Link>
+            <Link
               href="/collections/warped"
               className={`font-neue-haas font-medium text-xl lg:text-2xl ${
                 isContactPage ? 'text-white hover:text-squarage-orange' : 'text-squarage-green hover:text-squarage-orange'
@@ -350,6 +358,15 @@ export default function Navigation() {
                   className={menuItemClass}
                 >
                   Catalog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/collections/pose"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={menuItemClass}
+                >
+                  Posé
                 </Link>
               </li>
               <li>
