@@ -9,13 +9,18 @@ import ChairMeshes from './ChairMeshes';
 import ChairFloor from './ChairFloor';
 import CameraOrbitingLight from './CameraOrbitingLight';
 import { posePresets, type PoseVariantId } from '@/lib/posePresets';
+import type { ChairParams } from '@/components/chair/ChairVisualizer/types';
 
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
 interface RenderedChairViewProps {
-  preset: PoseVariantId;
+  // Either pass a preset id (resolved via posePresets) OR pass `params`
+  // directly (used by the morph hook so the chair can interpolate
+  // between presets every frame). `params` wins if both are supplied.
+  preset?: PoseVariantId;
+  params?: ChairParams;
   finish?: WoodFinish;
   color?: string;
   autoRotate?: boolean;
@@ -28,6 +33,7 @@ interface RenderedChairViewProps {
 
 export default function RenderedChairView({
   preset,
+  params: paramsProp,
   finish = 'Walnut',
   color,
   autoRotate = true,
@@ -37,7 +43,10 @@ export default function RenderedChairView({
   showFloor = true,
   floorColor = '#fffaf4',
 }: RenderedChairViewProps) {
-  const params = posePresets[preset].params;
+  if (!paramsProp && !preset) {
+    throw new Error('RenderedChairView: must pass either `preset` or `params`');
+  }
+  const params = paramsProp ?? posePresets[preset!].params;
 
   const alpha = (params.backAngle * Math.PI) / 180;
   const beta = (params.benchAngle * Math.PI) / 180;
