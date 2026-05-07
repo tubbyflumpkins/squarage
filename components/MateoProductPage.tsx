@@ -245,15 +245,23 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
     </div>
   );
 
+  // The layout slot stays aspect-square so the page grid math is
+  // unchanged; an absolute-positioned wrapper extends the actual
+  // canvas past the slot bounds so the cast shadow and tall
+  // variants (Tabouret) don't clip. cameraPadding bumps up to keep
+  // the chair roughly the same on-screen size despite the larger
+  // canvas — the extra space becomes breathing room around the chair.
   const chairCanvas = (
     <div className="relative w-full aspect-square">
-      <RenderedChairView
-        params={morphedParams}
-        color={selectedColorHex}
-        autoRotate
-        interactive
-        cameraPadding={0.32}
-      />
+      <div className="absolute -inset-y-8 inset-x-0 md:-inset-20">
+        <RenderedChairView
+          params={morphedParams}
+          color={selectedColorHex}
+          autoRotate
+          interactive
+          cameraPadding={0.42}
+        />
+      </div>
     </div>
   );
 
