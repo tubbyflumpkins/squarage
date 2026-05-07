@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import ProductPage from '@/components/ProductPage'
 import WarpedProductPage from '@/components/WarpedProductPage'
+import MateoProductPage from '@/components/MateoProductPage'
 import { shopifyApi } from '@/lib/shopify'
 import StructuredData, { generateProductSchema, generateBreadcrumbSchema } from '@/components/StructuredData'
 
@@ -69,9 +70,12 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
     }
 
     // Check if product is in the warped collection
-    const isWarpedProduct = product.collections?.some((collection: any) => 
+    const isWarpedProduct = product.collections?.some((collection: any) =>
       collection.handle === 'warped'
     ) || false
+
+    // The Mateo chair has its own custom page (3D morphing chair, no static images).
+    const isMateoProduct = handle === 'mateo-chair'
 
     // Serialize the product data to plain object for client component
   const serializedProduct = {
@@ -154,7 +158,9 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
     <>
       <StructuredData data={productSchema} />
       <StructuredData data={breadcrumbSchema} />
-      {isWarpedProduct ? (
+      {isMateoProduct ? (
+        <MateoProductPage product={serializedProduct} />
+      ) : isWarpedProduct ? (
         <WarpedProductPage product={serializedProduct} />
       ) : (
         <ProductPage product={serializedProduct} />
