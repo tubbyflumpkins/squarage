@@ -194,7 +194,7 @@ export const shopifyApi = {
                 name
                 values
               }
-              variants(first: 20) {
+              variants(first: 100) {
                 edges {
                   node {
                     id
