@@ -29,6 +29,11 @@ interface RenderedChairViewProps {
   className?: string;
   showFloor?: boolean;
   floorColor?: string;
+  // Smaller = camera closer = chair larger on screen. Default 0.45.
+  cameraPadding?: number;
+  // Drag the chair to spin it. Auto-rotate pauses during drag and resumes
+  // after a short idle.
+  interactive?: boolean;
 }
 
 export default function RenderedChairView({
@@ -42,6 +47,8 @@ export default function RenderedChairView({
   className,
   showFloor = true,
   floorColor = '#fffaf4',
+  cameraPadding = 0.45,
+  interactive = false,
 }: RenderedChairViewProps) {
   if (!paramsProp && !preset) {
     throw new Error('RenderedChairView: must pass either `preset` or `params`');
@@ -142,6 +149,8 @@ export default function RenderedChairView({
         depthOrLength={effectiveDepth}
         autoRotate={autoRotate}
         autoRotateSpeed={autoRotateSpeed}
+        cameraPadding={cameraPadding}
+        interactive={interactive}
       />
     </Canvas>
   );
