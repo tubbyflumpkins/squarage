@@ -254,13 +254,13 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   // room with a larger chair instead of more whitespace.
   const chairCanvas = (
     <div className="relative w-full aspect-square">
-      <div className="absolute -top-2 -bottom-16 -left-4 right-0 md:-top-12 md:-bottom-44 md:-left-40 md:-right-20">
+      <div className="absolute -top-2 -bottom-20 -left-4 right-0 md:-top-12 md:-bottom-56 md:-left-40 md:-right-20">
         <RenderedChairView
           params={morphedParams}
           color={selectedColorHex}
           autoRotate
           interactive
-          cameraPadding={0.36}
+          cameraPadding={0.4}
         />
       </div>
     </div>
