@@ -343,7 +343,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                   to match the right column and the chair would stay
                   pinned long enough to overlap the trust-badge section
                   scrolling up beneath it. */}
-              <div className="w-1/2 pr-8 max-h-[700px]">
+              <div className="w-1/2 pr-8 max-h-[900px]">
                 <div className="sticky top-32">{chairCanvas}</div>
               </div>
               <div className="w-1/2 pl-8">
