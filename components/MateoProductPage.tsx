@@ -338,7 +338,12 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
           {/* Desktop layout */}
           <div className="hidden lg:block w-full px-6">
             <div className="flex flex-row">
-              <div className="w-1/2 pr-8">
+              {/* max-h caps the sticky containing block so the chair
+                  releases earlier — without it, the column flex-stretches
+                  to match the right column and the chair would stay
+                  pinned long enough to overlap the trust-badge section
+                  scrolling up beneath it. */}
+              <div className="w-1/2 pr-8 max-h-[700px]">
                 <div className="sticky top-32">{chairCanvas}</div>
               </div>
               <div className="w-1/2 pl-8">
