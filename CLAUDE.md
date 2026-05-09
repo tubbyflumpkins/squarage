@@ -32,7 +32,7 @@
 | `/collections/tiled` | Tiled collection |
 | `/collections/warped` | Warped collection |
 | `/collections/warped/designer` | 3D shelf designer |
-| `/collections/pose` | Posé collection (Mateo chair — Posé / Tabouret / Diné variants, real-time 3D) |
+| `/collections/pose` | Posé collection (Mateo chair — Posé / Tabouret / Dîner variants, real-time 3D) |
 | `/custom` | Custom project request flow |
 | `/contact` | Contact page |
 | `/customer-service` | Customer service (shipping, returns, FAQ) |
@@ -84,7 +84,7 @@ components/                   # React components
   StructuredData.tsx           # JSON-LD SEO data
   Warped* / Carro*             # Warped & Carro collection components
   PoseHeroSection.tsx          # Posé hero (orbiting 5-chair circle + title blob)
-  PoseVariantsStack.tsx        # Posé variant rows (Posé / Tabouret / Diné, alternating)
+  PoseVariantsStack.tsx        # Posé variant rows (Posé / Tabouret / Dîner, alternating)
   PoseBlob.tsx                 # SVG-path organic title blob (used by Posé)
   chair/                       # Posé chair geometry + rendering (parallel to shelf/)
     ChairVisualizer/           # Pure TS: types + generateChairGeometry()
@@ -100,7 +100,7 @@ lib/
   cookieCategories.ts         # Cookie consent category definitions
   emailCapture.ts             # Email capture service
   policies.ts                 # Legal policy content (privacy, shipping, returns)
-  posePresets.ts              # Posé chair preset params (Posé / Tabouret / Diné)
+  posePresets.ts              # Posé chair preset params (Posé / Tabouret / Dîner)
   poseColors.ts               # Labs COLOR_FINISH_HEX palette + random picker
 
 wasm-shelf-geometry/            # Rust crate → compiled to WASM
@@ -177,7 +177,7 @@ stores/
   - `CameraOrbitingLight.tsx` re-derives the key light's position from the camera's azimuth each frame so the chair appears lit from a constant on-screen direction during orbit.
   - `BoomerangCamera` (in shelf/) takes optional `autoRotate` + `autoRotateSpeed` for the slow camera orbits.
 - Hero scene `HeroChairTrio.tsx`: 5 Posé chairs on a circle, each in a different palette color, facing radially outward, slow camera orbit. Used in `PoseHeroSection` (collection page hero) and the Posé tile in `CollectionsSection` (homepage).
-- Variant scene `RenderedChairView/index.tsx`: a single chair (Posé / Tabouret / Diné) auto-rotating with its own floor disc.
+- Variant scene `RenderedChairView/index.tsx`: a single chair (Posé / Tabouret / Dîner) auto-rotating with its own floor disc.
 - Wood textures (`.webp` for color/roughness, `.png` for normal) are loaded; chairs share the same `useWoodMaterial` / `useEdgeMaterial` hooks as shelves.
 
 ## Environment Variables

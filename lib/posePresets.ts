@@ -84,7 +84,7 @@ const DINE: ChairParams = {
 export const posePresets = {
   pose: { name: 'Posé', params: POSE },
   tabouret: { name: 'Tabouret', params: TABOURET },
-  dine: { name: 'Diné', params: DINE },
+  dine: { name: 'Dîner', params: DINE },
 } as const;
 
 export type PoseVariantId = keyof typeof posePresets;
