@@ -11,7 +11,7 @@ interface AccordionItem {
 }
 
 interface ProductDetailsAccordionProps {
-  productType: 'tiled' | 'warped'
+  productType: 'tiled' | 'warped' | 'pose'
   dimensions?: string
   metafields?: Array<{
     namespace: string
@@ -161,11 +161,25 @@ export default function ProductDetailsAccordion({
       title: 'Details',
       content: (
         <div className="space-y-3">
-          {productType === 'tiled' ? (
+          {productType === 'pose' ? (
             <>
               <p className="text-base font-neue-haas text-squarage-black">
-                Handcrafted in Los Angeles with meticulous attention to detail. 
-                Our entire Tiled Collection is 100% waterproof and suitable for both indoor and outdoor use. 
+                Handcrafted in our Los Angeles studio from Baltic birch plywood
+                with finger-slot joinery, designed to hold up to everyday use.
+              </p>
+              <ul className="space-y-2 text-sm font-neue-haas text-squarage-black">
+                <li>• Baltic birch plywood construction</li>
+                <li>• Finger-slot joinery for structural strength</li>
+                <li>• Handmade in our Los Angeles studio</li>
+                <li>• Each piece individually crafted and inspected</li>
+                <li>• Weight capacity: 250 lbs</li>
+              </ul>
+            </>
+          ) : productType === 'tiled' ? (
+            <>
+              <p className="text-base font-neue-haas text-squarage-black">
+                Handcrafted in Los Angeles with meticulous attention to detail.
+                Our entire Tiled Collection is 100% waterproof and suitable for both indoor and outdoor use.
                 These pieces are incredibly durable - you can even use them as stools.
               </p>
               <ul className="space-y-2 text-sm font-neue-haas text-squarage-black">
@@ -219,7 +233,21 @@ export default function ProductDetailsAccordion({
       title: 'Care',
       content: (
         <div className="space-y-3">
-          {productType === 'tiled' ? (
+          {productType === 'pose' ? (
+            <>
+              <p className="text-base font-neue-haas text-squarage-black font-medium">
+                Caring for Your Posé Piece
+              </p>
+              <ul className="space-y-2 text-sm font-neue-haas text-squarage-black">
+                <li>• Dust regularly with a soft, dry cloth</li>
+                <li>• Spot-clean with a slightly damp cloth and dry immediately</li>
+                <li>• Indoor use only — not designed for outdoor exposure</li>
+                <li>• Avoid prolonged direct sunlight to prevent fading</li>
+                <li>• Use coasters under drinks</li>
+                <li>• Avoid dragging across rough surfaces</li>
+              </ul>
+            </>
+          ) : productType === 'tiled' ? (
             <>
               <p className="text-base font-neue-haas text-squarage-black font-medium">
                 Caring for Your Tiled Piece

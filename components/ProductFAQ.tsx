@@ -9,13 +9,46 @@ interface FAQItem {
 }
 
 interface ProductFAQProps {
-  productType?: 'tiled' | 'warped'
+  productType?: 'tiled' | 'warped' | 'pose'
 }
 
 export default function ProductFAQ({ productType = 'tiled' }: ProductFAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
-  const faqItems: FAQItem[] = productType === 'tiled' ? [
+  const faqItems: FAQItem[] = productType === 'pose' ? [
+    {
+      question: "How long will it take to receive my order?",
+      answer: "Each piece is handmade in Los Angeles. Standard lead time is 2–3 weeks. Rush options may be available—contact us if you need a faster turnaround."
+    },
+    {
+      question: "Do you offer local pickup or delivery?",
+      answer: "Yes. We offer free pickup in Los Angeles and can arrange white-glove delivery within the area. Nationwide shipping is also available at checkout."
+    },
+    {
+      question: "What if something arrives damaged?",
+      answer: "If your chair arrives damaged, we'll repair or replace it at no cost. Just email us photos within 48 hours of delivery."
+    },
+    {
+      question: "How much weight can the chairs support?",
+      answer: "Each chair is built from Baltic birch plywood with finger-slot joinery that distributes load across the entire frame. Safe weight capacity is 250 lbs."
+    },
+    {
+      question: "How durable is the Baltic birch plywood?",
+      answer: "Baltic birch is one of the most stable plywoods made — multi-layer construction with no internal voids — and the finger-slot joinery is structurally sound for daily use. The chair is designed for indoor use only."
+    },
+    {
+      question: "Can I customize the size or color?",
+      answer: "Absolutely. The Mateo Chair already comes in three variants — Posé, Tabouret, and Dîner — with nine colors. We can also adjust dimensions within structural limits or apply a finish outside our standard palette as a custom order. Select \"Custom Order\" or contact us with the details you'd like."
+    },
+    {
+      question: "What is your return policy?",
+      answer: "We accept returns within 30 days of delivery on standard pieces in original condition. Custom orders are final sale."
+    },
+    {
+      question: "Do you offer financing?",
+      answer: "Yes. You can split payments at checkout through Shop Pay Installments or other listed providers."
+    }
+  ] : productType === 'tiled' ? [
     {
       question: "How long will it take to receive my order?",
       answer: "Each piece is handmade in Los Angeles. Standard lead time is 2–3 weeks. Rush options may be available—contact us if you need a faster turnaround."

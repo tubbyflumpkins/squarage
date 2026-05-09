@@ -325,13 +325,13 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">{cartButton}</div>
 
             <div className="mb-8">
-              <ProductDetailsAccordion productType="tiled" metafields={product.metafields} />
+              <ProductDetailsAccordion productType="pose" metafields={product.metafields} />
             </div>
             <div className="mb-8">
               <ProductTrustBadges />
             </div>
             <div className="mb-8">
-              <ProductFAQ productType="tiled" />
+              <ProductFAQ productType="pose" />
             </div>
           </div>
 
@@ -389,7 +389,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                 <div className="mb-8">{cartButton}</div>
 
                 <div className="mb-8">
-                  <ProductDetailsAccordion productType="tiled" metafields={product.metafields} />
+                  <ProductDetailsAccordion productType="pose" metafields={product.metafields} />
                 </div>
               </div>
             </div>
@@ -398,7 +398,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               <ProductTrustBadges />
             </div>
             <div>
-              <ProductFAQ productType="tiled" />
+              <ProductFAQ productType="pose" />
             </div>
           </div>
         </div>
