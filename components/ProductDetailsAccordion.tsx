@@ -243,7 +243,6 @@ export default function ProductDetailsAccordion({
                 <li>• Spot-clean with a slightly damp cloth and dry immediately</li>
                 <li>• Indoor use only — not designed for outdoor exposure</li>
                 <li>• Avoid prolonged direct sunlight to prevent fading</li>
-                <li>• Use coasters under drinks</li>
                 <li>• Avoid dragging across rough surfaces</li>
               </ul>
             </>
