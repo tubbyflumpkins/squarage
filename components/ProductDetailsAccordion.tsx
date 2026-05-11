@@ -241,7 +241,7 @@ export default function ProductDetailsAccordion({
               <ul className="space-y-2 text-sm font-neue-haas text-squarage-black">
                 <li>• Dust regularly with a soft, dry cloth</li>
                 <li>• Spot-clean with a slightly damp cloth and dry immediately</li>
-                <li>• Indoor use only — not designed for outdoor exposure</li>
+                <li>• Indoor use only. Not designed for outdoor exposure</li>
                 <li>• Avoid prolonged direct sunlight to prevent fading</li>
                 <li>• Avoid dragging across rough surfaces</li>
               </ul>

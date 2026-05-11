@@ -51,7 +51,7 @@ export default function ProductFAQ({ productType = 'tiled' }: ProductFAQProps) {
   ] : productType === 'tiled' ? [
     {
       question: "How long will it take to receive my order?",
-      answer: "Each piece is handmade in Los Angeles. Standard lead time is 2–3 weeks. Rush options may be available—contact us if you need a faster turnaround."
+      answer: "Each piece is handmade in Los Angeles. Standard lead time is 2–3 weeks. Rush options may be available. Contact us if you need a faster turnaround."
     },
     {
       question: "Do you offer local pickup or delivery?",
@@ -63,7 +63,7 @@ export default function ProductFAQ({ productType = 'tiled' }: ProductFAQProps) {
     },
     {
       question: "How much weight can the tables support?",
-      answer: "Each table is built on a reinforced plywood core designed for strength. Our tiled tables safely support up to 200 lbs — sturdy for everyday use, books, lamps, and even someone sitting on the surface."
+      answer: "Each table is built on a reinforced plywood core designed for strength. Our tiled tables safely support up to 200 lbs, sturdy for everyday use, books, lamps, and even someone sitting on the surface."
     },
     {
       question: "Are the tiles and grout durable?",

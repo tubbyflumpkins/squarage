@@ -187,7 +187,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
       <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
         Select Color
         {selectedColorName && (
-          <span className="ml-2 text-base font-normal text-gray-600">— {selectedColorName}</span>
+          <span className="ml-2 text-base font-normal text-gray-600">· {selectedColorName}</span>
         )}
       </h3>
       <div className="flex flex-wrap gap-3 md:gap-4">
