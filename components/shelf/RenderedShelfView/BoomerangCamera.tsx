@@ -11,6 +11,12 @@ interface BoomerangCameraProps {
   autoRotate?: boolean;
   autoRotateSpeed?: number; // radians per second
   /**
+   * Phase offset for the auto-rotate, in radians. Used by sibling chair
+   * scenes that share a rotation speed but should not all face the same
+   * direction at the same time.
+   */
+  initialRotation?: number;
+  /**
    * Multiplier on the bounding-sphere distance. Smaller = camera closer
    * = subject larger on screen. Default 0.45 keeps existing call sites
    * unchanged; the product page passes ~0.32 to zoom in.
@@ -35,11 +41,12 @@ export default function BoomerangCamera({
   depthOrLength,
   autoRotate = false,
   autoRotateSpeed = 0.4,
+  initialRotation = 0,
   cameraPadding = 0.45,
   interactive = false,
 }: BoomerangCameraProps) {
   const { camera, size, gl } = useThree();
-  const rotationRef = useRef(0);
+  const rotationRef = useRef(initialRotation);
   const isDraggingRef = useRef(false);
   const lastClientXRef = useRef(0);
   // -Infinity so auto-rotate runs from the very first frame (until the

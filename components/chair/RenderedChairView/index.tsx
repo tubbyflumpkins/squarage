@@ -25,6 +25,9 @@ interface RenderedChairViewProps {
   color?: string;
   autoRotate?: boolean;
   autoRotateSpeed?: number;
+  // Phase offset for the camera orbit, in radians. Lets sibling scenes
+  // share an autoRotateSpeed without facing the same direction.
+  initialRotation?: number;
   tilt?: number;
   className?: string;
   showFloor?: boolean;
@@ -43,6 +46,7 @@ export default function RenderedChairView({
   color,
   autoRotate = true,
   autoRotateSpeed = 0.1,
+  initialRotation = 0,
   tilt = 12,
   className,
   showFloor = true,
@@ -149,6 +153,7 @@ export default function RenderedChairView({
         depthOrLength={effectiveDepth}
         autoRotate={autoRotate}
         autoRotateSpeed={autoRotateSpeed}
+        initialRotation={initialRotation}
         cameraPadding={cameraPadding}
         interactive={interactive}
       />

@@ -43,7 +43,12 @@ export default function PoseVariantsStack() {
             >
               <div className="w-full md:w-1/2 aspect-[4/3] relative">
                 <div className="absolute inset-0 md:-inset-20 z-10 pointer-events-none">
-                  <RenderedChairView preset={id} color={color} autoRotate />
+                  <RenderedChairView
+                    preset={id}
+                    color={color}
+                    autoRotate
+                    initialRotation={(index * 2 * Math.PI) / 3}
+                  />
                 </div>
               </div>
               <div className="w-full md:w-1/2 text-center">
