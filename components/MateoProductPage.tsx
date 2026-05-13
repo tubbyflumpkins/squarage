@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CreditCardIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
@@ -53,6 +54,13 @@ interface MateoProductPageProps {
 
 const DEFAULT_COLOR_HEX = '#4A9B4E'; // Squarage green
 const DEFAULT_STYLE: PoseVariantId = 'pose';
+
+const GALLERY_IMAGES: Array<{ src: string; alt: string }> = [
+  { src: '/images/pose/gallery/gallery-1.jpg', alt: 'Hand-painted Mateo Posé chair on grass' },
+  { src: '/images/pose/gallery/gallery-2.jpg', alt: 'Hand-painted Mateo Posé chair with strawberry detail' },
+  { src: '/images/pose/gallery/gallery-3.jpg', alt: 'Green Mateo Posé chair on grass' },
+  { src: '/images/pose/gallery/gallery-4.jpg', alt: 'Blue Tabouret and green Posé Mateo chairs side by side' },
+];
 
 function formatPrice(price: string, currencyCode: string): string {
   return new Intl.NumberFormat('en-US', {
@@ -245,6 +253,33 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
     </div>
   );
 
+  const gallerySection = (
+    <section aria-labelledby="mateo-gallery-heading">
+      <h2
+        id="mateo-gallery-heading"
+        className="text-2xl lg:text-3xl font-bold font-neue-haas text-squarage-black mb-6"
+      >
+        Gallery
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+        {GALLERY_IMAGES.map((img) => (
+          <div
+            key={img.src}
+            className="relative aspect-[4/3] overflow-hidden bg-cream"
+          >
+            <Image
+              src={img.src}
+              alt={img.alt}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+
   // The layout slot stays aspect-square so the page grid math is
   // unchanged; an absolute-positioned wrapper extends the actual
   // canvas past the slot bounds. Top + right are anchored; bottom
@@ -330,6 +365,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">
               <ProductTrustBadges />
             </div>
+            <div className="mb-8">{gallerySection}</div>
             <div className="mb-8">
               <ProductFAQ productType="pose" />
             </div>
@@ -397,6 +433,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mt-12 mb-12">
               <ProductTrustBadges />
             </div>
+            <div className="mb-12">{gallerySection}</div>
             <div>
               <ProductFAQ productType="pose" />
             </div>
