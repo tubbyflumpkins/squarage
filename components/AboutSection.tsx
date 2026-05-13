@@ -16,7 +16,7 @@ export default function AboutSection() {
             
             <div className="space-y-6 text-xl md:text-2xl font-medium font-neue-haas text-brown-medium leading-relaxed">
               <p>
-                Squarage Studio is an LA based design studio focusing on creating functional art.
+                Squarage Studio is an LA based design studio making things, spaces, and furniture.
                 All our pieces are designed in house by co-founder Dylan Selden, and manufactured
                 locally.
               </p>
