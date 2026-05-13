@@ -14,25 +14,18 @@ export default function AboutSection() {
               About Us
             </h2>
             
-            {/* About Text - Preserved from original */}
             <div className="space-y-6 text-xl md:text-2xl font-medium font-neue-haas text-brown-medium leading-relaxed">
               <p>
-                Squarage Studio is a Los Angeles-based design studio focused on creating 
-                functional art and design pieces. Founded by Dylan and Thomas, we specialize 
-                in custom furniture that bridges the gap between form and function.
+                Squarage Studio is an LA based design studio focusing on creating functional art.
+                All our pieces are designed in house by co-founder Dylan Selden, and manufactured
+                locally.
               </p>
-              
+
+              <p>We aim to bring a sense of playfulness and fantasy into the home.</p>
+
               <p>
-                Our approach combines traditional craftsmanship with contemporary design 
-                principles, resulting in pieces that are both aesthetically striking and 
-                built to last. Every item is carefully considered and meticulously crafted 
-                in our Los Angeles workshop.
-              </p>
-              
-              <p>
-                We believe that good design should enhance daily life while telling a story. 
-                Each piece we create reflects our commitment to quality, sustainability, and 
-                the timeless appeal of well-made objects.
+                Squarage was founded by Dylan Selden and Thomas Gareton, friends since pre-k.
+                Our journey started in a sandbox in LA, and grew into the real sandbox that is LA.
               </p>
             </div>
 
