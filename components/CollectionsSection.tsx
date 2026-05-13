@@ -3,14 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import PoseBlob from '@/components/PoseBlob'
-
-// Heavy R3F component — load only on the client.
-const HeroChairTrio = dynamic(
-  () => import('@/components/chair/RenderedChairView/HeroChairTrio'),
-  { ssr: false, loading: () => null },
-)
 
 interface Collection {
   id: string
@@ -35,7 +28,7 @@ const collections: Collection[] = [
     title: 'Posé',
     subtitle: 'Chairs',
     description: 'The Mateo chair, three ways. Sculptural plywood seating handcrafted in Los Angeles.',
-    image: '/images/collection-warped.jpg',
+    image: '/images/pose/pose-hero.jpg',
     imageAlt: 'Posé Collection — Sculptural plywood chairs handcrafted in Los Angeles',
     href: '/collections/pose',
     bgColor: 'bg-squarage-yellow',
@@ -166,25 +159,17 @@ export default function CollectionsSection() {
               <div className="relative">
                 <div className="w-full">
                   <div className={`grid grid-cols-1 md:flex ${reverseRow ? 'md:flex-row-reverse' : ''} items-stretch`}>
-                    {/* Image side — for Posé this is the rotating-chair scene
-                        from the collection-page hero, dropped straight in. */}
-                    <div
-                      className={`relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2 ${
-                        collection.id === 'pose' ? 'bg-cream' : ''
-                      }`}
-                    >
-                      {collection.id === 'pose' ? (
-                        <HeroChairTrio />
-                      ) : (
-                        <Image
-                          src={collection.image}
-                          alt={collection.imageAlt}
-                          fill
-                          className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''}`}
-                          style={flipImage ? { objectPosition: '65% center' } : undefined}
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                        />
-                      )}
+                    {/* Image side */}
+                    <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
+                      <Image
+                        src={collection.image}
+                        alt={collection.imageAlt}
+                        fill
+                        className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''}`}
+                        style={flipImage ? { objectPosition: '65% center' } : undefined}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+
 
                       {/* Mobile blob overlay */}
                       <div
