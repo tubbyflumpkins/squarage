@@ -261,20 +261,17 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
       >
         Gallery
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {GALLERY_IMAGES.map((img) => (
-          <div
+          <Image
             key={img.src}
-            className="relative aspect-[4/3] overflow-hidden bg-cream"
-          >
-            <Image
-              src={img.src}
-              alt={img.alt}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
-            />
-          </div>
+            src={img.src}
+            alt={img.alt}
+            width={1800}
+            height={1350}
+            className="w-full h-auto"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
+          />
         ))}
       </div>
     </section>
