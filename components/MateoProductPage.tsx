@@ -359,10 +359,10 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">
               <ProductDetailsAccordion productType="pose" metafields={product.metafields} />
             </div>
+            <div className="mb-8">{gallerySection}</div>
             <div className="mb-8">
               <ProductTrustBadges />
             </div>
-            <div className="mb-8">{gallerySection}</div>
             <div className="mb-8">
               <ProductFAQ productType="pose" />
             </div>
@@ -427,10 +427,10 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               </div>
             </div>
 
-            <div className="mt-12 mb-12">
+            <div className="mt-12 mb-12">{gallerySection}</div>
+            <div className="mb-12">
               <ProductTrustBadges />
             </div>
-            <div className="mb-12">{gallerySection}</div>
             <div>
               <ProductFAQ productType="pose" />
             </div>
