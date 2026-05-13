@@ -160,15 +160,20 @@ export default function CollectionsSection() {
                 <div className="w-full">
                   <div className={`grid grid-cols-1 md:flex ${reverseRow ? 'md:flex-row-reverse' : ''} items-stretch`}>
                     {/* Image side */}
-                    <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2 overflow-hidden">
-                      <Image
-                        src={collection.image}
-                        alt={collection.imageAlt}
-                        fill
-                        className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''} ${collection.id === 'pose' ? 'scale-[1.175] translate-y-[6%]' : ''}`}
-                        style={flipImage ? { objectPosition: '65% center' } : undefined}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
+                    <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
+                      {/* Inner wrapper clips the scaled image without clipping
+                          the mobile title blob below, which intentionally
+                          overhangs into the yellow banner. */}
+                      <div className="absolute inset-0 overflow-hidden">
+                        <Image
+                          src={collection.image}
+                          alt={collection.imageAlt}
+                          fill
+                          className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''} ${collection.id === 'pose' ? 'scale-[1.175] translate-y-[6%]' : ''}`}
+                          style={flipImage ? { objectPosition: '65% center' } : undefined}
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                      </div>
 
 
                       {/* Mobile blob overlay */}
