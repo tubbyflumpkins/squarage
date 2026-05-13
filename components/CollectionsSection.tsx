@@ -160,12 +160,12 @@ export default function CollectionsSection() {
                 <div className="w-full">
                   <div className={`grid grid-cols-1 md:flex ${reverseRow ? 'md:flex-row-reverse' : ''} items-stretch`}>
                     {/* Image side */}
-                    <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
+                    <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2 overflow-hidden">
                       <Image
                         src={collection.image}
                         alt={collection.imageAlt}
                         fill
-                        className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''}`}
+                        className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''} ${collection.id === 'pose' ? 'scale-[1.35]' : ''}`}
                         style={flipImage ? { objectPosition: '65% center' } : undefined}
                         sizes="(max-width: 768px) 100vw, 50vw"
                       />
