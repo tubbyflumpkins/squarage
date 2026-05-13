@@ -25,7 +25,7 @@ export default function AboutSection() {
 
               <p>
                 Squarage was founded by Dylan Selden and Thomas Gareton, friends since pre-k.
-                Our journey started in a sandbox in LA, and grew into the real sandbox that is LA.
+                Our journey started in a sandbox in LA, and we're still playing in it.
               </p>
             </div>
 
