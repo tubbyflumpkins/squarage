@@ -14,7 +14,7 @@ export const POSE_FINISHES: readonly PoseFinish[] = [
   { name: 'Rose', hex: '#E0908A' },
   { name: 'Sky', hex: '#7EB5D5' },
   { name: 'Mint', hex: '#8FB89A' },
-  { name: 'Mustard', hex: '#DAB42F' },
+  { name: 'Yellow', hex: '#F0DC73' },
   { name: 'Midnight', hex: '#2B4570' },
   { name: 'Orange', hex: '#E2692E' },
   { name: 'Merlot', hex: '#7B3542' },
