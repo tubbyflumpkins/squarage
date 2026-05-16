@@ -55,6 +55,10 @@ interface MateoProductPageProps {
 const DEFAULT_COLOR_HEX = '#4A9B4E'; // Squarage green
 const DEFAULT_STYLE: PoseVariantId = 'pose';
 
+// Hidden until we have more product photography. Flip back to true
+// once the gallery images in /public/images/pose/gallery are ready.
+const SHOW_GALLERY = false;
+
 const GALLERY_IMAGES: Array<{ src: string; alt: string }> = [
   { src: '/images/pose/gallery/gallery-1.jpg', alt: 'Hand-painted Mateo Posé chair on grass' },
   { src: '/images/pose/gallery/gallery-2.jpg', alt: 'Hand-painted Mateo Posé chair with strawberry detail' },
@@ -359,7 +363,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">
               <ProductDetailsAccordion productType="pose" metafields={product.metafields} />
             </div>
-            <div className="mb-8">{gallerySection}</div>
+            {SHOW_GALLERY && <div className="mb-8">{gallerySection}</div>}
             <div className="mb-8">
               <ProductTrustBadges />
             </div>
@@ -427,7 +431,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               </div>
             </div>
 
-            <div className="mt-12 mb-12">{gallerySection}</div>
+            {SHOW_GALLERY && <div className="mt-12 mb-12">{gallerySection}</div>}
             <div className="mb-12">
               <ProductTrustBadges />
             </div>
