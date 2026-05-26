@@ -1069,16 +1069,7 @@ export default function DesignerPage() {
         {/* BOTTOM ROW — Estimated Price (hidden on mobile, shown in sticky bar) */}
         {/* ============================================================= */}
         <div className={"hidden md:flex md:order-4 border-l border-t border-squarage-black px-7 py-6 flex-col justify-between"}>
-          <div>
-            <SectionLabel>Estimated Price</SectionLabel>
-            <div className="mt-4">
-              <span className="text-[42px] font-bold text-squarage-black tabular-nums leading-none">
-                ${Math.round(price / 50) * 50}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 text-[16px] font-medium tracking-[0.01em] text-squarage-black mt-5">
+          <div className="flex flex-col gap-2 text-[16px] font-medium tracking-[0.01em] text-squarage-black">
             {p.isCorner && (
               <div className="flex justify-between">
                 <span>Type</span>
@@ -1112,18 +1103,10 @@ export default function DesignerPage() {
       {/* ============================================================= */}
       {/* MOBILE: Sticky bottom price bar */}
       {/* ============================================================= */}
-      <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-3 flex items-center justify-between transition-opacity duration-300 ${showQuoteFlow ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-3 flex items-center justify-center transition-opacity duration-300 ${showQuoteFlow ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
         style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
-        <div className="flex flex-col">
-          <span className="text-[28px] font-bold text-squarage-black tabular-nums leading-none">
-            ${Math.round(price / 50) * 50}
-          </span>
-          <span className="text-[12px] font-medium tracking-[0.01em] text-squarage-black/60 mt-1 tabular-nums">
-            {dimStr} &middot; {finish}
-          </span>
-        </div>
-        <button onClick={() => setShowQuoteFlow(true)} className="px-6 py-3 bg-squarage-orange text-white text-xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 shrink-0">
+        <button onClick={() => setShowQuoteFlow(true)} className="w-full py-3 bg-squarage-orange text-white text-xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300">
           Get Quote
         </button>
       </div>

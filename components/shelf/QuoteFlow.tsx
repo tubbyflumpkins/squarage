@@ -418,11 +418,6 @@ export default function QuoteFlow({
                   </div>
                 ))}
                 <div className="border-b border-dashed border-squarage-black/20 my-3" />
-                <div className="flex justify-between items-baseline">
-                  <span className="text-[16px] font-bold font-neue-haas text-squarage-black">Estimated Total</span>
-                  <span className="text-2xl font-bold font-neue-haas text-squarage-black tabular-nums">${Math.round(price / 50) * 50}</span>
-                </div>
-                <div className="border-b border-dashed border-squarage-black/20 my-3" />
                 <div className="space-y-1">
                   <div className="flex justify-between">
                     <span className="text-[13px] font-neue-haas text-squarage-black/50">Customer</span>
