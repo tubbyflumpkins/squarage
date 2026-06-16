@@ -169,8 +169,14 @@ export default function CollectionsSection() {
                           src={collection.image}
                           alt={collection.imageAlt}
                           fill
-                          className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''} ${collection.id === 'pose' ? 'scale-[1.7] -translate-y-[40%] translate-x-[1%]' : ''}`}
-                          style={flipImage ? { objectPosition: '65% center' } : undefined}
+                          className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''}`}
+                          style={
+                            collection.id === 'pose'
+                              ? { transform: 'scale(1.7)', transformOrigin: '50% 64%' }
+                              : flipImage
+                                ? { objectPosition: '65% center' }
+                                : undefined
+                          }
                           quality={collection.id === 'pose' ? 90 : 75}
                           sizes={collection.id === 'pose' ? '100vw' : '(max-width: 768px) 100vw, 50vw'}
                         />
