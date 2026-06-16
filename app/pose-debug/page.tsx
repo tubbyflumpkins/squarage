@@ -4,23 +4,25 @@ import { useEffect, useRef, useState } from 'react'
 
 // Posé tile positioner.
 //
-// KEY: panning is done with `object-position`, NOT transform:translate.
-// object-cover crops the photo to fill the box (crop locked to the
-// object-position point); object-position chooses WHICH slice of the
-// photo shows and can never expose the background. Zoom is transform
-// scale(s>=1) from center, which always keeps the box covered.
+// Model (identical to production):
+//   object-fit: cover            -> always fills the frame, no white edges
+//   object-position: ax% ay%     -> picks which slice of the photo shows
+//   transform: scale(z)          -> zoom (z >= 1)
+//   transform-origin: ax% ay%    -> zoom anchored at the SAME point you dragged to
 //
-// Each frame is independent (desktop is wide, mobile is taller, so they
-// need different slices). Copy each fragment and paste both back.
+// Because the zoom anchor == the drag anchor, dragging to the bottom and
+// then zooming keeps the bottom edge pinned (the chair grows upward from
+// it). Once zoomed, moving the anchor pans the magnified content in any
+// direction. Anchor stays within 0..100%, scale stays >= 1, so the frame
+// is always fully covered — white edges are impossible.
 
 const IMG = '/images/pose/pose-homepage.png'
-const IMG_ASPECT = 2400 / 1792
 const DESKTOP_H = 500
 const MOBILE_W = 390
 const MOBILE_H = 273 // aspect-[100/70]
 
 const clampScale = (s: number) => Math.min(5, Math.max(1, s))
-const clampNum = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
+const clamp01 = (n: number) => Math.min(100, Math.max(0, n))
 
 /** One independently-controlled preview frame. */
 function Positioner({
@@ -28,47 +30,33 @@ function Positioner({
   outline,
   widthCss,
   heightPx,
-  fixedWidthPx,
   prefix,
-  defaultPos,
+  defaultAnchor,
 }: {
   label: string
   outline: string
   widthCss: string
   heightPx: number
-  fixedWidthPx?: number
   prefix: string // '' for mobile, 'md:' for desktop
-  defaultPos: { x: number; y: number }
+  defaultAnchor: { x: number; y: number }
 }) {
-  const [pos, setPos] = useState(defaultPos) // object-position %, 0..100
-  const [s, setS] = useState(1)
+  const [anchor, setAnchor] = useState(defaultAnchor) // %, 0..100
+  const [z, setZ] = useState(1)
   const frameRef = useRef<HTMLDivElement | null>(null)
-  const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null)
-
-  // Pannable overflow (screen px) on each axis at the current zoom.
-  const overflow = () => {
-    const W = fixedWidthPx ?? frameRef.current?.getBoundingClientRect().width ?? 640
-    const H = heightPx
-    const fa = W / H
-    const coverW = fa >= IMG_ASPECT ? W : H * IMG_ASPECT
-    const coverH = fa >= IMG_ASPECT ? W / IMG_ASPECT : H
-    return { Ox: Math.max(0, coverW * s - W), Oy: Math.max(0, coverH * s - H) }
-  }
+  const drag = useRef<{ x: number; y: number; ax: number; ay: number } | null>(null)
 
   const onPointerDown = (e: React.PointerEvent) => {
     e.preventDefault()
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-    drag.current = { x: e.clientX, y: e.clientY, px: pos.x, py: pos.y }
+    drag.current = { x: e.clientX, y: e.clientY, ax: anchor.x, ay: anchor.y }
   }
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!drag.current) return
-    const { Ox, Oy } = overflow()
-    const dx = e.clientX - drag.current.x
-    const dy = e.clientY - drag.current.y
-    // Grab-and-move feel: dragging down reveals the top (lower object-position).
-    const nx = Ox > 0 ? clampNum(drag.current.px - (dx / Ox) * 100, 0, 100) : drag.current.px
-    const ny = Oy > 0 ? clampNum(drag.current.py - (dy / Oy) * 100, 0, 100) : drag.current.py
-    setPos({ x: nx, y: ny })
+    if (!drag.current || !frameRef.current) return
+    const rect = frameRef.current.getBoundingClientRect()
+    // Grab-and-move: drag down reveals the top (anchor moves toward 0).
+    const dax = -((e.clientX - drag.current.x) / rect.width) * 100
+    const day = -((e.clientY - drag.current.y) / rect.height) * 100
+    setAnchor({ x: clamp01(drag.current.ax + dax), y: clamp01(drag.current.ay + day) })
   }
   const onPointerUp = () => {
     drag.current = null
@@ -79,17 +67,17 @@ function Positioner({
     if (!el) return
     const handler = (e: WheelEvent) => {
       e.preventDefault()
-      setS((prev) => clampScale(prev * (1 - e.deltaY * 0.0015)))
+      setZ((prev) => clampScale(prev * (1 - e.deltaY * 0.0015)))
     }
     el.addEventListener('wheel', handler, { passive: false })
     return () => el.removeEventListener('wheel', handler)
   }, [])
 
-  const px = pos.x.toFixed(1)
-  const py = pos.y.toFixed(1)
-  const ss = s.toFixed(3)
-  const fragment = `${prefix}object-[${px}%_${py}%] ${prefix}[transform:scale(${ss})]`
-  const readable = `object-position: ${px}% ${py}%  ·  zoom ${ss}`
+  const ax = anchor.x.toFixed(1)
+  const ay = anchor.y.toFixed(1)
+  const zz = z.toFixed(3)
+  const fragment = `${prefix}object-[${ax}%_${ay}%] ${prefix}[transform:scale(${zz})] ${prefix}[transform-origin:${ax}%_${ay}%]`
+  const readable = `anchor ${ax}% ${ay}%  ·  zoom ${zz}`
 
   const imgStyle: React.CSSProperties = {
     position: 'absolute',
@@ -97,9 +85,9 @@ function Positioner({
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    objectPosition: `${pos.x}% ${pos.y}%`,
-    transform: `scale(${s})`,
-    transformOrigin: 'center center',
+    objectPosition: `${anchor.x}% ${anchor.y}%`,
+    transform: `scale(${z})`,
+    transformOrigin: `${anchor.x}% ${anchor.y}%`,
     userSelect: 'none',
     pointerEvents: 'none',
   }
@@ -108,9 +96,9 @@ function Positioner({
     <div style={{ marginBottom: '2rem' }}>
       <div style={{ marginBottom: '0.5rem', color: '#555', fontSize: '0.85rem' }}>{label}</div>
       <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
-        <button onClick={() => setS((v) => clampScale(v + 0.1))} style={btn}>＋ zoom</button>
-        <button onClick={() => setS((v) => clampScale(v - 0.1))} style={btn}>－ zoom</button>
-        <button onClick={() => { setPos(defaultPos); setS(1) }} style={btn}>reset</button>
+        <button onClick={() => setZ((v) => clampScale(v + 0.1))} style={btn}>＋ zoom</button>
+        <button onClick={() => setZ((v) => clampScale(v - 0.1))} style={btn}>－ zoom</button>
+        <button onClick={() => { setAnchor(defaultAnchor); setZ(1) }} style={btn}>reset</button>
         <code style={{ background: '#1a1a1a', color: '#7CFC9B', padding: '0.4rem 0.6rem', borderRadius: 6 }}>{readable}</code>
         <button
           onClick={() => navigator.clipboard?.writeText(fragment)}
@@ -147,10 +135,11 @@ export default function PoseDebugPage() {
       <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#1a1a1a' }}>
         Posé tile positioner
       </h1>
-      <p style={{ color: '#555', marginBottom: '1.5rem', maxWidth: 720 }}>
-        Drag to choose which slice of the photo shows (it&apos;s locked inside the photo — no white
-        edges possible). Scroll or use +/− to zoom. Frame the desktop and mobile tiles independently,
-        then hit Copy on each and paste both fragments back to me.
+      <p style={{ color: '#555', marginBottom: '1.5rem', maxWidth: 740 }}>
+        Drag to set the anchor (which part of the photo to feature). Scroll or use +/− to zoom — the
+        zoom stays pinned to wherever you dragged, so drag to the bottom edge and zoom in and the
+        bottom stays put. No white edges are possible. Frame desktop and mobile separately, then hit
+        Copy on each and paste both fragments back to me.
       </p>
 
       <Positioner
@@ -159,16 +148,15 @@ export default function PoseDebugPage() {
         widthCss="50vw"
         heightPx={DESKTOP_H}
         prefix="md:"
-        defaultPos={{ x: 50, y: 100 }}
+        defaultAnchor={{ x: 50, y: 100 }}
       />
       <Positioner
         label="Mobile (aspect 100/70)"
         outline="#4a9b6e"
         widthCss={`${MOBILE_W}px`}
         heightPx={MOBILE_H}
-        fixedWidthPx={MOBILE_W}
         prefix=""
-        defaultPos={{ x: 50, y: 60 }}
+        defaultAnchor={{ x: 50, y: 60 }}
       />
     </div>
   )

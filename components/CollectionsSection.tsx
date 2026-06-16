@@ -171,8 +171,9 @@ export default function CollectionsSection() {
                           fill
                           className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''} ${
                             collection.id === 'pose'
-                              ? // Slice via object-position; base = mobile, md: = desktop. Set in /pose-debug.
-                                'object-[50%_60%] [transform:scale(1)] md:object-[50%_100%] md:[transform:scale(1)]'
+                              ? // Anchor-tied framing (object-position + scale + matching origin).
+                                // Base = mobile, md: = desktop. Set in /pose-debug.
+                                'object-[50%_60%] [transform:scale(1)] [transform-origin:50%_60%] md:object-[50%_100%] md:[transform:scale(1)] md:[transform-origin:50%_100%]'
                               : ''
                           }`}
                           style={flipImage ? { objectPosition: '65% center' } : undefined}
