@@ -173,7 +173,7 @@ export default function CollectionsSection() {
                             collection.id === 'pose'
                               ? // Anchor-tied framing (object-position + scale + matching origin).
                                 // Base = mobile, md: = desktop. Set in /pose-debug.
-                                'object-[50%_60%] [transform:scale(1)] [transform-origin:50%_60%] md:object-[50%_100%] md:[transform:scale(1)] md:[transform-origin:50%_100%]'
+                                'object-[50.0%_90.6%] [transform:scale(1.692)] [transform-origin:50.0%_90.6%] md:object-[49.9%_84.6%] md:[transform:scale(1.484)] md:[transform-origin:49.9%_84.6%]'
                               : ''
                           }`}
                           style={flipImage ? { objectPosition: '65% center' } : undefined}
