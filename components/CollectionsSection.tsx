@@ -172,7 +172,7 @@ export default function CollectionsSection() {
                           className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''}`}
                           style={
                             collection.id === 'pose'
-                              ? { transform: 'scale(1.15)', transformOrigin: '50% 60%' }
+                              ? { transform: 'scale(1.15)', transformOrigin: '50% 85%' }
                               : flipImage
                                 ? { objectPosition: '65% center' }
                                 : undefined
