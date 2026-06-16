@@ -169,14 +169,13 @@ export default function CollectionsSection() {
                           src={collection.image}
                           alt={collection.imageAlt}
                           fill
-                          className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''}`}
-                          style={
+                          className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''} ${
                             collection.id === 'pose'
-                              ? { transform: 'translate(0%, 0%) scale(1.15)', transformOrigin: 'center center' }
-                              : flipImage
-                                ? { objectPosition: '65% center' }
-                                : undefined
-                          }
+                              ? // Mobile framing (base) + desktop framing (md:); set via /pose-debug.
+                                '[transform-origin:center] [transform:translate(0%,0%)_scale(1.15)] md:[transform:translate(0%,0%)_scale(1.15)]'
+                              : ''
+                          }`}
+                          style={flipImage ? { objectPosition: '65% center' } : undefined}
                           quality={collection.id === 'pose' ? 90 : 75}
                           sizes={collection.id === 'pose' ? '100vw' : '(max-width: 768px) 100vw, 50vw'}
                         />
