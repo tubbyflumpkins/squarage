@@ -28,7 +28,7 @@ const collections: Collection[] = [
     title: 'Posé',
     subtitle: 'Chairs',
     description: 'The Mateo chair, three ways. Sculptural plywood seating handcrafted in Los Angeles.',
-    image: '/images/pose/pose-hero-bridge.jpg',
+    image: '/images/pose/pose-homepage.png',
     imageAlt: 'Posé Collection — Sculptural plywood chairs handcrafted in Los Angeles',
     href: '/collections/pose',
     bgColor: 'bg-squarage-yellow',
@@ -172,7 +172,7 @@ export default function CollectionsSection() {
                           className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''}`}
                           style={
                             collection.id === 'pose'
-                              ? { transform: 'scale(1.7)', transformOrigin: '50% 100%' }
+                              ? { transform: 'scale(1.15)', transformOrigin: '50% 60%' }
                               : flipImage
                                 ? { objectPosition: '65% center' }
                                 : undefined
