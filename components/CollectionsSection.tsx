@@ -171,7 +171,8 @@ export default function CollectionsSection() {
                           fill
                           className={`object-cover ${flipImage ? '-scale-x-100 md:scale-x-100' : ''} ${collection.id === 'pose' ? 'scale-[1.7] -translate-y-[40%] translate-x-[1%]' : ''}`}
                           style={flipImage ? { objectPosition: '65% center' } : undefined}
-                          sizes="(max-width: 768px) 100vw, 50vw"
+                          quality={collection.id === 'pose' ? 90 : 75}
+                          sizes={collection.id === 'pose' ? '100vw' : '(max-width: 768px) 100vw, 50vw'}
                         />
                       </div>
 
