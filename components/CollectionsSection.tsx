@@ -178,7 +178,10 @@ export default function CollectionsSection() {
                           }`}
                           style={flipImage ? { objectPosition: '65% center' } : undefined}
                           quality={collection.id === 'pose' ? 90 : 75}
-                          sizes={collection.id === 'pose' ? '100vw' : '(max-width: 768px) 100vw, 50vw'}
+                          // Each tile image is full-width on mobile, half-width on desktop
+                          // (md:w-1/2). Posé previously requested 100vw, over-fetching a
+                          // full-width variant on desktop; align it with the other tiles.
+                          sizes="(max-width: 768px) 100vw, 50vw"
                         />
                       </div>
 
