@@ -160,7 +160,14 @@ export default function CollectionsSection() {
                 <div className="w-full">
                   <div className={`grid grid-cols-1 md:flex ${reverseRow ? 'md:flex-row-reverse' : ''} items-stretch`}>
                     {/* Image side */}
-                    <div className="relative aspect-[100/70] md:aspect-auto md:h-[500px] md:w-1/2">
+                    {/* w-full is required on mobile: this aspect-ratio box is a grid
+                        item whose children are ALL absolutely positioned (image wrapper
+                        + blob), so it has no in-flow content. Without an explicit width,
+                        Safari/WebKit shrink-wraps it to width:0 → height:0 and the whole
+                        tile collapses (Chromium stretches it, hiding the bug). The
+                        overflow-hidden that used to mask this was moved to the inner
+                        wrapper in 0e9aad7. Do not remove w-full. */}
+                    <div className="relative aspect-[100/70] w-full md:aspect-auto md:h-[500px] md:w-1/2">
                       {/* Inner wrapper clips the scaled image without clipping
                           the mobile title blob below, which intentionally
                           overhangs into the yellow banner. */}
