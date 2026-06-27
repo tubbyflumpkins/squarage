@@ -82,7 +82,6 @@ export async function preloadForPage(pathname: string) {
   // Tiled collection - preload all tiled product images
   if (pathname === '/collections/tiled') {
     images.push(
-      '/images/collection-tiled.jpg',
       // Harper variants
       '/images/products/harper/product_3_main_angle.jpg',
       '/images/products/harper/product_3_green_corrected_v3.jpg',

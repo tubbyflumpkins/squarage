@@ -78,7 +78,7 @@ await fetchAndCacheShopifyProducts()
 #### Collection Pages (`/collections/tiled`)
 ```javascript
 // Collection hero image
-'/images/collection-tiled.jpg'
+'/images/collection-tiled-v2.jpg'
 
 // All product variants for the collection
 '/images/products/harper/product_3_*.jpg'

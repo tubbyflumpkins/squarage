@@ -45,7 +45,7 @@ export default function AboutSection() {
           <div className="relative">
             <div className="aspect-[4/5] relative overflow-hidden bg-gray-100">
               <Image
-                src="/images/aboutus.jpg"
+                src="/images/aboutus-v2.jpg"
                 alt="Squarage Studio Workshop"
                 fill
                 className="object-cover object-center"
