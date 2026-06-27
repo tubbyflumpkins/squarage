@@ -63,13 +63,15 @@ Handles Shopify-specific images:
 
 #### Homepage (`/`)
 ```javascript
-// Local images preloaded immediately
-'/images/hero-2-processed.jpg'
-'/images/IMG_0961.jpg'
-'/images/collection-tiled.jpg'
-'/images/collection-warped.jpg'
+// NO local images are preloaded on the homepage.
+// Every homepage image (hero, collection tiles, about) renders through the Next.js
+// image optimizer (/_next/image). The preloader loads RAW originals via `new Image()`,
+// which bypasses the optimizer — preloading them here force-decoded ~230 MB of
+// full-resolution images and exhausted iOS Safari's RAM-proportional decoded-image
+// budget on 4 GB iPhones, blanking the collection tiles. The raw URLs also never matched
+// the optimized /_next/image URLs the page renders, so it was pure waste. Removed.
 
-// Shopify products fetched for later use
+// Shopify products are still fetched for later use (data only, no image decoding)
 await fetchAndCacheShopifyProducts()
 ```
 

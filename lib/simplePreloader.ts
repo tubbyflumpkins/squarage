@@ -70,25 +70,17 @@ export async function preloadForPage(pathname: string) {
   
   const images: string[] = []
   
-  // Homepage - preload hero images and collection images
-  if (pathname === '/') {
-    images.push(
-      '/images/home_hero.png',
-      '/images/home_hero_mobile.jpeg',
-      '/images/IMG_0961.jpg',
-      '/images/IMG_1286.jpg',
-      '/images/IMG_6122.jpeg',
-      '/images/product_5_main_angle_blue.jpg',
-      '/images/product_6_main_angle_3d.jpg',
-      '/images/collection-tiled.jpg',
-      '/images/warped_side.jpg',
-      '/images/collection-chairs.jpg',
-      '/images/collection-objects.jpg'
-    )
-  }
-  
+  // Homepage: intentionally no local-image preloads.
+  // Every homepage image renders through the Next.js image optimizer (/_next/image),
+  // so preloading the RAW originals here (img.src = '/images/...') bypassed the optimizer
+  // and force-decoded ~230 MB of full-resolution images. That exhausted iOS Safari's
+  // RAM-proportional decoded-image budget on 4 GB iPhones, causing WebKit to drop the
+  // collection-tile decodes (blank tiles) while 6 GB devices and emulators were unaffected.
+  // The raw URLs also never matched the optimized /_next/image URLs the page renders, so
+  // this preloading provided zero benefit. See PRELOADING.md.
+
   // Tiled collection - preload all tiled product images
-  else if (pathname === '/collections/tiled') {
+  if (pathname === '/collections/tiled') {
     images.push(
       '/images/collection-tiled.jpg',
       // Harper variants
