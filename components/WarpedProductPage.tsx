@@ -14,69 +14,13 @@ import StickyAddToCart from '@/components/StickyAddToCart'
 import ProductDetailsAccordion from '@/components/ProductDetailsAccordion'
 import ProductTrustBadges from '@/components/ProductTrustBadges'
 import { CreditCardIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
+import { formatPrice } from '@/lib/formatPrice'
+import { useStickyCartVisibility } from '@/lib/useStickyCartVisibility'
+import { SerializedProduct } from '@/lib/productTypes'
 
 // Import Swiper styles
 import 'swiper/css'
 import 'swiper/css/navigation'
-
-interface SerializedProduct {
-  id: string
-  title: string
-  handle: string
-  description: string
-  descriptionHtml: string
-  availableForSale: boolean
-  createdAt: string
-  updatedAt: string
-  productType: string
-  vendor: string
-  tags: string[]
-  options: Array<{
-    id: string
-    name: string
-    values: string[]
-  }>
-  variants: Array<{
-    id: string
-    title: string
-    availableForSale: boolean
-    price: {
-      amount: string
-      currencyCode: string
-    }
-    compareAtPrice: {
-      amount: string
-      currencyCode: string
-    } | null
-    selectedOptions: Array<{
-      name: string
-      value: string
-    }>
-    image: {
-      id: string
-      src: string
-      altText: string
-    } | null
-  }>
-  images: Array<{
-    id: string
-    src: string
-    altText: string
-    width: number
-    height: number
-  }>
-  metafields?: Array<{
-    id: string
-    namespace: string
-    key: string
-    value: string
-    type: string
-  }>
-  collections?: Array<{
-    handle: string
-    title: string
-  }>
-}
 
 interface WarpedProductPageProps {
   product: SerializedProduct
@@ -91,10 +35,10 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [activeIndex, setActiveIndex] = useState(0)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [showStickyCart, setShowStickyCart] = useState(false)
   const [isZoomed, setIsZoomed] = useState(false)
   const [zoomOrigin, setZoomOrigin] = useState('50% 50%')
   const addToCartRef = useRef<HTMLDivElement>(null)
+  const showStickyCart = useStickyCartVisibility(addToCartRef)
   
   // Use cart context
   const { addToCart } = useCart()
@@ -238,16 +182,6 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     }
   }, [selectedFinish, selectedSize, product.variants, availableSizes])
 
-  // Format price
-  const formatPrice = (price: string, currencyCode: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currencyCode,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(parseFloat(price))
-  }
-
   // Get metafield value - check multiple namespaces
   const getMetafieldValue = (namespace: string, key: string): string => {
     // Try the specified namespace first
@@ -292,19 +226,6 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
     return textureMapping[finishName] || ''
   }
 
-  // Handle scroll for sticky cart
-  useEffect(() => {
-    const handleScroll = () => {
-      if (addToCartRef.current) {
-        const rect = addToCartRef.current.getBoundingClientRect()
-        setShowStickyCart(rect.bottom < 0)
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-  
   // Reset active index when finish or size changes
   useEffect(() => {
     setActiveIndex(0)

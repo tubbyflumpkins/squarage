@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import { ShoppingBagIcon } from '@heroicons/react/24/outline'
+import { formatPrice } from '@/lib/formatPrice'
 
 interface StickyAddToCartProps {
   product: {
@@ -30,15 +31,6 @@ export default function StickyAddToCart({
   isVisible 
 }: StickyAddToCartProps) {
   const [isAdding, setIsAdding] = useState(false)
-
-  const formatPrice = (price: string, currencyCode: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currencyCode,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(parseFloat(price))
-  }
 
   const handleAddToCart = async () => {
     setIsAdding(true)

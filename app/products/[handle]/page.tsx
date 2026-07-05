@@ -5,6 +5,7 @@ import WarpedProductPage from '@/components/WarpedProductPage'
 import MateoProductPage from '@/components/MateoProductPage'
 import { shopifyApi } from '@/lib/shopify'
 import StructuredData, { generateProductSchema, generateBreadcrumbSchema } from '@/components/StructuredData'
+import { SerializedProduct } from '@/lib/productTypes'
 import { cache } from 'react'
 
 // This route stays fully dynamic (SSR per request): MateoProductPage reads
@@ -87,7 +88,7 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
     const isMateoProduct = handle === 'mateo-chair'
 
     // Serialize the product data to plain object for client component
-  const serializedProduct = {
+  const serializedProduct: SerializedProduct = {
     id: String(product.id),
     title: String(product.title),
     handle: String(product.handle),

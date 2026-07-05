@@ -5,6 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/context/CartContext'
 import { preloadImages, isImageCached } from '@/lib/simplePreloader'
+import { formatPrice } from '@/lib/formatPrice'
+import { useStickyCartVisibility } from '@/lib/useStickyCartVisibility'
+import { SerializedProduct } from '@/lib/productTypes'
 import FastProductImage from '@/components/FastProductImage'
 import ProductFAQ from '@/components/ProductFAQ'
 import ShippingEstimator from '@/components/ShippingEstimator'
@@ -12,65 +15,6 @@ import StickyAddToCart from '@/components/StickyAddToCart'
 import ProductDetailsAccordion from '@/components/ProductDetailsAccordion'
 import ProductTrustBadges from '@/components/ProductTrustBadges'
 import { CreditCardIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
-
-interface SerializedProduct {
-  id: string
-  title: string
-  handle: string
-  description: string
-  descriptionHtml: string
-  availableForSale: boolean
-  createdAt: string
-  updatedAt: string
-  productType: string
-  vendor: string
-  tags: string[]
-  options: Array<{
-    id: string
-    name: string
-    values: string[]
-  }>
-  variants: Array<{
-    id: string
-    title: string
-    availableForSale: boolean
-    price: {
-      amount: string
-      currencyCode: string
-    }
-    compareAtPrice: {
-      amount: string
-      currencyCode: string
-    } | null
-    selectedOptions: Array<{
-      name: string
-      value: string
-    }>
-    image: {
-      id: string
-      src: string
-      altText: string
-    } | null
-  }>
-  images: Array<{
-    id: string
-    src: string
-    altText: string
-    width: number
-    height: number
-  }>
-  metafields?: Array<{
-    id: string
-    namespace: string
-    key: string
-    value: string
-    type: string
-  }>
-  collections?: Array<{
-    handle: string
-    title: string
-  }>
-}
 
 interface ProductPageProps {
   product: SerializedProduct
@@ -82,10 +26,10 @@ export default function ProductPage({ product }: ProductPageProps) {
   const [selectedSize, setSelectedSize] = useState<string>('')
   const [imagesPreloaded, setImagesPreloaded] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
-  const [showStickyCart, setShowStickyCart] = useState(false)
   const [isZoomed, setIsZoomed] = useState(false)
   const [zoomOrigin, setZoomOrigin] = useState('50% 50%')
   const addToCartRef = useRef<HTMLDivElement>(null)
+  const showStickyCart = useStickyCartVisibility(addToCartRef)
   
   // Use cart context
   const { addToCart } = useCart()
@@ -93,16 +37,6 @@ export default function ProductPage({ product }: ProductPageProps) {
   // Get the selected variant
   const selectedVariant = product.variants?.[selectedVariantIndex]
   
-  // Format price
-  const formatPrice = (price: string, currencyCode: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currencyCode,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(parseFloat(price))
-  }
-
   // Get color options from variants (all available since made to order)
   const unsortedColorOptions = useMemo(() => {
     // Check if product has separate color option
@@ -350,19 +284,6 @@ export default function ProductPage({ product }: ProductPageProps) {
     
     return colorStyles[colorName] || 'border-squarage-green bg-green-50'
   }
-
-  // Handle scroll for sticky cart
-  useEffect(() => {
-    const handleScroll = () => {
-      if (addToCartRef.current) {
-        const rect = addToCartRef.current.getBoundingClientRect()
-        setShowStickyCart(rect.bottom < 0)
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // Set the correct default variant index on component mount
   useEffect(() => {

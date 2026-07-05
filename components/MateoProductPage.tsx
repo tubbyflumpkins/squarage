@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CreditCardIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 import { useCart } from '@/context/CartContext';
+import { formatPrice } from '@/lib/formatPrice';
+import { useStickyCartVisibility } from '@/lib/useStickyCartVisibility';
+import { SerializedProduct } from '@/lib/productTypes';
 import ProductFAQ from '@/components/ProductFAQ';
 import ShippingEstimator from '@/components/ShippingEstimator';
 import StickyAddToCart from '@/components/StickyAddToCart';
@@ -20,33 +23,6 @@ const RenderedChairView = dynamic(() => import('@/components/chair/RenderedChair
   ssr: false,
   loading: () => null,
 });
-
-interface SerializedProduct {
-  id: string;
-  title: string;
-  handle: string;
-  description: string;
-  descriptionHtml: string;
-  availableForSale: boolean;
-  createdAt: string;
-  updatedAt: string;
-  productType: string;
-  vendor: string;
-  tags: string[];
-  options: Array<{ id: string; name: string; values: string[] }>;
-  variants: Array<{
-    id: string;
-    title: string;
-    availableForSale: boolean;
-    price: { amount: string; currencyCode: string };
-    compareAtPrice: { amount: string; currencyCode: string } | null;
-    selectedOptions: Array<{ name: string; value: string }>;
-    image: { id: string; src: string; altText: string } | null;
-  }>;
-  images: Array<{ id: string; src: string; altText: string; width: number; height: number }>;
-  metafields?: Array<{ id: string; namespace: string; key: string; value: string; type: string }>;
-  collections?: Array<{ handle: string; title: string }>;
-}
 
 interface MateoProductPageProps {
   product: SerializedProduct;
@@ -65,15 +41,6 @@ const GALLERY_IMAGES: Array<{ src: string; alt: string }> = [
   { src: '/images/pose/gallery/gallery-3.jpg', alt: 'Green Mateo Posé chair on grass' },
   { src: '/images/pose/gallery/gallery-4.jpg', alt: 'Blue Tabouret and green Posé Mateo chairs side by side' },
 ];
-
-function formatPrice(price: string, currencyCode: string): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currencyCode,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(parseFloat(price));
-}
 
 // Locate the Shopify variant matching (style, color). Tolerant of common
 // option-name spellings ("Style"/"Variant"/"Type" and "Color"/"Colour"/"Finish")
@@ -120,8 +87,8 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   const [selectedStyle, setSelectedStyle] = useState<PoseVariantId>(initialStyle);
   const [selectedColorHex, setSelectedColorHex] = useState<string>(initialColor);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [showStickyCart, setShowStickyCart] = useState(false);
   const addToCartRef = useRef<HTMLDivElement>(null);
+  const showStickyCart = useStickyCartVisibility(addToCartRef);
 
   const morphedParams = useChairMorph(selectedStyle, 2000);
 
@@ -131,17 +98,6 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
     () => findMateoVariant(product, selectedStyleName, selectedColorName),
     [product, selectedStyleName, selectedColorName],
   );
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (addToCartRef.current) {
-        const rect = addToCartRef.current.getBoundingClientRect();
-        setShowStickyCart(rect.bottom < 0);
-      }
-    };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   const handleAddToCart = async () => {
     if (!selectedVariant || isAddingToCart) return;
