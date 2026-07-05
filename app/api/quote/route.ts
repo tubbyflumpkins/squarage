@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
 import { z } from 'zod'
+import { sendStudioMail, escapeHtml, isSmtpConfigured, rateLimit, clientIp } from '@/lib/email'
 
 // Use z.coerce for numeric/boolean fields to handle production builds
 // where values may arrive as strings instead of their original types
@@ -16,66 +16,61 @@ const quoteSchema = z.object({
   message: z.string().max(5000).optional().default(''),
   specs: z.object({
     shelfType: z.enum(['flat', 'corner']),
-    width: z.coerce.number(),
-    height: z.coerce.number(),
-    depth: z.coerce.number(),
-    length: z.coerce.number(),
-    shelfCount: z.coerce.number(),
-    columnCount: z.coerce.number(),
+    width: z.coerce.number().min(0).max(1000),
+    height: z.coerce.number().min(0).max(1000),
+    depth: z.coerce.number().min(0).max(1000),
+    length: z.coerce.number().min(0).max(1000),
+    shelfCount: z.coerce.number().min(0).max(200),
+    columnCount: z.coerce.number().min(0).max(200),
     roundLeft: coerceBoolean.optional(),
     roundRight: coerceBoolean.optional(),
-    finish: z.string(),
+    finish: z.string().max(60),
     amplitude: z.coerce.number(),
     shelfOffset: z.coerce.number(),
     columnOffset: z.coerce.number(),
     columnAngle: z.coerce.number().optional(),
-    estimatedPrice: z.coerce.number(),
+    estimatedPrice: z.coerce.number().min(0).max(1_000_000),
   }),
-  savedDesignJson: z.string(),
+  savedDesignJson: z.string().max(100_000),
 })
 
 export async function POST(request: NextRequest) {
   try {
+    // Best-effort rate limit (see lib/email.ts). Complement with Vercel WAF.
+    if (!rateLimit(`quote:${clientIp(request.headers)}`)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait a moment and try again.' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
     const validationResult = quoteSchema.safeParse(body)
 
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid form data', details: validationResult.error.issues },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid form data' }, { status: 400 })
     }
 
     const { designName, customerName, email, message, specs, savedDesignJson } = validationResult.data
 
-    const sanitized = {
+    if (!isSmtpConfigured()) {
+      console.error('Missing required environment variables: SMTP_USER, SMTP_PASS')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    }
+
+    const data = {
       designName: designName.trim(),
       customerName: customerName.trim(),
       email: email.trim().toLowerCase(),
       message: message.trim(),
     }
-
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.error('Missing required environment variables: SMTP_USER, SMTP_PASS')
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      )
+    const safe = {
+      designName: escapeHtml(data.designName),
+      customerName: escapeHtml(data.customerName),
+      email: escapeHtml(data.email),
+      message: escapeHtml(data.message),
+      savedDesignJson: escapeHtml(savedDesignJson),
     }
-
-    const recipientEmail = process.env.CONTACT_EMAIL || process.env.SMTP_USER
-
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.zoho.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    })
-
-    await transporter.verify()
 
     const specRows = [
       ['Type', specs.shelfType === 'corner' ? 'Corner Unit' : 'Standard (Flat)'],
@@ -90,20 +85,20 @@ export async function POST(request: NextRequest) {
       ['Amplitude', specs.amplitude.toFixed(2)],
       ['Shelf Offset', String(specs.shelfOffset)],
       ['Column Offset', String(specs.columnOffset)],
-      ...(specs.columnAngle !== undefined ? [['Column Angle', `${specs.columnAngle.toFixed(1)}\u00B0`]] : []),
+      ...(specs.columnAngle !== undefined ? [['Column Angle', `${specs.columnAngle.toFixed(1)}°`]] : []),
     ]
 
-    const emailSubject = `Warped Shelf Quote: "${sanitized.designName}" - from ${sanitized.customerName}`
+    const emailSubject = `Warped Shelf Quote: "${data.designName}" - from ${data.customerName}`
 
     const emailText = `
 Warped Shelf Quote Request
 ==========================
 
-Customer: ${sanitized.customerName}
-Email: ${sanitized.email}
-${sanitized.message ? `Message: ${sanitized.message}` : ''}
+Customer: ${data.customerName}
+Email: ${data.email}
+${data.message ? `Message: ${data.message}` : ''}
 
-Design: "${sanitized.designName}"
+Design: "${data.designName}"
 
 Specs:
 ${specRows.map(([k, v]) => `  ${k}: ${v}`).join('\n')}
@@ -120,8 +115,8 @@ ${new Date().toLocaleString()}
 
     const specRowsHtml = specRows.map(([k, v]) =>
       `<tr>
-        <td style="padding: 6px 0; color: #333333; opacity: 0.6; font-size: 14px; border-bottom: 1px dashed #e0ddd8;">${k}</td>
-        <td style="padding: 6px 0; color: #333333; font-size: 14px; font-weight: 500; text-align: right; border-bottom: 1px dashed #e0ddd8;">${v}</td>
+        <td style="padding: 6px 0; color: #333333; opacity: 0.6; font-size: 14px; border-bottom: 1px dashed #e0ddd8;">${escapeHtml(String(k))}</td>
+        <td style="padding: 6px 0; color: #333333; font-size: 14px; font-weight: 500; text-align: right; border-bottom: 1px dashed #e0ddd8;">${escapeHtml(String(v))}</td>
       </tr>`
     ).join('')
 
@@ -142,7 +137,7 @@ ${new Date().toLocaleString()}
     <div style="background-color: #ffffff; margin-top: 24px; padding: 28px 24px; border: 1px solid #e8e4df;">
 
       <!-- Design Name -->
-      <h2 style="margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #333333;">${sanitized.designName}</h2>
+      <h2 style="margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #333333;">${safe.designName}</h2>
       <p style="margin: 0 0 20px; font-size: 13px; color: #333333; opacity: 0.5;">${specs.shelfType === 'corner' ? 'Corner Unit' : 'Standard'} &middot; ${specs.width}&quot; &times; ${specs.height}&quot; &times; ${specs.depth}&quot;</p>
 
       <!-- Specs -->
@@ -164,12 +159,12 @@ ${new Date().toLocaleString()}
     <!-- Customer Info -->
     <div style="background-color: #ffffff; margin-top: 12px; padding: 20px 24px; border: 1px solid #e8e4df;">
       <p style="margin: 0 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #333333; opacity: 0.4;">Customer</p>
-      <p style="margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #333333;">${sanitized.customerName}</p>
-      <p style="margin: 0; font-size: 14px;"><a href="mailto:${sanitized.email}" style="color: #F04E23; text-decoration: none;">${sanitized.email}</a></p>
-      ${sanitized.message ? `
+      <p style="margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #333333;">${safe.customerName}</p>
+      <p style="margin: 0; font-size: 14px;"><a href="mailto:${safe.email}" style="color: #F04E23; text-decoration: none;">${safe.email}</a></p>
+      ${data.message ? `
       <div style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e0ddd8;">
         <p style="margin: 0 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #333333; opacity: 0.4;">Message</p>
-        <p style="margin: 0; font-size: 14px; color: #333333; white-space: pre-wrap; font-style: italic;">${sanitized.message}</p>
+        <p style="margin: 0; font-size: 14px; color: #333333; white-space: pre-wrap; font-style: italic;">${safe.message}</p>
       </div>` : ''}
     </div>
 
@@ -177,7 +172,7 @@ ${new Date().toLocaleString()}
     <div style="background-color: #ffffff; margin-top: 12px; padding: 20px 24px; border: 1px solid #e8e4df;">
       <p style="margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #333333; opacity: 0.4;">Saved Design Data</p>
       <p style="margin: 0 0 8px; font-size: 12px; color: #333333; opacity: 0.5;">Paste into localStorage key &ldquo;squarage-saved-designs&rdquo; to load in designer</p>
-      <pre style="background-color: #fffaf4; padding: 14px; overflow-x: auto; font-size: 11px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; color: #333333; border: 1px solid #e8e4df; margin: 0;">${savedDesignJson}</pre>
+      <pre style="background-color: #fffaf4; padding: 14px; overflow-x: auto; font-size: 11px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; color: #333333; border: 1px solid #e8e4df; margin: 0;">${safe.savedDesignJson}</pre>
     </div>
 
     <!-- Footer -->
@@ -190,37 +185,17 @@ ${new Date().toLocaleString()}
 </html>
 `
 
-    const mailOptions = {
-      from: `"Squarage Studio" <${process.env.SMTP_USER}>`,
-      to: recipientEmail,
-      replyTo: sanitized.email,
+    const info = await sendStudioMail({
       subject: emailSubject,
       text: emailText,
       html: emailHtml,
-    }
-
-    const info = await transporter.sendMail(mailOptions)
+      replyTo: data.email,
+    })
     console.log('Quote email sent:', info.messageId)
 
     return NextResponse.json({ success: true, message: 'Quote request sent successfully' })
   } catch (error) {
     console.error('Error sending quote email:', error)
-
-    if (error instanceof Error) {
-      if (error.message.includes('Invalid login')) {
-        return NextResponse.json(
-          { error: 'Email configuration error' },
-          { status: 500 }
-        )
-      }
-      if (error.message.includes('connection')) {
-        return NextResponse.json(
-          { error: 'Email service connection error' },
-          { status: 500 }
-        )
-      }
-    }
-
     return NextResponse.json(
       { error: 'Failed to send quote request. Please try again later.' },
       { status: 500 }

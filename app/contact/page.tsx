@@ -11,6 +11,8 @@ const contactSchema = z.object({
   email: z.string().email('Please enter a valid email address').max(255, 'Email is too long'),
   subject: z.string().min(5, 'Subject must be at least 5 characters').max(200, 'Subject is too long'),
   message: z.string().min(10, 'Message must be at least 10 characters').max(5000, 'Message is too long'),
+  // Honeypot — hidden from real users; bots that fill it are silently dropped
+  company: z.string().optional(),
 })
 
 type ContactFormData = z.infer<typeof contactSchema>
@@ -190,6 +192,15 @@ export default function ContactPage() {
         {/* Contact Form */}
         <div className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit(onSubmit, onInvalidSubmit)} className="space-y-6">
+            {/* Honeypot: off-screen, skipped by keyboard/autofill, ignored by humans */}
+            <input
+              {...register('company')}
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+            />
             <FormField
               name="name"
               label="Name"
