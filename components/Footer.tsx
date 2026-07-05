@@ -59,6 +59,11 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/collections/pose" className="text-lg md:text-xl opacity-90 hover:opacity-100 transition-opacity">
+                    Posé Collection
+                  </Link>
+                </li>
+                <li>
                   <Link href="/products" className="text-lg md:text-xl opacity-90 hover:opacity-100 transition-opacity">
                     All Products
                   </Link>
