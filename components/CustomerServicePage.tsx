@@ -38,7 +38,7 @@ export default function CustomerServicePage() {
           // Add fallback content
           loadedDocs.push({
             ...doc,
-            content: `<h2>${doc.title}</h2><p>Content is being updated. Please check back soon or contact us at info@squarage.com for assistance.</p>`
+            content: `<h2>${doc.title}</h2><p>Content is being updated. Please check back soon or contact us at hello@squarage.com for assistance.</p>`
           })
         }
       }
