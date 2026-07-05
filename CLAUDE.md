@@ -18,7 +18,7 @@
 - **Zustand** for saved designs store; React Context for cart, image cache, cookie consent, email capture
 - **react-hook-form** + **zod** for form validation
 - **Nodemailer** (Zoho SMTP) for contact/quote emails
-- **Swiper.js** for hero slideshow
+- **Swiper.js** for Warped product page carousels
 - **Google Analytics** with cookie consent gating
 
 ## Routes
@@ -26,9 +26,9 @@
 ### Pages
 | Route | Description |
 |-------|-------------|
-| `/` | Homepage (hero slideshow, collections, about, custom CTA) |
-| `/products` | All products grid |
-| `/products/[handle]` | Individual product page (Tiled collection) |
+| `/` | Homepage (static hero, collections, about, custom CTA) |
+| `/products` | All products grid (server-rendered catalog, ISR 10 min) |
+| `/products/[handle]` | Individual product page (ProductPage / WarpedProductPage / MateoProductPage by collection) |
 | `/collections/tiled` | Tiled collection |
 | `/collections/warped` | Warped collection |
 | `/collections/warped/designer` | 3D shelf designer |
@@ -51,7 +51,7 @@
 app/                          # Next.js App Router
   layout.tsx                  # Root layout (SimplePreloader, providers, nav, footer)
   page.tsx                    # Homepage
-  products/                   # Product pages
+  products/                   # Product pages (page.tsx = server component fetching Shopify catalog, revalidate 600)
   collections/                # Collection pages (tiled, warped, pose)
     pose/                     # Posé chair collection (real-time 3D hero + variant stack)
   custom/                     # Custom project flow
@@ -63,12 +63,14 @@ app/                          # Next.js App Router
 components/                   # React components
   Navigation.tsx              # Main nav + mobile menu
   Footer.tsx                  # Site footer
-  HeroSlideshow.tsx           # Homepage hero
+  HeroStatic.tsx              # Homepage hero (static image + sr-only h1)
   CollectionsSection.tsx      # Homepage collections grid
   AboutSection.tsx            # Homepage about
   CustomProjectSection.tsx    # "Want a Custom Piece?" CTA
   ProductPage.tsx             # Tiled product detail page
   WarpedProductPage.tsx       # Warped product detail page
+  MateoProductPage.tsx        # Mateo chair product page (/products/mateo-chair)
+  ProductsPageClient.tsx      # /products client UI (receives server-fetched catalog as props)
   ProductGrid.tsx             # Product listing grid
   FastProductImage.tsx        # Instant-render cached product images
   SimplePreloader.tsx         # Route-based image preloader (in layout)
@@ -132,7 +134,7 @@ stores/
 - **Green**: `squarage-green`
 - **Blue**: `squarage-blue`
 - **Black text**: `squarage-black`
-- **Typography**: Neue Haas Grotesk (self-hosted, all weights, `font-display: swap`)
+- **Typography**: Neue Haas Grotesk (self-hosted woff2 with ttf fallback, all weights, `font-display: swap`; Roman/Medium/Bold preloaded in layout.tsx)
 - **Font class**: `font-neue-haas`
 
 ## Active Systems
@@ -162,6 +164,14 @@ stores/
 - To rebuild: `npm run wasm:build` (release) or `npm run wasm:dev` (debug) — requires Rust + wasm-pack
 - Consumers (`FlatShelfMeshes`, `CornerShelfMeshes`, `page.tsx`) must gate on `useShelfWasm()` before calling WASM functions
 - WASM exports: `generate_flat_mesh_data`, `generate_corner_mesh_data`, `generate_svg_projection`, `compute_derived_params`
+
+### SEO
+- **Canonical host is `https://www.squarage.com`** — every absolute URL (canonicals, OG urls, sitemap, robots, JSON-LD) must use www; apex redirects to it
+- `app/sitemap.ts` (static routes + Shopify products) and `app/robots.ts` — **add new routes to the sitemap**
+- Social share images are dedicated 1200×630 crops in `public/images/og/` — never point OG tags at full-res page images
+- Every route needs metadata: server pages export `metadata`; `'use client'` pages use a sibling `layout.tsx` (see `/products`, `/custom`, `/contact`)
+- JSON-LD in `components/StructuredData.tsx` (Organization/LocalBusiness/WebSite site-wide; Product + BreadcrumbList on product detail pages)
+- Product pages must keep exactly one `<h1>` (responsive duplicates are `<p>` styled identically)
 
 ### Cookie Consent
 - CookieConsentContext manages consent state
