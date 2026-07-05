@@ -29,10 +29,9 @@ export default function SimplePreloader() {
         if (productHandle) {
           await preloadShopifyProduct(productHandle)
         }
-      } else if (pathname === '/products') {
-        // On products page, fetch all Shopify products
-        await fetchAndCacheShopifyProducts()
       }
+      // /products needs no fetch here: the server component provides the
+      // catalog and ProductsPageClient seeds the cache from it.
     }
     
     // Wait for page to be interactive

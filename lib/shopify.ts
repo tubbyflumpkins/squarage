@@ -99,6 +99,22 @@ export interface ShopifyCollection {
 // Export native Shopify types for use in components
 export type { Product, Collection, ProductVariant, Image, CheckoutLineItem }
 
+// Share one in-flight fetchAllWithProducts across concurrent collection
+// lookups (e.g. /products requests tiled+warped+pose in parallel — that was
+// three full collection-graph downloads for one page).
+let collectionsInflight: Promise<Collection[]> | null = null
+
+function fetchAllCollections(): Promise<Collection[]> {
+  if (!collectionsInflight) {
+    collectionsInflight = client.collection
+      .fetchAllWithProducts({ first: 250, productsFirst: 250 })
+      .finally(() => {
+        collectionsInflight = null
+      }) as Promise<Collection[]>
+  }
+  return collectionsInflight
+}
+
 // True when real (non-placeholder) Shopify credentials are configured.
 export function isShopifyConfigured(): boolean {
   const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
@@ -305,7 +321,7 @@ export const shopifyApi = {
         return null
       }
 
-      const collections = await client.collection.fetchAllWithProducts({ first: 250, productsFirst: 250 })
+      const collections = await fetchAllCollections()
       const collection = collections.find((c: any) => c.handle === handle)
       return collection || null
     } catch (error) {
@@ -322,7 +338,7 @@ export const shopifyApi = {
         return []
       }
 
-      const collections = await client.collection.fetchAllWithProducts({ first: 250, productsFirst: 250 })
+      const collections = await fetchAllCollections()
       return collections
     } catch (error) {
       console.error('Error fetching collections:', error)

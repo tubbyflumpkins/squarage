@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { shopifyApi, Product } from '@/lib/shopify'
+import { seedShopifyProductCache } from '@/lib/shopifyPreloader'
 import ProductGrid from '@/components/ProductGrid'
 
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc'
@@ -40,7 +41,12 @@ export default function ProductsPageClient({
   useEffect(() => {
     // Catalog is normally server-rendered via app/products/page.tsx; this
     // fetch only runs as a fallback when no initial data was provided
-    if (initialProducts.length > 0) return
+    if (initialProducts.length > 0) {
+      // Reuse the server-fetched catalog for the hover-preload system
+      // instead of letting it re-download everything client-side
+      seedShopifyProductCache(initialProducts)
+      return
+    }
 
     const fetchProducts = async () => {
       try {

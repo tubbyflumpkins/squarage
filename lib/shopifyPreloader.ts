@@ -23,41 +23,16 @@ export async function fetchAndCacheShopifyProducts() {
     console.log('⚡ Shopify products already loaded')
     return window.__shopifyProducts
   }
-  
+
   console.log('🛍️ Fetching Shopify products...')
-  
+
   try {
     const products = await shopifyApi.getProducts()
     window.__shopifyProducts = products
     window.__shopifyLoaded = true
-    
+
     console.log(`✅ Loaded ${products.length} Shopify products`)
-    
-    // Extract all image URLs
-    const imageUrls: string[] = []
-    
-    products.forEach((product: any) => {
-      // Add main images
-      if (product.images) {
-        product.images.forEach((img: any) => {
-          if (img.src) {
-            imageUrls.push(img.src)
-          }
-        })
-      }
-      
-      // Add variant images
-      if (product.variants) {
-        product.variants.forEach((variant: any) => {
-          if (variant.image?.src) {
-            imageUrls.push(variant.image.src)
-          }
-        })
-      }
-    })
-    
-    console.log(`📸 Found ${imageUrls.length} Shopify images to preload`)
-    
+
     return products
   } catch (error) {
     console.error('❌ Failed to fetch Shopify products:', error)
@@ -65,9 +40,24 @@ export async function fetchAndCacheShopifyProducts() {
   }
 }
 
+// Seed the cache with server-fetched catalog data (e.g. /products passes its
+// props here) so hover-preloading works without a duplicate client fetch.
+export function seedShopifyProductCache(products: any[]) {
+  if (typeof window === 'undefined' || window.__shopifyLoaded || products.length === 0) return
+  window.__shopifyProducts = products
+  window.__shopifyLoaded = true
+  console.log(`⚡ Seeded Shopify cache with ${products.length} server-fetched products`)
+}
+
+// The cache array starts as [] (truthy), so callers must check the loaded
+// flag — `window.__shopifyProducts || fetch...` would never fetch.
+async function getCachedProducts(): Promise<any[]> {
+  return window.__shopifyLoaded ? window.__shopifyProducts : fetchAndCacheShopifyProducts()
+}
+
 // Preload Shopify images for a specific collection
 export async function preloadShopifyCollection(collectionHandle: string) {
-  const products = window.__shopifyProducts || await fetchAndCacheShopifyProducts()
+  const products = await getCachedProducts()
   
   const collectionImages: string[] = []
   
@@ -105,7 +95,7 @@ export async function preloadShopifyCollection(collectionHandle: string) {
 
 // Preload Shopify images for a specific product
 export async function preloadShopifyProduct(productHandle: string) {
-  const products = window.__shopifyProducts || await fetchAndCacheShopifyProducts()
+  const products = await getCachedProducts()
   
   const product = products.find((p: any) => p.handle === productHandle)
   
