@@ -705,9 +705,9 @@ export default function ProductPage({ product }: ProductPageProps) {
               <div className="w-1/2 pl-8">
                 {/* Title and Collection */}
                 <div className="mb-8">
-                  <h1 className="text-5xl font-bold font-neue-haas text-squarage-black mb-2">
+                  <p className="text-5xl font-bold font-neue-haas text-squarage-black mb-2">
                     {product.title}
-                  </h1>
+                  </p>
                   <Link 
                     href={`/collections/${collection.handle}`}
                     className="text-lg font-neue-haas text-gray-600 hover:text-squarage-orange transition-colors inline-flex items-center"

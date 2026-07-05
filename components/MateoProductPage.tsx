@@ -385,12 +385,12 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               </div>
               <div className="w-1/2 pl-8">
                 <div className="mb-8">
-                  <h1
+                  <p
                     className="leading-tight mb-2"
                     style={{ fontSize: 'clamp(3rem, 4.5vw, 5rem)' }}
                   >
                     {titleNode}
-                  </h1>
+                  </p>
                   <Link
                     href={`/collections/${collection.handle}`}
                     className="text-lg font-neue-haas text-gray-600 hover:text-squarage-orange transition-colors inline-flex items-center"
