@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import LayoutWrapper from '@/components/LayoutWrapper'
-import { ImageCacheProvider } from '@/context/ImageCacheContext'
 import { CartProvider } from '@/context/CartContext'
 import { CookieConsentProvider } from '@/context/CookieConsentContext'
 import { EmailCaptureProvider } from '@/context/EmailCaptureContext'
@@ -98,13 +97,11 @@ export default function RootLayout({
       <body className="bg-cream font-neue-haas-text">
         <CookieConsentProvider>
           <EmailCaptureProvider>
-            <ImageCacheProvider>
-              <CartProvider>
-                <LayoutWrapper>
-                  {children}
-                </LayoutWrapper>
-              </CartProvider>
-            </ImageCacheProvider>
+            <CartProvider>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </CartProvider>
             <CookieConsentWrapper />
             <EmailCapturePopup />
           </EmailCaptureProvider>

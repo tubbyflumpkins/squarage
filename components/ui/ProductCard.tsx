@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Product } from 'shopify-buy'
-import { useImageCache } from '@/context/ImageCacheContext'
+import { preloadProductImages, isProductPreloaded } from '@/lib/productImagePreload'
 import { useState, useRef, useCallback, useMemo } from 'react'
 import FastProductImage from '@/components/FastProductImage'
 
@@ -13,7 +13,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, className = '', selectedFinish }: ProductCardProps) {
-  const { preloadProductImages, isProductPreloaded } = useImageCache()
   const [hovering, setHovering] = useState(false)
   const [hoverImageIndex, setHoverImageIndex] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -83,7 +82,7 @@ export default function ProductCard({ product, className = '', selectedFinish }:
     intervalRef.current = setInterval(() => {
       setHoverImageIndex(prev => (prev + 1) % allImages.length)
     }, 1200)
-  }, [isHoverDevice, allImages.length, isProductPreloaded, preloadProductImages, product])
+  }, [isHoverDevice, allImages.length, product])
 
   const handleMouseLeave = useCallback(() => {
     setHovering(false)

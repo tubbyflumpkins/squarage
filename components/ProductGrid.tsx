@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { Product } from 'shopify-buy'
 import ProductCard from '@/components/ui/ProductCard'
-import { useImageCache } from '@/context/ImageCacheContext'
+import { preloadProductImages, isProductPreloaded } from '@/lib/productImagePreload'
 
 interface ProductGridProps {
   products: Product[]
@@ -22,8 +22,6 @@ export default function ProductGrid({
   children,
   selectedFinish,
 }: ProductGridProps) {
-  const { preloadProductImages, isProductPreloaded, getCacheStats } = useImageCache()
-
   // Enhanced preloading: Start immediately when products are available
   useEffect(() => {
     if (!products.length) return
@@ -61,14 +59,14 @@ export default function ProductGrid({
           })
 
           await Promise.allSettled(backgroundPreloadPromises)
-          console.log('All products preloaded. Cache stats:', getCacheStats())
+          console.log('All products preloaded')
         })
       }
     }
 
     // Start preloading immediately when products are available
     preloadAllProducts()
-  }, [products, preloadProductImages, isProductPreloaded, getCacheStats])
+  }, [products])
   
   if (loading) {
     return (
