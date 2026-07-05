@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Product } from 'shopify-buy'
 import { preloadProductImages, isProductPreloaded } from '@/lib/productImagePreload'
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import FastProductImage from '@/components/FastProductImage'
 
 interface ProductCardProps {
@@ -15,7 +15,16 @@ interface ProductCardProps {
 export default function ProductCard({ product, className = '', selectedFinish }: ProductCardProps) {
   const [hovering, setHovering] = useState(false)
   const [hoverImageIndex, setHoverImageIndex] = useState(0)
+  // Hover-capable (desktop) only, set after mount: the crossfade stack decodes
+  // every product image at full resolution, which blows iOS Safari's per-tab
+  // decoded-image budget and white-screens the page on phones — where the
+  // hover slideshow can never run anyway. SSR renders without the stack.
+  const [enableHoverStack, setEnableHoverStack] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    setEnableHoverStack(window.matchMedia('(hover: hover)').matches)
+  }, [])
 
   // Format price
   const formatPrice = (price: string, currencyCode: string) => {
@@ -66,13 +75,15 @@ export default function ProductCard({ product, className = '', selectedFinish }:
   }, [])
 
   const handleMouseEnter = useCallback(() => {
+    // Hover-only feature: iOS fires mouseenter on first tap, so bail before
+    // preloading full-resolution variants a touch device will never show
+    if (!isHoverDevice()) return
+
     // Preload product images on hover if not already done
     if (!isProductPreloaded(product.id.toString())) {
       preloadProductImages(product)
     }
 
-    // Only start hover slideshow on desktop devices with hover capability
-    if (!isHoverDevice()) return
     if (allImages.length <= 1) return
 
     setHovering(true)
@@ -117,8 +128,8 @@ export default function ProductCard({ product, className = '', selectedFinish }:
               className="w-full h-auto object-contain"
             />
 
-            {/* Stacked images for crossfade on hover */}
-            {allImages.length > 1 && allImages.map((img, index) => (
+            {/* Stacked images for crossfade on hover — desktop only */}
+            {enableHoverStack && allImages.length > 1 && allImages.map((img, index) => (
               <div
                 key={img.src}
                 className="absolute inset-0 transition-opacity duration-500 ease-in-out"

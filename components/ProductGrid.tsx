@@ -26,6 +26,11 @@ export default function ProductGrid({
   useEffect(() => {
     if (!products.length) return
 
+    // Grid preloading exists to make the desktop hover crossfade instant.
+    // Touch devices never hover, and decoding the full-resolution catalog
+    // exhausts iOS Safari's decoded-image budget (white-screen tab kill).
+    if (!window.matchMedia('(hover: hover)').matches) return
+
     const preloadAllProducts = async () => {
       console.log('Starting enhanced image preloading for', products.length, 'products')
       
