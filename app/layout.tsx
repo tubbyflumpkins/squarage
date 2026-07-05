@@ -25,14 +25,6 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon.png', type: 'image/png', sizes: '512x512' },
-    ],
-    apple: '/apple-icon.png',
-    shortcut: '/favicon.ico',
-  },
   openGraph: {
     title: 'Squarage Studio - Made in Los Angeles',
     description: 'Functional Art & Design - LA-based design studio creating custom furniture and design pieces. Shop unique tables, shelves, and chairs handcrafted in Los Angeles.',
@@ -67,9 +59,6 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
-  },
-  alternates: {
-    canonical: 'https://www.squarage.com',
   },
 }
 
