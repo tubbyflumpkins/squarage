@@ -40,3 +40,4 @@ next-env.d.ts
 
 # Rust/WASM build artifacts
 wasm-shelf-geometry/target/
+.playwright-mcp/
