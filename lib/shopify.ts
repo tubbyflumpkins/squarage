@@ -370,9 +370,7 @@ export const shopifyApi = {
       return checkout
     } catch (error) {
       console.error('Error creating checkout:', error)
-      console.error('Shopify Domain:', process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN)
-      console.error('Has Access Token:', !!process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN)
-      return null
+      throw error
     }
   },
 
@@ -383,7 +381,7 @@ export const shopifyApi = {
       return checkout
     } catch (error) {
       console.error('Error adding to checkout:', error)
-      return null
+      throw error
     }
   },
 
@@ -394,7 +392,7 @@ export const shopifyApi = {
       return checkout
     } catch (error) {
       console.error('Error updating checkout:', error)
-      return null
+      throw error
     }
   },
 
@@ -405,7 +403,7 @@ export const shopifyApi = {
       return checkout
     } catch (error) {
       console.error('Error removing from checkout:', error)
-      return null
+      throw error
     }
   },
 

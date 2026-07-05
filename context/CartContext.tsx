@@ -81,12 +81,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, isOpen: true }
     
     case 'CLOSE_CART':
-      return { ...state, isOpen: false }
-    
+      return { ...state, isOpen: false, error: null }
+
     case 'SET_CHECKOUT':
-      // Debug: log the checkout payload to understand structure
-      console.log('SET_CHECKOUT payload:', action.payload)
-      console.log('Line items:', action.payload.lineItems)
       return {
         ...state,
         checkoutId: action.payload.id,
@@ -140,102 +137,99 @@ export function CartProvider({ children }: CartProviderProps) {
   }, [])
 
   // Initialize or retrieve checkout
-  const initializeCheckout = async () => {
+  const initializeCheckout = async (): Promise<string | null> => {
     dispatch({ type: 'SET_LOADING', payload: true })
-    
+
     try {
-      // Check if we have a stored checkout ID
+      // Reuse a stored checkout when one is still valid
       const storedCheckoutId = localStorage.getItem('shopify_checkout_id')
-      
+
       if (storedCheckoutId) {
-        console.log('Attempting to retrieve existing checkout:', storedCheckoutId)
-        // Try to fetch existing checkout
         const existingCheckout = await shopifyApi.getCheckout(storedCheckoutId)
-        
+
         if (existingCheckout) {
-          console.log('Successfully retrieved existing checkout with items:', existingCheckout.lineItems?.length || 0)
           dispatch({ type: 'SET_CHECKOUT', payload: existingCheckout })
-          return
-        } else {
-          console.log('Existing checkout not found or expired, creating new one')
-          // Clear invalid checkout ID
-          localStorage.removeItem('shopify_checkout_id')
+          return existingCheckout.id
         }
+        // Stale/expired id — drop it and create a fresh checkout
+        localStorage.removeItem('shopify_checkout_id')
       }
-      
-      // Create new checkout if no valid existing one
-      console.log('Creating new checkout')
+
       const checkout = await shopifyApi.createCheckout()
       if (checkout) {
         dispatch({ type: 'SET_CHECKOUT', payload: checkout })
         localStorage.setItem('shopify_checkout_id', checkout.id)
-        console.log('New checkout created:', checkout.id)
+        return checkout.id
       }
+
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize cart' })
+      return null
     } catch (error) {
       console.error('Error initializing checkout:', error)
       dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize cart' })
+      return null
     }
   }
 
   // Add item to cart
   const addToCart = async (variantId: string, quantity: number = 1) => {
-    if (!state.checkoutId) return
-    
+    dispatch({ type: 'SET_ERROR', payload: null })
     dispatch({ type: 'SET_LOADING', payload: true })
-    
+
     try {
-      const lineItemsToAdd = [{
-        variantId,
-        quantity,
-      }]
-      
-      const checkout = await shopifyApi.addToCheckout(state.checkoutId, lineItemsToAdd)
-      if (checkout) {
-        dispatch({ type: 'SET_CHECKOUT', payload: checkout })
-        dispatch({ type: 'OPEN_CART' })
+      // Recover if the mount-time checkout creation failed (null checkoutId)
+      let checkoutId = state.checkoutId
+      if (!checkoutId) {
+        checkoutId = await initializeCheckout()
       }
+      if (!checkoutId) {
+        dispatch({ type: 'SET_ERROR', payload: 'Could not start a cart. Please try again.' })
+        dispatch({ type: 'OPEN_CART' })
+        return
+      }
+
+      const checkout = await shopifyApi.addToCheckout(checkoutId, [{ variantId, quantity }])
+      if (!checkout) throw new Error('No checkout returned from addToCheckout')
+      dispatch({ type: 'SET_CHECKOUT', payload: checkout })
+      dispatch({ type: 'OPEN_CART' })
     } catch (error) {
       console.error('Error adding to cart:', error)
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to add item to cart' })
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to add item to cart. Please try again.' })
+      dispatch({ type: 'OPEN_CART' })
     }
   }
 
   // Update cart item quantity
   const updateCartItem = async (lineItemId: string, quantity: number) => {
     if (!state.checkoutId) return
-    
+
+    dispatch({ type: 'SET_ERROR', payload: null })
     dispatch({ type: 'SET_LOADING', payload: true })
-    
+
     try {
-      const lineItemsToUpdate = [{
-        id: lineItemId,
-        quantity,
-      }]
-      
-      const checkout = await shopifyApi.updateCheckout(state.checkoutId, lineItemsToUpdate)
-      if (checkout) {
-        dispatch({ type: 'SET_CHECKOUT', payload: checkout })
-      }
+      const checkout = await shopifyApi.updateCheckout(state.checkoutId, [{ id: lineItemId, quantity }])
+      if (!checkout) throw new Error('No checkout returned from updateCheckout')
+      dispatch({ type: 'SET_CHECKOUT', payload: checkout })
     } catch (error) {
       console.error('Error updating cart item:', error)
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update cart item' })
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to update cart item. Please try again.' })
     }
   }
 
   // Remove item from cart
   const removeFromCart = async (lineItemId: string) => {
     if (!state.checkoutId) return
-    
+
+    dispatch({ type: 'SET_ERROR', payload: null })
     dispatch({ type: 'SET_LOADING', payload: true })
-    
+
     try {
       const checkout = await shopifyApi.removeFromCheckout(state.checkoutId, [lineItemId])
-      if (checkout) {
-        dispatch({ type: 'SET_CHECKOUT', payload: checkout })
-      }
+      if (!checkout) throw new Error('No checkout returned from removeFromCheckout')
+      dispatch({ type: 'SET_CHECKOUT', payload: checkout })
     } catch (error) {
       console.error('Error removing from cart:', error)
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to remove item from cart' })
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to remove item from cart. Please try again.' })
     }
   }
 

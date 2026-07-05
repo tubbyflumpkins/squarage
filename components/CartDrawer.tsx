@@ -1,7 +1,6 @@
 'use client'
 
 import { useCart } from '@/context/CartContext'
-import Image from 'next/image'
 import CartItem from './CartItem'
 import CartSummary from './CartSummary'
 import { useRouter } from 'next/navigation'
@@ -41,9 +40,16 @@ export default function CartDrawer() {
             <h2 className="text-4xl md:text-5xl font-bold font-neue-haas text-white text-center">Your Cart</h2>
           </div>
           
+          {/* Error banner */}
+          {state.error && (
+            <div className="mx-6 mb-2 p-3 bg-squarage-red text-white text-center font-neue-haas font-medium" role="alert">
+              {state.error}
+            </div>
+          )}
+
           {/* Cart Contents */}
           <div className="flex-1 overflow-y-auto">
-            {state.lineItems.length === 0 ? (
+            {state.lineItems.length === 0 && !state.error ? (
               <div className="flex flex-col items-center justify-center h-full p-6">
                 <p className="text-2xl font-neue-haas text-white mb-6 text-center">Weird... theres nothing here?</p>
                 <button
