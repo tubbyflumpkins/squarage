@@ -70,6 +70,27 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link
+          rel="preload"
+          href="/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayRoman.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayMediu.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/neue-haas-grotesk-display-pro-cufonfonts/NeueHaasDisplayBold.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <StructuredData data={organizationSchema} />
         <StructuredData data={localBusinessSchema} />
         <StructuredData data={websiteSchema} />
