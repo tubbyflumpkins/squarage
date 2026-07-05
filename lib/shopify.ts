@@ -99,24 +99,13 @@ export interface ShopifyCollection {
 // Export native Shopify types for use in components
 export type { Product, Collection, ProductVariant, Image, CheckoutLineItem }
 
-// Export function for fetching all products (for preloader)
-export async function fetchAllProducts(): Promise<Product[]> {
-  try {
-    // Check if Shopify is configured
-    const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
-    const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
-    
-    if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
-      console.log('Shopify credentials not configured for preloader')
-      return []
-    }
-    
-    const products = await client.product.fetchAll(250)
-    return products
-  } catch (error) {
-    console.error('Error fetching products for preloader:', error)
-    return []
-  }
+// True when real (non-placeholder) Shopify credentials are configured.
+export function isShopifyConfigured(): boolean {
+  const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
+  const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
+  return Boolean(
+    domain && domain !== 'placeholder.myshopify.com' && token && token !== 'placeholder-token'
+  )
 }
 
 // Shopify API functions
@@ -124,15 +113,11 @@ export const shopifyApi = {
   // Fetch all products
   async getProducts(): Promise<Product[]> {
     try {
-      // Check if Shopify is configured
-      const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
-      const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
-      
-      if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
+      if (!isShopifyConfigured()) {
         console.log('Shopify credentials not configured')
         return []
       }
-      
+
       const products = await client.product.fetchAll(250)
       return products
     } catch (error) {
@@ -315,15 +300,11 @@ export const shopifyApi = {
   // Fetch collection by handle
   async getCollectionByHandle(handle: string): Promise<Collection | null> {
     try {
-      // Check if Shopify is configured
-      const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
-      const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
-      
-      if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
+      if (!isShopifyConfigured()) {
         console.log('Shopify credentials not configured')
         return null
       }
-      
+
       const collections = await client.collection.fetchAllWithProducts({ first: 250, productsFirst: 250 })
       const collection = collections.find((c: any) => c.handle === handle)
       return collection || null
@@ -336,15 +317,11 @@ export const shopifyApi = {
   // Fetch all collections
   async getCollections(): Promise<Collection[]> {
     try {
-      // Check if Shopify is configured
-      const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
-      const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
-      
-      if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
+      if (!isShopifyConfigured()) {
         console.log('Shopify credentials not configured')
         return []
       }
-      
+
       const collections = await client.collection.fetchAllWithProducts({ first: 250, productsFirst: 250 })
       return collections
     } catch (error) {
@@ -356,15 +333,11 @@ export const shopifyApi = {
   // Filter products by collection
   async getProductsByCollection(collectionHandle: string): Promise<Product[]> {
     try {
-      // Check if Shopify is configured
-      const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
-      const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN
-      
-      if (!domain || domain === 'placeholder.myshopify.com' || !token || token === 'placeholder-token') {
+      if (!isShopifyConfigured()) {
         console.log('Shopify credentials not configured')
         return []
       }
-      
+
       const collection = await this.getCollectionByHandle(collectionHandle)
       return collection?.products || []
     } catch (error) {
