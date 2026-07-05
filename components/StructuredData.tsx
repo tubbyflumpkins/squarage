@@ -17,6 +17,7 @@ export default function StructuredData({ data }: StructuredDataProps) {
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': 'https://www.squarage.com/#organization',
   name: 'Squarage Studio',
   alternateName: 'Squarage',
   url: 'https://www.squarage.com',
@@ -46,7 +47,6 @@ export const localBusinessSchema = {
   name: 'Squarage Studio',
   description: 'Custom furniture design studio in Los Angeles creating handcrafted tables, shelves, chairs, and functional art pieces.',
   url: 'https://www.squarage.com',
-  telephone: '',
   email: 'hello@squarage.com',
   image: [
     'https://www.squarage.com/images/hero-main.jpg',
@@ -82,14 +82,6 @@ export const websiteSchema = {
   description: 'Functional Art & Design - LA-based design studio',
   publisher: {
     '@id': 'https://www.squarage.com/#organization',
-  },
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: {
-      '@type': 'EntryPoint',
-      urlTemplate: 'https://www.squarage.com/products?search={search_term_string}',
-    },
-    'query-input': 'required name=search_term_string',
   },
 }
 
