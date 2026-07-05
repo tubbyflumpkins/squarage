@@ -17,6 +17,9 @@ export default function CartSummary() {
   
   const handleCheckout = () => {
     if (state.checkoutUrl) {
+      // Hand off to Shopify checkout. Drop the stored id so a returning
+      // customer starts a fresh cart instead of resuming a completed one.
+      localStorage.removeItem('shopify_checkout_id')
       window.location.href = state.checkoutUrl
     }
   }
