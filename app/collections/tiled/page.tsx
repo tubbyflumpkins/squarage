@@ -13,14 +13,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Tiled Collection - Custom Tables',
     description: 'Handcrafted custom tables combining traditional craftsmanship with contemporary design.',
-    images: ['/images/carro/header.jpg'],
+    images: ['/images/og/tiled.jpg'],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Tiled Collection - Custom Tables',
     description: 'Handcrafted custom tables combining traditional craftsmanship with contemporary design.',
-    images: ['/images/carro/header.jpg'],
+    images: ['/images/og/tiled.jpg'],
   },
 }
 

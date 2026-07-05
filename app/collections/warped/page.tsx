@@ -13,14 +13,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Warped Collection - Custom Modular Shelving',
     description: 'Custom modular shelving built to your exact dimensions. Organic curves that fit any space. Handcrafted in Los Angeles.',
-    images: ['/images/collection-shelves.jpg'],
+    images: ['/images/og/warped.jpg'],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Warped Collection - Custom Modular Shelving',
     description: 'Custom modular shelving built to your exact dimensions. Organic curves that fit any space.',
-    images: ['/images/collection-shelves.jpg'],
+    images: ['/images/og/warped.jpg'],
   },
 }
 

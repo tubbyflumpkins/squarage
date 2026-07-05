@@ -8,14 +8,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: '3D Shelf Designer - Design Custom Warped Shelves | Squarage Studio',
     description: 'Design your own custom warped shelf with our free interactive 3D configurator. Choose dimensions, wood finishes, and request a quote.',
-    images: ['/images/collection-warped.jpg'],
+    images: ['/images/og/designer.jpg'],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: '3D Shelf Designer - Design Custom Warped Shelves',
     description: 'Design your own custom warped shelf with our free interactive 3D configurator.',
-    images: ['/images/collection-warped.jpg'],
+    images: ['/images/og/designer.jpg'],
   },
   alternates: {
     canonical: 'https://www.squarage.com/collections/warped/designer',

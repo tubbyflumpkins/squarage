@@ -14,14 +14,14 @@ export const metadata: Metadata = {
     description:
       'The Mateo chair, three ways. Sculptural plywood seating from Squarage Studio.',
     type: 'website',
-    images: ['/images/pose/pose-hero.jpg'],
+    images: ['/images/og/pose.jpg'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Posé Collection — Mateo Chair',
     description:
       'The Mateo chair, three ways. Sculptural plywood seating from Squarage Studio.',
-    images: ['/images/pose/pose-hero.jpg'],
+    images: ['/images/og/pose.jpg'],
   },
 };
 

@@ -10,13 +10,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Contact Us | Squarage Studio',
     description: 'Get in touch for custom furniture inquiries, collaborations, or to visit our Los Angeles workshop.',
-    images: ['/images/hero-main.jpg'],
+    images: ['/images/og/home.jpg'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Contact Us | Squarage Studio',
     description: 'Get in touch for custom furniture inquiries, collaborations, or to visit our Los Angeles workshop.',
-    images: ['/images/hero-main.jpg'],
+    images: ['/images/og/home.jpg'],
   },
 }
 

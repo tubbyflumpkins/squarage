@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: '/images/hero-main.jpg',
+        url: '/images/og/home.jpg',
         width: 1200,
         height: 630,
         alt: 'Squarage Studio - Custom Furniture Made in Los Angeles',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     description: 'Functional Art & Design - LA-based design studio creating custom furniture and design pieces.',
     site: '@squaragestudio',
     creator: '@squaragestudio',
-    images: ['/images/hero-main.jpg'],
+    images: ['/images/og/home.jpg'],
   },
   robots: {
     index: true,

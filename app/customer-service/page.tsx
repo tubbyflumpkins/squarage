@@ -11,13 +11,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Customer Service | Squarage Studio',
     description: 'Shipping, returns, warranty, and FAQ for Squarage Studio custom furniture.',
-    images: ['/images/hero-main.jpg'],
+    images: ['/images/og/home.jpg'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Customer Service | Squarage Studio',
     description: 'Shipping, returns, warranty, and FAQ for Squarage Studio custom furniture.',
-    images: ['/images/hero-main.jpg'],
+    images: ['/images/og/home.jpg'],
   },
 }
 

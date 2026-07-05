@@ -10,13 +10,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Shop Custom Furniture | Squarage Studio',
     description: 'Shop handcrafted custom furniture. Custom-dimension shelving, tables, and design objects — made to order in Los Angeles.',
-    images: ['/images/collection-tables.jpg'],
+    images: ['/images/og/products.jpg'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Shop Custom Furniture',
     description: 'Custom-dimension shelving, tables, and design objects — made to order in Los Angeles.',
-    images: ['/images/collection-tables.jpg'],
+    images: ['/images/og/products.jpg'],
   },
 }
 
