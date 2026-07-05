@@ -94,7 +94,12 @@ components/                   # React components
                                #   CameraOrbitingLight (key light follows camera)
 
 lib/
-  shopify.ts                  # Shopify Buy SDK client + product serialization
+  shopify.ts                  # Shopify Buy SDK client + raw GraphQL fetch; SHOPIFY_API_VERSION constant (bump yearly, used by both paths)
+  email.ts                    # Shared Zoho SMTP transport (pooled, timeouts), HTML escaping, per-instance rate limiting
+  productTypes.ts             # SerializedProduct shape shared by the serializer + all product templates
+  formatPrice.ts              # Shared whole-dollar price formatter
+  useStickyCartVisibility.ts  # Shared sticky add-to-cart scroll hook
+  productImagePreload.ts      # Grid/card image preloading over window.__simpleImageCache
   shelfGeometryWasm.ts        # WASM wrapper — lazy loading, React hook, THREE.js helpers
   wasm-pkg/                   # Compiled WASM output (committed, built from wasm-shelf-geometry/)
   simplePreloader.ts          # Core preloading (preloadImage, preloadImages, isImageCached, preloadForPage)
@@ -118,7 +123,6 @@ wasm-shelf-geometry/            # Rust crate → compiled to WASM
 
 context/
   CartContext.tsx              # Shopping cart state + Shopify checkout
-  ImageCacheContext.tsx        # Image cache context
   CookieConsentContext.tsx     # Cookie consent state
   EmailCaptureContext.tsx      # Email capture state
 
@@ -143,12 +147,16 @@ stores/
 - **SimplePreloader** in layout.tsx preloads images per route
 - **FastProductImage** uses native `<img>` for cached images (<1ms), Next.js Image for uncached
 - **MobileCollectionPreloader** handles mobile collection pages
-- **`window.__simpleImageCache`** is the global cache Set
+- **`window.__simpleImageCache`** is the single global cache Set — ProductGrid/ProductCard preload through `lib/productImagePreload.ts` into it (no React-context cache layer; preload progress must never re-render the tree)
+- `/products` seeds `window.__shopifyProducts` from its server-fetched props (no client catalog re-fetch)
 - See [PRELOADING.md](./PRELOADING.md) for full details
 
 ### E-commerce
-- Shopify Buy SDK for products, collections, and checkout
-- Cart persisted via localStorage (`shopify_checkout_id`)
+- Shopify Buy SDK for products, collections, and checkout (runs on the Cart API under the hood)
+- Storefront API version pinned as `SHOPIFY_API_VERSION` in lib/shopify.ts — used by BOTH the SDK client and the raw GraphQL fetch; bump within Shopify's 12-month support window
+- Catalog fetches request 250 items (SDK silently defaults to 20 — never call fetchAll/fetchAllWithProducts bare)
+- Cart persisted via localStorage (`shopify_checkout_id`); cleared on checkout handoff so completed carts don't resume
+- Cart mutation failures throw from lib/shopify.ts and surface via `state.error` in CartDrawer — don't reintroduce return-null-on-error
 - CartContext wraps the app in layout.tsx
 
 ### Contact & Quote
