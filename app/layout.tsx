@@ -10,14 +10,14 @@ import EmailCapturePopup from '@/components/EmailCapturePopup'
 import StructuredData, { organizationSchema, localBusinessSchema, websiteSchema } from '@/components/StructuredData'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://squarage.com'),
+  metadataBase: new URL('https://www.squarage.com'),
   title: {
     default: 'Squarage Studio - Made in Los Angeles',
     template: '%s | Squarage Studio'
   },
   description: 'Functional Art & Design - LA-based design studio creating custom furniture and design pieces. Shop unique tables, shelves, and chairs handcrafted in Los Angeles.',
   keywords: ['custom furniture Los Angeles', 'handmade tables', 'design studio LA', 'functional art', 'modern furniture', 'custom shelving', 'designer chairs', 'squarage studio', 'made in LA', 'artisan furniture'],
-  authors: [{ name: 'Squarage Studio', url: 'https://squarage.com' }],
+  authors: [{ name: 'Squarage Studio', url: 'https://www.squarage.com' }],
   creator: 'Squarage Studio',
   publisher: 'Squarage Studio',
   formatDetection: {
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Squarage Studio - Made in Los Angeles',
     description: 'Functional Art & Design - LA-based design studio creating custom furniture and design pieces. Shop unique tables, shelves, and chairs handcrafted in Los Angeles.',
-    url: 'https://squarage.com',
+    url: 'https://www.squarage.com',
     siteName: 'Squarage Studio',
     type: 'website',
     locale: 'en_US',
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://squarage.com',
+    canonical: 'https://www.squarage.com',
   },
 }
 

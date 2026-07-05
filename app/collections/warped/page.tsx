@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: 'Custom modular shelving built to your exact dimensions. Warped\'s organic curves fit any space — corners, walls, or freestanding. Choose your size, wood finish, and configuration. Handcrafted in Los Angeles.',
   keywords: ['custom shelving', 'wooden shelves', 'warped wood', 'handcrafted furniture', 'Los Angeles', 'Squarage Studio', 'organic design', 'custom dimension shelving', 'modular shelves', 'shelving for any space', 'made to measure shelves', 'custom size shelf', 'modular wall shelving'],
   alternates: {
-    canonical: 'https://squarage.com/collections/warped',
+    canonical: 'https://www.squarage.com/collections/warped',
   },
   openGraph: {
     title: 'Warped Collection - Custom Modular Shelving',

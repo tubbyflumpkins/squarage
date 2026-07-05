@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     'The Mateo chair, three ways. Sculptural plywood seating from Squarage Studio — handcrafted in Los Angeles.',
   alternates: {
-    canonical: 'https://squarage.com/collections/pose',
+    canonical: 'https://www.squarage.com/collections/pose',
   },
   openGraph: {
     title: 'Posé Collection — Mateo Chair',

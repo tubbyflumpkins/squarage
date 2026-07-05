@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     images: ['/images/collection-warped.jpg'],
   },
   alternates: {
-    canonical: 'https://squarage.com/collections/warped/designer',
+    canonical: 'https://www.squarage.com/collections/warped/designer',
   },
 }
 
@@ -29,11 +29,11 @@ const webApplicationSchema = {
   description: 'Interactive 3D tool for designing custom warped shelves. Choose dimensions, wood finishes, and shelf count, then request a quote.',
   applicationCategory: 'DesignApplication',
   operatingSystem: 'Web',
-  url: 'https://squarage.com/collections/warped/designer',
+  url: 'https://www.squarage.com/collections/warped/designer',
   provider: {
     '@type': 'Organization',
     name: 'Squarage Studio',
-    url: 'https://squarage.com',
+    url: 'https://www.squarage.com',
   },
   offers: {
     '@type': 'Offer',
@@ -43,9 +43,9 @@ const webApplicationSchema = {
 }
 
 const breadcrumbSchema = generateBreadcrumbSchema([
-  { name: 'Home', url: 'https://squarage.com' },
-  { name: 'Warped Collection', url: 'https://squarage.com/collections/warped' },
-  { name: 'Designer', url: 'https://squarage.com/collections/warped/designer' },
+  { name: 'Home', url: 'https://www.squarage.com' },
+  { name: 'Warped Collection', url: 'https://www.squarage.com/collections/warped' },
+  { name: 'Designer', url: 'https://www.squarage.com/collections/warped/designer' },
 ])
 
 export default function DesignerLayout({

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Customer Service',
   description: 'Shipping, returns, warranty, and FAQ for Squarage Studio custom furniture. Handcrafted in Los Angeles with premium materials — learn about our policies and care instructions.',
   alternates: {
-    canonical: 'https://squarage.com/customer-service',
+    canonical: 'https://www.squarage.com/customer-service',
   },
   openGraph: {
     title: 'Customer Service | Squarage Studio',

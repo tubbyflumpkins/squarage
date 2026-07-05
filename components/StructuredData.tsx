@@ -19,8 +19,8 @@ export const organizationSchema = {
   '@type': 'Organization',
   name: 'Squarage Studio',
   alternateName: 'Squarage',
-  url: 'https://squarage.com',
-  logo: 'https://squarage.com/images/logo_main.png',
+  url: 'https://www.squarage.com',
+  logo: 'https://www.squarage.com/images/logo_main.png',
   description: 'Functional Art & Design - LA-based design studio creating custom furniture and design pieces.',
   email: 'hello@squarage.com',
   address: {
@@ -42,15 +42,15 @@ export const organizationSchema = {
 export const localBusinessSchema = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
-  '@id': 'https://squarage.com/#business',
+  '@id': 'https://www.squarage.com/#business',
   name: 'Squarage Studio',
   description: 'Custom furniture design studio in Los Angeles creating handcrafted tables, shelves, chairs, and functional art pieces.',
-  url: 'https://squarage.com',
+  url: 'https://www.squarage.com',
   telephone: '',
   email: 'hello@squarage.com',
   image: [
-    'https://squarage.com/images/hero-main.jpg',
-    'https://squarage.com/images/collection-tables.jpg',
+    'https://www.squarage.com/images/hero-main.jpg',
+    'https://www.squarage.com/images/collection-tables.jpg',
   ],
   address: {
     '@type': 'PostalAddress',
@@ -76,18 +76,18 @@ export const localBusinessSchema = {
 export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  '@id': 'https://squarage.com/#website',
-  url: 'https://squarage.com',
+  '@id': 'https://www.squarage.com/#website',
+  url: 'https://www.squarage.com',
   name: 'Squarage Studio',
   description: 'Functional Art & Design - LA-based design studio',
   publisher: {
-    '@id': 'https://squarage.com/#organization',
+    '@id': 'https://www.squarage.com/#organization',
   },
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://squarage.com/products?search={search_term_string}',
+      urlTemplate: 'https://www.squarage.com/products?search={search_term_string}',
     },
     'query-input': 'required name=search_term_string',
   },

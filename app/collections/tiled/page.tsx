@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: 'Explore our Tiled collection of handcrafted custom dining and coffee tables. Made in Los Angeles with premium materials and traditional craftsmanship.',
   keywords: ['custom tables', 'dining tables', 'coffee tables', 'handcrafted furniture', 'Los Angeles', 'Squarage Studio', 'Tiled'],
   alternates: {
-    canonical: 'https://squarage.com/collections/tiled',
+    canonical: 'https://www.squarage.com/collections/tiled',
   },
   openGraph: {
     title: 'Tiled Collection - Custom Tables',
