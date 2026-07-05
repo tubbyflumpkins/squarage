@@ -5,6 +5,15 @@ import WarpedProductPage from '@/components/WarpedProductPage'
 import MateoProductPage from '@/components/MateoProductPage'
 import { shopifyApi } from '@/lib/shopify'
 import StructuredData, { generateProductSchema, generateBreadcrumbSchema } from '@/components/StructuredData'
+import { cache } from 'react'
+
+// This route stays fully dynamic (SSR per request): MateoProductPage reads
+// useSearchParams() for the Posé ?style= deep links, which bails out of
+// static prerendering. Making it ISR would require a Suspense refactor there.
+
+// Dedupe the Shopify fetch across generateMetadata + the page render within
+// a single request (previously two live GraphQL calls per view).
+const getProduct = cache((handle: string) => shopifyApi.getProductByHandle(handle))
 
 interface ProductPageProps {
   params: Promise<{
@@ -17,7 +26,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { handle } = await params
   
   try {
-    const product = await shopifyApi.getProductByHandle(handle)
+    const product = await getProduct(handle)
     
     if (!product) {
       return {
@@ -62,7 +71,7 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
   const { handle } = await params
   
   try {
-    const product = await shopifyApi.getProductByHandle(handle)
+    const product = await getProduct(handle)
     
     if (!product) {
       notFound()
