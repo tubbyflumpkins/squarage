@@ -423,6 +423,34 @@ export default function EasterEggGame() {
     mouseXRef.current = null
   }
   
+  // Block browser swipe-back navigation while playing. touch-action: none on
+  // the canvas stops page scrolling but NOT the browser's history-swipe
+  // gesture: iOS Safari only backs off when touchstart is preventDefault-ed
+  // via a non-passive listener (React's synthetic touch handlers are passive),
+  // and Android Chrome respects overscroll-behavior-x: none on the root.
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const preventNav = (e: TouchEvent) => e.preventDefault()
+    canvas.addEventListener('touchstart', preventNav, { passive: false })
+    canvas.addEventListener('touchmove', preventNav, { passive: false })
+
+    const html = document.documentElement
+    const body = document.body
+    const prevHtmlOverscroll = html.style.overscrollBehaviorX
+    const prevBodyOverscroll = body.style.overscrollBehaviorX
+    html.style.overscrollBehaviorX = 'none'
+    body.style.overscrollBehaviorX = 'none'
+
+    return () => {
+      canvas.removeEventListener('touchstart', preventNav)
+      canvas.removeEventListener('touchmove', preventNav)
+      html.style.overscrollBehaviorX = prevHtmlOverscroll
+      body.style.overscrollBehaviorX = prevBodyOverscroll
+    }
+  }, [])
+
   // Handle canvas resize
   useEffect(() => {
     const handleResize = () => {
@@ -488,7 +516,7 @@ export default function EasterEggGame() {
       
       {/* Countdown overlay */}
       {gameState === 'countdown' && (
-        <div className="absolute inset-0 flex items-center justify-center z-20">
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
           <div className="text-8xl sm:text-9xl font-bold font-neue-haas text-orange">
             {countdown === 0 ? 'GO!' : countdown}
           </div>
@@ -521,7 +549,7 @@ export default function EasterEggGame() {
       
       {/* Instructions (shown briefly) */}
       {gameState === 'playing' && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-10">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-10 pointer-events-none">
           <p className="text-sm sm:text-base font-neue-haas text-orange opacity-75">
             Move your cart to catch the falling squares!
           </p>
