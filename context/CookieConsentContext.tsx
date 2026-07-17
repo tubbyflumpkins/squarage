@@ -27,7 +27,6 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
   const [hasInteracted, setHasInteracted] = useState(false)
   const [showBanner, setShowBanner] = useState(false)
   const [showModal, setShowModal] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
   // Load consent from localStorage/cookie
   useEffect(() => {
@@ -54,8 +53,6 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       } catch (error) {
         console.error('Error loading consent:', error)
         setShowBanner(true)
-      } finally {
-        setIsLoading(false)
       }
     }
 
@@ -167,10 +164,11 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
     }
   }, [])
 
-  if (isLoading) {
-    return <>{children}</>
-  }
-
+  // Always render the Provider. An early `return <>{children}</>` while
+  // consent loads swaps the tree's structure once loading finishes, which
+  // makes React unmount and remount the ENTIRE app on every page load
+  // (double-firing mount effects like analytics events). Children just see
+  // defaultConsentState until the load effect runs.
   return (
     <CookieConsentContext.Provider
       value={{
