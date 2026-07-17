@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import ConsentAwareAnalytics from './ConsentAwareAnalytics'
 import CookieBanner from './CookieBanner'
 import ManageCookiesModal from './ManageCookiesModal'
+import MetaPixel from './MetaPixel'
 
 export default function CookieConsentWrapper() {
   const [mounted, setMounted] = useState(false)
@@ -20,6 +21,7 @@ export default function CookieConsentWrapper() {
   return (
     <>
       <ConsentAwareAnalytics />
+      <MetaPixel />
       <CookieBanner />
       <ManageCookiesModal />
     </>

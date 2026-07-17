@@ -1,3 +1,9 @@
+// Storage key + version for the persisted consent blob. Written by
+// CookieConsentContext (localStorage + mirror cookie); read client-side by
+// lib/metaPixel.ts and server-side by lib/metaCapi.ts.
+export const CONSENT_STORAGE_KEY = 'squarage_cookie_consent'
+export const CONSENT_VERSION = '1.0'
+
 export interface CookieCategory {
   id: string
   name: string

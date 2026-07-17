@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { ConsentState, defaultConsentState } from '@/lib/cookieCategories'
+import { ConsentState, defaultConsentState, CONSENT_STORAGE_KEY, CONSENT_VERSION } from '@/lib/cookieCategories'
 
 interface CookieConsentContextType {
   consent: ConsentState
@@ -19,8 +19,7 @@ interface CookieConsentContextType {
 
 export const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined)
 
-const CONSENT_COOKIE_NAME = 'squarage_cookie_consent'
-const CONSENT_VERSION = '1.0'
+const CONSENT_COOKIE_NAME = CONSENT_STORAGE_KEY
 const CONSENT_EXPIRY_DAYS = 365
 
 export function CookieConsentProvider({ children }: { children: React.ReactNode }) {

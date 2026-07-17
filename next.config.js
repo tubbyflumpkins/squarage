@@ -20,7 +20,9 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    // Keep console.error so server-side failures (SMTP, Meta CAPI) stay
+    // visible in Vercel logs; strip the rest in production.
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
   },
   headers: async () => {
     return [
