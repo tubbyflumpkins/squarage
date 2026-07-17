@@ -186,6 +186,14 @@ stores/
 - Google Analytics only loads after consent
 - See [COOKIE_CONSENT_DOCUMENTATION.md](./COOKIE_CONSENT_DOCUMENTATION.md)
 
+### Meta Pixel + Conversions API
+- **Gated on `marketing` cookie consent** — pixel never loads, and no CAPI event is sent (client or server), without it. Consent constants (`CONSENT_STORAGE_KEY`/`CONSENT_VERSION`) live in `lib/cookieCategories.ts`
+- `components/MetaPixel.tsx` (mounted in CookieConsentWrapper) loads the pixel after consent and fires PageView per route change
+- **Every event goes out on BOTH channels** — browser `fbq` + Conversions API — sharing one `eventID` so Meta dedupes. Never fire one channel without the other
+- `lib/metaPixel.ts` = client half (`trackMetaEvent`, `useMetaViewContent`); `lib/metaCapi.ts` = server half (Graph API `v25.0` pinned as `META_GRAPH_API_VERSION`, bump like SHOPIFY_API_VERSION); `/api/meta-events` = relay for browser-initiated CAPI events
+- Events: PageView (MetaPixel), ViewContent (product templates), AddToCart (CartContext), InitiateCheckout (CartSummary), Contact + Lead (contact/quote routes send CAPI directly with hashed email; client passes `metaEventId` in the form body)
+- **Purchase is NOT tracked here** — checkout lives on Shopify; connect the pixel in Shopify admin (Facebook & Instagram sales channel) for Purchase events
+
 ### Posé Chair Rendering (R3F, no WASM)
 - Pure-TypeScript parametric chair geometry in `components/chair/ChairVisualizer/geometry.ts` (ported from sister labs project). Generates closed-polygon outlines for sideFrame×2, front/rear crosspieces, seat slats LR + FB, back slats; centered on actual bbox.
 - `components/chair/RenderedChairView/`:
@@ -210,6 +218,9 @@ stores/
 | `SMTP_USER` | Zoho SMTP username |
 | `SMTP_PASS` | Zoho SMTP password |
 | `CONTACT_EMAIL` | Recipient for contact/quote forms |
+| `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel / dataset ID (Events Manager) |
+| `META_CONVERSIONS_API_ACCESS_TOKEN` | Meta Conversions API token (server-side events) |
+| `META_TEST_EVENT_CODE` | Optional — routes CAPI events to Events Manager Test Events; unset in production |
 
 ## Development Commands
 
