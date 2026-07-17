@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { generateMetaEventId, trackMetaBrowserEvent } from '@/lib/metaPixel'
 
 // Contact form validation schema
 const contactSchema = z.object({
@@ -142,16 +143,21 @@ export default function ContactPage() {
     setIsSubmitting(true)
     setSubmitStatus('idle')
 
+    // Shared event id lets Meta dedupe the browser pixel event against the
+    // Conversions API event the route sends (with hashed email) server-side.
+    const metaEventId = generateMetaEventId()
+
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, metaEventId }),
       })
 
       if (response.ok) {
+        trackMetaBrowserEvent('Contact', {}, metaEventId)
         setSubmitStatus('success')
         setShowValidationErrors(false)
         reset()

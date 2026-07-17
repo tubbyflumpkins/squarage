@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { generateMetaEventId, trackMetaBrowserEvent } from '@/lib/metaPixel';
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 
@@ -258,6 +259,10 @@ export default function QuoteFlow({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
+    // Shared event id lets Meta dedupe the browser pixel event against the
+    // Conversions API event the route sends (with hashed email) server-side.
+    const metaEventId = generateMetaEventId();
+    const estimatedPrice = Math.round(price / 50) * 50;
     try {
       const res = await fetch('/api/quote', {
         method: 'POST',
@@ -271,12 +276,18 @@ export default function QuoteFlow({
             shelfType, width, height, depth, length,
             shelfCount, columnCount, roundLeft, roundRight,
             finish, amplitude, shelfOffset, columnOffset,
-            columnAngle, estimatedPrice: Math.round(price / 50) * 50,
+            columnAngle, estimatedPrice,
           },
           savedDesignJson: JSON.stringify(savedDesignObj, null, 2),
+          metaEventId,
         }),
       });
       if (res.ok) {
+        trackMetaBrowserEvent(
+          'Lead',
+          { value: estimatedPrice, currency: 'USD', content_name: 'Warped Shelf Quote' },
+          metaEventId,
+        );
         setSubmitStatus('success');
       } else {
         const errData = await res.json().catch(() => null);

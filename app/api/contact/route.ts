@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { z } from 'zod'
 import { sendStudioMail, escapeHtml, isSmtpConfigured, rateLimit, clientIp } from '@/lib/email'
+import { hasMarketingConsentCookie, sendMetaCapiEvent } from '@/lib/metaCapi'
 
 // Contact form validation schema (server-side)
 const contactSchema = z.object({
@@ -10,6 +12,8 @@ const contactSchema = z.object({
   message: z.string().min(10, 'Message must be at least 10 characters').max(5000, 'Message is too long'),
   // Honeypot — hidden in the UI, must stay empty for real users
   company: z.string().max(0).optional().or(z.string()),
+  // Browser-generated id for Meta Pixel / Conversions API deduplication
+  metaEventId: z.string().regex(/^[\w-]{8,64}$/).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -30,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid form data' }, { status: 400 })
     }
 
-    const { name, email, subject, message, company } = validationResult.data
+    const { name, email, subject, message, company, metaEventId } = validationResult.data
 
     // Honeypot tripped: pretend success so bots don't learn they were caught.
     if (company && company.trim() !== '') {
@@ -112,6 +116,21 @@ ${new Date().toLocaleString()}
       fromName: 'Squarage Studio Contact Form',
     })
     console.log('Email sent successfully:', info.messageId)
+
+    // Meta Conversions API "Contact" event — consent-gated, with hashed email
+    // as a high-quality match key. sendMetaCapiEvent never throws.
+    if (hasMarketingConsentCookie(request)) {
+      const [firstName, ...restName] = data.name.split(/\s+/)
+      await sendMetaCapiEvent({
+        request,
+        eventName: 'Contact',
+        eventId: metaEventId || randomUUID(),
+        eventSourceUrl: request.headers.get('referer') || 'https://www.squarage.com/contact',
+        email: data.email,
+        firstName,
+        lastName: restName.join(' ') || undefined,
+      })
+    }
 
     return NextResponse.json({ success: true, message: 'Email sent successfully' })
   } catch (error) {

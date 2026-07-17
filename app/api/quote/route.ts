@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { z } from 'zod'
 import { sendStudioMail, escapeHtml, isSmtpConfigured, rateLimit, clientIp } from '@/lib/email'
+import { hasMarketingConsentCookie, sendMetaCapiEvent } from '@/lib/metaCapi'
 
 // Use z.coerce for numeric/boolean fields to handle production builds
 // where values may arrive as strings instead of their original types
@@ -32,6 +34,8 @@ const quoteSchema = z.object({
     estimatedPrice: z.coerce.number().min(0).max(1_000_000),
   }),
   savedDesignJson: z.string().max(100_000),
+  // Browser-generated id for Meta Pixel / Conversions API deduplication
+  metaEventId: z.string().regex(/^[\w-]{8,64}$/).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -51,7 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid form data' }, { status: 400 })
     }
 
-    const { designName, customerName, email, message, specs, savedDesignJson } = validationResult.data
+    const { designName, customerName, email, message, specs, savedDesignJson, metaEventId } = validationResult.data
 
     if (!isSmtpConfigured()) {
       console.error('Missing required environment variables: SMTP_USER, SMTP_PASS')
@@ -192,6 +196,26 @@ ${new Date().toLocaleString()}
       replyTo: data.email,
     })
     console.log('Quote email sent:', info.messageId)
+
+    // Meta Conversions API "Lead" event — consent-gated, with hashed email
+    // as a high-quality match key. sendMetaCapiEvent never throws.
+    if (hasMarketingConsentCookie(request)) {
+      const [firstName, ...restName] = data.customerName.split(/\s+/)
+      await sendMetaCapiEvent({
+        request,
+        eventName: 'Lead',
+        eventId: metaEventId || randomUUID(),
+        eventSourceUrl: request.headers.get('referer') || 'https://www.squarage.com/collections/warped/designer',
+        email: data.email,
+        firstName,
+        lastName: restName.join(' ') || undefined,
+        customData: {
+          value: specs.estimatedPrice,
+          currency: 'USD',
+          content_name: 'Warped Shelf Quote',
+        },
+      })
+    }
 
     return NextResponse.json({ success: true, message: 'Quote request sent successfully' })
   } catch (error) {
