@@ -8,6 +8,7 @@ import { preloadImages, isImageCached } from '@/lib/simplePreloader'
 import { formatPrice } from '@/lib/formatPrice'
 import { useStickyCartVisibility } from '@/lib/useStickyCartVisibility'
 import { SerializedProduct } from '@/lib/productTypes'
+import { useMetaViewContent } from '@/lib/metaPixel'
 import FastProductImage from '@/components/FastProductImage'
 import ProductFAQ from '@/components/ProductFAQ'
 import ShippingEstimator from '@/components/ShippingEstimator'
@@ -21,6 +22,7 @@ interface ProductPageProps {
 }
 
 export default function ProductPage({ product }: ProductPageProps) {
+  useMetaViewContent(product)
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
   const [selectedColor, setSelectedColor] = useState<string>('')
   const [selectedSize, setSelectedSize] = useState<string>('')

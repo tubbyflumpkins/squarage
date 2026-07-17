@@ -10,6 +10,7 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatPrice';
 import { useStickyCartVisibility } from '@/lib/useStickyCartVisibility';
 import { SerializedProduct } from '@/lib/productTypes';
+import { useMetaViewContent } from '@/lib/metaPixel';
 import ProductFAQ from '@/components/ProductFAQ';
 import ShippingEstimator from '@/components/ShippingEstimator';
 import StickyAddToCart from '@/components/StickyAddToCart';
@@ -67,6 +68,7 @@ function findMateoVariant(
 }
 
 export default function MateoProductPage({ product }: MateoProductPageProps) {
+  useMetaViewContent(product);
   const searchParams = useSearchParams();
   const { addToCart } = useCart();
 

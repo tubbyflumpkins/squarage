@@ -17,6 +17,7 @@ import { CreditCardIcon, CheckBadgeIcon } from '@heroicons/react/24/outline'
 import { formatPrice } from '@/lib/formatPrice'
 import { useStickyCartVisibility } from '@/lib/useStickyCartVisibility'
 import { SerializedProduct } from '@/lib/productTypes'
+import { useMetaViewContent } from '@/lib/metaPixel'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -30,6 +31,7 @@ interface WarpedProductPageProps {
 const WARPED_FINISHES = ['Birch', 'Oak', 'Walnut']
 
 export default function WarpedProductPage({ product }: WarpedProductPageProps) {
+  useMetaViewContent(product)
   const [mainSwiper, setMainSwiper] = useState<SwiperType | null>(null)
   const [selectedFinish, setSelectedFinish] = useState<string>('Birch')
   const [selectedSize, setSelectedSize] = useState<string>('')

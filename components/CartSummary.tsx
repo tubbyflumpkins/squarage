@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/context/CartContext'
+import { trackMetaEvent } from '@/lib/metaPixel'
 
 export default function CartSummary() {
   const { state } = useCart()
@@ -17,6 +18,24 @@ export default function CartSummary() {
   
   const handleCheckout = () => {
     if (state.checkoutUrl) {
+      // Meta Pixel InitiateCheckout — the CAPI half uses a keepalive fetch so
+      // it survives the redirect. Line items are in the raw Buy SDK shape.
+      const contents = state.lineItems
+        .map((item: any) => ({
+          id: item.variant?.id as string,
+          quantity: item.quantity || 0,
+          item_price: parseFloat(item.variant?.price?.amount || '0'),
+        }))
+        .filter(c => c.id)
+      trackMetaEvent('InitiateCheckout', {
+        value: parseFloat(state.subtotalPrice.amount || '0'),
+        currency: state.subtotalPrice.currencyCode || 'USD',
+        num_items: state.totalQuantity,
+        content_ids: contents.map(c => c.id),
+        content_type: 'product',
+        contents,
+      })
+
       // Hand off to Shopify checkout. Drop the stored id so a returning
       // customer starts a fresh cart instead of resuming a completed one.
       localStorage.removeItem('shopify_checkout_id')

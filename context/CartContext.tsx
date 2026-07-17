@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react'
 import { shopifyApi } from '@/lib/shopify'
+import { trackMetaEvent } from '@/lib/metaPixel'
 
 // Cart types
 interface CartLineItem {
@@ -192,6 +193,19 @@ export function CartProvider({ children }: CartProviderProps) {
       if (!checkout) throw new Error('No checkout returned from addToCheckout')
       dispatch({ type: 'SET_CHECKOUT', payload: checkout })
       dispatch({ type: 'OPEN_CART' })
+
+      // Meta Pixel AddToCart (no-ops without marketing consent). Line items
+      // arrive in the raw Buy SDK shape: price/title live under item.variant.
+      const added = checkout.lineItems?.find((item: any) => item.variant?.id === variantId)
+      const itemPrice = parseFloat(String(added?.variant?.price?.amount ?? '0'))
+      trackMetaEvent('AddToCart', {
+        content_ids: [variantId],
+        content_name: added?.title,
+        content_type: 'product',
+        value: itemPrice * quantity,
+        currency: added?.variant?.price?.currencyCode || 'USD',
+        contents: [{ id: variantId, quantity, item_price: itemPrice }],
+      })
     } catch (error) {
       console.error('Error adding to cart:', error)
       dispatch({ type: 'SET_ERROR', payload: 'Failed to add item to cart. Please try again.' })
