@@ -38,7 +38,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
     const title = `${product.title} | Squarage Studio`
     const description = product.description || `Handcrafted ${product.title} from Squarage Studio. Made in Los Angeles with premium materials and traditional craftsmanship.`
-    const image = product.images?.[0]?.src
+    // Mateo gets a dedicated square share crop (gallery lead photo) instead
+    // of the Shopify render; resolved against metadataBase (www).
+    const image = handle === 'mateo-chair'
+      ? '/images/og/mateo-chair.jpg'
+      : product.images?.[0]?.src
 
     return {
       title,
