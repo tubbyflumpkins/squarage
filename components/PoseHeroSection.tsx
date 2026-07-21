@@ -24,7 +24,7 @@ export default function PoseHeroSection() {
           rather than the section itself. */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <Image
-          src="/images/pose/posehero.jpg"
+          src="/images/pose/posehero.png"
           alt="Cream Mateo lounge chair on a wood deck beside a pool"
           fill
           priority
