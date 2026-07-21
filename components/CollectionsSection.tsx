@@ -69,7 +69,7 @@ const collections: Collection[] = [
 // Each marquee chunk must be wider than any viewport so the -50% loop
 // never shows a gap; non-breaking spaces at the phrase seams keep them
 // from collapsing.
-const MARQUEE_CHUNK = ('made in los angeles' + '\u00A0').repeat(10)
+const MARQUEE_CHUNK = ('made in los angeles' + '\u00A0\u2022\u00A0').repeat(10)
 
 export default function CollectionsSection() {
   return (
