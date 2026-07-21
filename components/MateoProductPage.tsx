@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CreditCardIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
+import { CreditCardIcon, CheckBadgeIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/formatPrice';
 import { useStickyCartVisibility } from '@/lib/useStickyCartVisibility';
@@ -32,15 +32,13 @@ interface MateoProductPageProps {
 const DEFAULT_COLOR_HEX = '#4A9B4E'; // Squarage green
 const DEFAULT_STYLE: PoseVariantId = 'pose';
 
-// Hidden until we have more product photography. Flip back to true
-// once the gallery images in /public/images/pose/gallery are ready.
-const SHOW_GALLERY = false;
-
-const GALLERY_IMAGES: Array<{ src: string; alt: string }> = [
-  { src: '/images/pose/gallery/gallery-1.jpg', alt: 'Hand-painted Mateo Posé chair on grass' },
-  { src: '/images/pose/gallery/gallery-2.jpg', alt: 'Hand-painted Mateo Posé chair with strawberry detail' },
-  { src: '/images/pose/gallery/gallery-3.jpg', alt: 'Green Mateo Posé chair on grass' },
-  { src: '/images/pose/gallery/gallery-4.jpg', alt: 'Blue Tabouret and green Posé Mateo chairs side by side' },
+const GALLERY_IMAGES: Array<{ src: string; alt: string; width: number; height: number }> = [
+  { src: '/images/pose/posegallery/1.jpg', alt: 'Cream Mateo lounge chair in front of a weathered green wooden door', width: 1537, height: 2318 },
+  { src: '/images/pose/posegallery/2.jpg', alt: 'Orange Mateo dining chair on the banks of the Los Angeles River', width: 1535, height: 2316 },
+  { src: '/images/pose/posegallery/3.jpg', alt: 'Natural birch Mateo lounge chair in warm light beside a record collection', width: 1536, height: 2318 },
+  { src: '/images/pose/posegallery/4.jpg', alt: 'Orange Mateo dining chair beneath a concrete bridge with tiled cubes', width: 1535, height: 2316 },
+  { src: '/images/pose/posegallery/5.jpg', alt: 'Cream Mateo lounge chair on a poolside wood deck', width: 1376, height: 2075 },
+  { src: '/images/pose/posegallery/6.jpg', alt: 'Orange Mateo dining chair on a hilltop overlooking the downtown Los Angeles skyline', width: 1253, height: 1890 },
 ];
 
 // Locate the Shopify variant matching (style, color). Tolerant of common
@@ -89,10 +87,26 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   const [selectedStyle, setSelectedStyle] = useState<PoseVariantId>(initialStyle);
   const [selectedColorHex, setSelectedColorHex] = useState<string>(initialColor);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<(typeof GALLERY_IMAGES)[number] | null>(null);
   const addToCartRef = useRef<HTMLDivElement>(null);
   const showStickyCart = useStickyCartVisibility(addToCartRef);
 
   const morphedParams = useChairMorph(selectedStyle, 2000);
+
+  // Close lightbox on Escape and lock page scroll while it's open.
+  useEffect(() => {
+    if (!lightboxImage) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxImage(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [lightboxImage]);
 
   const selectedColorName = finishNameForHex(selectedColorHex);
   const selectedStyleName = posePresets[selectedStyle].name;
@@ -223,17 +237,23 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
       >
         Gallery
       </h2>
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
         {GALLERY_IMAGES.map((img) => (
-          <Image
+          <button
             key={img.src}
-            src={img.src}
-            alt={img.alt}
-            width={1800}
-            height={1350}
-            className="w-full h-auto"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
-          />
+            type="button"
+            onClick={() => setLightboxImage(img)}
+            aria-label={`View larger: ${img.alt}`}
+            className="relative block w-full aspect-[2/3] overflow-hidden cursor-zoom-in group"
+          >
+            <Image
+              src={img.src}
+              alt={img.alt}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              sizes="(max-width: 1023px) 50vw, 33vw"
+            />
+          </button>
         ))}
       </div>
     </section>
@@ -321,7 +341,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">
               <ProductDetailsAccordion productType="pose" metafields={product.metafields} />
             </div>
-            {SHOW_GALLERY && <div className="mb-8">{gallerySection}</div>}
+            <div className="mb-8">{gallerySection}</div>
             <div className="mb-8">
               <ProductTrustBadges />
             </div>
@@ -389,7 +409,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               </div>
             </div>
 
-            {SHOW_GALLERY && <div className="mt-12 mb-12">{gallerySection}</div>}
+            <div className="mt-12 mb-12">{gallerySection}</div>
             <div className="mb-12">
               <ProductTrustBadges />
             </div>
@@ -399,6 +419,35 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
           </div>
         </div>
       </div>
+
+      {lightboxImage && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={lightboxImage.alt}
+          onClick={() => setLightboxImage(null)}
+          className="fixed inset-0 z-[10010] flex items-center justify-center bg-black/85 p-4 md:p-10 cursor-zoom-out"
+        >
+          <button
+            type="button"
+            autoFocus
+            onClick={() => setLightboxImage(null)}
+            aria-label="Close image"
+            className="absolute top-4 right-4 md:top-6 md:right-6 p-2 text-white/80 hover:text-white transition-colors cursor-pointer"
+          >
+            <XMarkIcon className="w-8 h-8 md:w-9 md:h-9" />
+          </button>
+          <Image
+            src={lightboxImage.src}
+            alt={lightboxImage.alt}
+            width={lightboxImage.width}
+            height={lightboxImage.height}
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-full max-h-full w-auto h-auto object-contain cursor-default"
+            sizes="(max-width: 767px) 100vw, 60vw"
+          />
+        </div>
+      )}
     </main>
   );
 }
