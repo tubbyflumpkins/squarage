@@ -33,12 +33,17 @@ export default function PoseHeroSection() {
         />
       </div>
 
+      {/* Mobile scales from the bottom-left corner so the doubled blob
+          grows up/right from its left margin instead of clipping
+          off-screen. Desktop's larger translateY offset keeps the
+          doubled blob's below-edge hang shallow enough to clear the
+          tightened heading section underneath. */}
       <div
-        className={`absolute bottom-0 z-50 ${isMobile ? 'w-full flex justify-center px-4' : 'left-[25%]'}`}
+        className={`absolute bottom-0 z-50 ${isMobile ? 'left-4 origin-bottom-left' : 'left-[25%]'}`}
         style={{
           transform: isMobile
-            ? 'translateY(calc(50% - 1rem)) scale(0.7)'
-            : 'translateY(calc(50% - 2vw)) translateX(-50%) scale(clamp(1, 1.1, 1.2))',
+            ? 'translateY(calc(50% - 1rem)) scale(1.4)'
+            : 'translateY(calc(50% - 8vw)) translateX(-50%) scale(2.2)',
         }}
       >
         <PoseBlob>

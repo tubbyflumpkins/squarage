@@ -30,7 +30,7 @@ export default function PosePage() {
     <main className="min-h-screen bg-cream">
       <PoseHeroSection />
 
-      <section className="py-16 md:py-24 text-center px-4">
+      <section className="py-8 md:pt-12 md:pb-16 text-center px-4">
         <h2
           className="font-bold font-neue-haas text-squarage-black"
           style={{ fontSize: 'clamp(2.5rem, 5vw, 5rem)' }}
