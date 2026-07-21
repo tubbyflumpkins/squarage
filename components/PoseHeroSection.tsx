@@ -42,7 +42,7 @@ export default function PoseHeroSection() {
         style={{
           transform: isMobile
             ? 'translateY(50%) scale(1.05)'
-            : 'translateY(calc(50% - 5vw)) translateX(-50%) scale(1.65)',
+            : 'translateY(calc(50% - 4vw)) translateX(-50%) scale(1.65)',
         }}
       >
         <PoseBlob>
