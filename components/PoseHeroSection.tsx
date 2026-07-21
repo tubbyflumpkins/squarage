@@ -1,13 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import PoseBlob from '@/components/PoseBlob';
-
-const HeroChairTrio = dynamic(() => import('@/components/chair/RenderedChairView/HeroChairTrio'), {
-  ssr: false,
-  loading: () => null,
-});
 
 export default function PoseHeroSection() {
   const [isMobile, setIsMobile] = useState(false);
@@ -24,17 +19,18 @@ export default function PoseHeroSection() {
       className="relative w-full overflow-visible bg-cream"
       style={{ height: isMobile ? '35vh' : 'clamp(40vh, 30vh + 15vw, 60vh)' }}
     >
-      {/* Canvas extends past the section bottom, all the way down to where
-          the Posé blob's bottom edge lands (the blob is half in / half
-          below the section, so we drop the canvas by ~half-blob-height).
-          Chairs are still composed to render at section center via the
-          yShift prop inside HeroChairTrio, but they're no longer clipped
-          at the bottom of their viewport. */}
-      <div
-        className="absolute left-0 right-0 top-0 z-0 pointer-events-none"
-        style={{ bottom: isMobile ? '-2.5rem' : '-4.5rem' }}
-      >
-        <HeroChairTrio />
+      {/* The image is clipped to the section while the blob below hangs
+          half outside it, so the overflow-hidden lives on this wrapper
+          rather than the section itself. */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <Image
+          src="/images/pose/posehero.jpg"
+          alt="Cream Mateo lounge chair on a wood deck beside a pool"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
       </div>
 
       <div
