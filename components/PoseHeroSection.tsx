@@ -41,8 +41,8 @@ export default function PoseHeroSection() {
         className={`absolute bottom-0 z-50 ${isMobile ? 'left-4 origin-bottom-left' : 'left-[25%]'}`}
         style={{
           transform: isMobile
-            ? 'translateY(50%) scale(1.4)'
-            : 'translateY(calc(50% - 6vw)) translateX(-50%) scale(2.2)',
+            ? 'translateY(50%) scale(1.05)'
+            : 'translateY(calc(50% - 5vw)) translateX(-50%) scale(2.2)',
         }}
       >
         <PoseBlob>
