@@ -15,10 +15,13 @@ Squarage Studio uses a **simple, direct preloading system** that ensures instant
 **Location**: `/components/SimplePreloader.tsx`
 
 The main orchestrator that:
-- Preloads local images based on current route
 - Fetches and caches Shopify products globally
+- Preloads Shopify product images based on current route
 - Preloads on hover for instant navigation
-- Handles both local and Shopify images
+
+Local `/images/` files are **never** preloaded — they render exclusively
+through the Next.js image optimizer (see "Why local images are not preloaded"
+below).
 
 #### 2. Simple Preloader Library
 **Location**: `/lib/simplePreloader.ts`
@@ -26,8 +29,11 @@ The main orchestrator that:
 Direct preloading functions:
 - `preloadImage(src)` - Preloads a single image
 - `preloadImages(srcs, maxConcurrent)` - Batch preload with concurrency
-- `preloadForPage(pathname)` - Route-based preloading
+- `isImageCached(src)` - Cache membership check
 - Global cache: `window.__simpleImageCache`
+
+Only Shopify CDN URLs belong in this cache — they are rendered verbatim by
+FastProductImage, so a preload is an exact-string cache hit.
 
 #### 3. Shopify Preloader
 **Location**: `/lib/shopifyPreloader.ts`
@@ -59,43 +65,36 @@ Handles Shopify-specific images:
 
 ## How It Works
 
-### Route-Based Preloading
+### Why local images are not preloaded
+
+**No local `/images/` file is ever preloaded, on any route.** Every local
+image (heroes, collection tiles, about, galleries) renders through the
+Next.js image optimizer (`/_next/image`). Preloading the RAW originals via
+`new Image()` bypasses the optimizer, so the preloaded URLs never match the
+optimized URLs the pages actually render — zero cache benefit. Worse, it
+force-decoded ~230 MB of full-resolution images, which exhausted iOS Safari's
+RAM-proportional decoded-image budget on 4 GB iPhones and blanked the
+homepage collection tiles. The route-based local preload lists were removed
+entirely; do not reintroduce them.
+
+### Route-Based Preloading (Shopify only)
 
 #### Homepage (`/`)
 ```javascript
-// NO local images are preloaded on the homepage.
-// Every homepage image (hero, collection tiles, about) renders through the Next.js
-// image optimizer (/_next/image). The preloader loads RAW originals via `new Image()`,
-// which bypasses the optimizer — preloading them here force-decoded ~230 MB of
-// full-resolution images and exhausted iOS Safari's RAM-proportional decoded-image
-// budget on 4 GB iPhones, blanking the collection tiles. The raw URLs also never matched
-// the optimized /_next/image URLs the page renders, so it was pure waste. Removed.
-
-// Shopify products are still fetched for later use (data only, no image decoding)
+// Shopify products are fetched for later use (data only, no image decoding)
 await fetchAndCacheShopifyProducts()
 ```
 
-#### Collection Pages (`/collections/tiled`)
+#### Collection Pages (`/collections/[handle]`)
 ```javascript
-// Collection hero image
-'/images/collection-tiled-v2.jpg'
-
-// All product variants for the collection
-'/images/products/harper/product_3_*.jpg'
-'/images/products/matis/Product_1_*.jpg'
-'/images/products/chuck/product_4_*.jpg'
-
 // Shopify images for the collection
 await preloadShopifyCollection('tiled')
 ```
 
 #### Product Pages (`/products/[handle]`)
 ```javascript
-// All color variants preloaded immediately
+// All color variants preloaded immediately from the Shopify CDN
 await preloadShopifyProduct(productHandle)
-
-// Local product images if applicable
-'/images/products/[product]/*.jpg'
 ```
 
 ### Instant Color Switching
@@ -130,18 +129,10 @@ FastProductImage automatically:
 
 ### Adding Images to a New Page
 
-1. **Update Simple Preloader Routes**:
-```javascript
-// In /lib/simplePreloader.ts
-else if (pathname === '/your-new-page') {
-  images.push(
-    '/images/your-image-1.jpg',
-    '/images/your-image-2.jpg'
-  )
-}
-```
+1. **Local (static) images**: render with `next/image` — no preloader changes.
+   The optimizer handles sizing/format; do NOT add local paths to the cache.
 
-2. **Use FastProductImage for Dynamic Images**:
+2. **Shopify (color-switching) images**: use FastProductImage:
 ```javascript
 import FastProductImage from '@/components/FastProductImage'
 
@@ -166,21 +157,9 @@ else if (pathname === '/your-new-page') {
 
 ### Adding a New Product
 
-1. **Local Images**: Add to `/public/images/products/[product-name]/`
-
-2. **Update Preloader**:
-```javascript
-// In /lib/simplePreloader.ts
-else if (pathname === '/products/your-product') {
-  images.push(
-    '/images/products/your-product/variant-1.jpg',
-    '/images/products/your-product/variant-2.jpg',
-    // ... all variants
-  )
-}
-```
-
-3. **Use FastProductImage in Component**:
+Product images live in Shopify, not the repo. Upload them to the product in
+Shopify admin — `preloadShopifyProduct` / `preloadShopifyCollection` pick them
+up automatically. In components, render them with FastProductImage:
 ```javascript
 <FastProductImage
   src={product.images[selectedIndex].src}
@@ -204,11 +183,10 @@ else if (pathname === '/products/your-product') {
 ### Console Output
 ```
 🚀 SimplePreloader: Starting for /
-📦 Preloading 10 images...
-✅ Preloaded: /images/hero-2-processed.jpg
 🛍️ Fetching Shopify products...
 ✅ Loaded 7 Shopify products
-📸 Found 84 Shopify images to preload
+📦 Preloading 84 images...
+✅ Preloaded: https://cdn.shopify.com/s/files/...
 ```
 
 ## Debugging
@@ -249,7 +227,8 @@ All preloading happens client-side. Check browser console (F12) for:
 ### DON'Ts
 - ❌ Don't use regular `Image` component for frequently-switched images
 - ❌ Don't preload everything at once (wastes bandwidth)
-- ❌ Don't forget to update preloader when adding new images
+- ❌ Don't preload local `/images/` paths — they render via the optimizer
+  and raw preloads never match (and blow iOS Safari's memory budget)
 - ❌ Don't use complex state management for image caching
 
 ## Current Implementation Status
@@ -258,7 +237,7 @@ All preloading happens client-side. Check browser console (F12) for:
 - SimplePreloader in layout.tsx
 - FastProductImage on all product pages (Tiled & Warped)
 - MobileCollectionPreloader on collection pages
-- Route-based preloading for all pages
+- Route-based Shopify image preloading
 - Shopify product caching
 - Hover preloading for navigation
 - Mobile-specific optimizations

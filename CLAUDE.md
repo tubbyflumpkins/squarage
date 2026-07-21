@@ -4,7 +4,7 @@
 
 1. **READ [PRELOADING.md](./PRELOADING.md) FIRST** before touching any image code
 2. **USE `FastProductImage`** for ALL product images (never regular `Image` for color-switching)
-3. **UPDATE `/lib/simplePreloader.ts`** when adding new image paths
+3. **NEVER preload local `/images/` paths** — they render via the Next.js optimizer, so raw preloads never match and blow iOS Safari's memory budget; only Shopify CDN URLs go in the preload cache
 4. **TEST on mobile AND desktop** — different optimizations apply
 5. **NEVER remove SimplePreloader** from layout.tsx
 
@@ -102,7 +102,7 @@ lib/
   productImagePreload.ts      # Grid/card image preloading over window.__simpleImageCache
   shelfGeometryWasm.ts        # WASM wrapper — lazy loading, React hook, THREE.js helpers
   wasm-pkg/                   # Compiled WASM output (committed, built from wasm-shelf-geometry/)
-  simplePreloader.ts          # Core preloading (preloadImage, preloadImages, isImageCached, preloadForPage)
+  simplePreloader.ts          # Core preloading (preloadImage, preloadImages, isImageCached)
   shopifyPreloader.ts         # Shopify product image caching
   cookieCategories.ts         # Cookie consent category definitions
   emailCapture.ts             # Email capture service
@@ -144,7 +144,7 @@ stores/
 ## Active Systems
 
 ### Image Preloading
-- **SimplePreloader** in layout.tsx preloads images per route
+- **SimplePreloader** in layout.tsx preloads Shopify product images per route (local images are never preloaded — they render via the Next.js optimizer)
 - **FastProductImage** uses native `<img>` for cached images (<1ms), Next.js Image for uncached
 - **MobileCollectionPreloader** handles mobile collection pages
 - **`window.__simpleImageCache`** is the single global cache Set — ProductGrid/ProductCard preload through `lib/productImagePreload.ts` into it (no React-context cache layer; preload progress must never re-render the tree)
