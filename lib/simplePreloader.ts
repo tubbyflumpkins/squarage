@@ -27,20 +27,20 @@ export function preloadImage(src: string): Promise<void> {
 
   return new Promise((resolve) => {
     const img = new Image()
-    
+
     img.onload = () => {
       window.__simpleImageCache.add(src)
       window.__preloadQueue.delete(src)
       console.log('✅ Preloaded:', src)
       resolve()
     }
-    
+
     img.onerror = () => {
       window.__preloadQueue.delete(src)
       console.log('❌ Failed:', src)
       resolve() // Resolve anyway to not block
     }
-    
+
     img.src = src
   })
 }
@@ -49,14 +49,14 @@ export function preloadImage(src: string): Promise<void> {
 export async function preloadImages(srcs: string[], maxConcurrent = 3): Promise<void> {
   const uniqueSrcs = [...new Set(srcs)]
   const uncached = uniqueSrcs.filter(src => !window.__simpleImageCache.has(src))
-  
+
   if (uncached.length === 0) {
     console.log('⚡ All images already cached')
     return
   }
-  
+
   console.log(`📦 Preloading ${uncached.length} images...`)
-  
+
   // Process in batches
   for (let i = 0; i < uncached.length; i += maxConcurrent) {
     const batch = uncached.slice(i, i + maxConcurrent)
@@ -64,109 +64,17 @@ export async function preloadImages(srcs: string[], maxConcurrent = 3): Promise<
   }
 }
 
-// Preload based on current page
-export async function preloadForPage(pathname: string) {
-  console.log(`📍 Preloading for: ${pathname}`)
-  
-  const images: string[] = []
-  
-  // Homepage: intentionally no local-image preloads.
-  // Every homepage image renders through the Next.js image optimizer (/_next/image),
-  // so preloading the RAW originals here (img.src = '/images/...') bypassed the optimizer
-  // and force-decoded ~230 MB of full-resolution images. That exhausted iOS Safari's
-  // RAM-proportional decoded-image budget on 4 GB iPhones, causing WebKit to drop the
-  // collection-tile decodes (blank tiles) while 6 GB devices and emulators were unaffected.
-  // The raw URLs also never matched the optimized /_next/image URLs the page renders, so
-  // this preloading provided zero benefit. See PRELOADING.md.
-
-  // Tiled collection - preload all tiled product images
-  if (pathname === '/collections/tiled') {
-    images.push(
-      // Harper variants
-      '/images/products/harper/product_3_main_angle.jpg',
-      '/images/products/harper/product_3_green_corrected_v3.jpg',
-      '/images/products/harper/product_3_yellow.jpg',
-      '/images/products/harper/product_3_orange.jpg',
-      '/images/products/harper/product_3_red.jpg',
-      '/images/products/harper/product_3_black.jpg',
-      '/images/products/harper/product_3_white.jpg',
-      // Matis variants
-      '/images/products/matis/Product_1_blue.jpg',
-      '/images/products/matis/Product_1_green.jpg',
-      '/images/products/matis/Product_1_yellow.jpg',
-      '/images/products/matis/Product_1_orange.jpg',
-      '/images/products/matis/Product_1_red.jpg',
-      '/images/products/matis/Product_1_white.jpg',
-      // Chuck variants
-      '/images/products/chuck/product_4_main_angle_blue.jpg',
-      '/images/products/chuck/product_4_main_angle_green.jpg',
-      '/images/products/chuck/product_4_main_angle_yellow.jpg',
-      '/images/products/chuck/product_4_main_angle_orange.jpg',
-      '/images/products/chuck/product_4_main_angle_red.jpg',
-      '/images/products/chuck/product_4_main_angle_black.jpg',
-      '/images/products/chuck/product_4_main_angle_white.jpg'
-    )
-  }
-  
-  // Warped collection
-  else if (pathname === '/collections/warped') {
-    images.push(
-      '/images/warped_side.jpg',
-      '/images/warped/curved_shelf_light_05.png',
-      '/images/warped/curved_shelf_dark_05.png',
-      '/images/warped/corner_shelf_light_05.png',
-      '/images/warped/corner_shelf_medium_02.png',
-      '/images/warped/corner_shelf_medium_07.png'
-    )
-  }
-  
-  // Products page - preload first image of each product
-  else if (pathname === '/products') {
-    images.push(
-      '/images/products/harper/product_3_main_angle.jpg',
-      '/images/products/matis/Product_1_blue.jpg',
-      '/images/products/chuck/product_4_main_angle_blue.jpg',
-      '/images/products/arielle/Product_2_blue.jpg',
-      '/images/products/saskia/Blue.jpg',
-      '/images/products/seba/product_6_main_angle_blue.jpg'
-    )
-  }
-  
-  // Product detail pages - preload all variants
-  else if (pathname.startsWith('/products/')) {
-    const productHandle = pathname.split('/').pop()
-    
-    if (productHandle === 'the-harper') {
-      images.push(
-        '/images/products/harper/product_3_main_angle.jpg',
-        '/images/products/harper/product_3_green_corrected_v3.jpg',
-        '/images/products/harper/product_3_yellow.jpg',
-        '/images/products/harper/product_3_orange.jpg',
-        '/images/products/harper/product_3_red.jpg',
-        '/images/products/harper/product_3_black.jpg',
-        '/images/products/harper/product_3_white.jpg'
-      )
-    }
-    // Add other products as needed
-  }
-  
-  // Preload with appropriate concurrency
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-  await preloadImages(images, isMobile ? 2 : 4)
-}
+// There is intentionally NO route-based preloading of local /images/ files.
+// Local images render exclusively through the Next.js image optimizer
+// (/_next/image), so preloading the RAW originals (img.src = '/images/...')
+// never matches the URLs the pages actually render and force-decodes
+// full-resolution files — which exhausted iOS Safari's RAM-proportional
+// decoded-image budget on 4 GB iPhones (blank collection tiles). Only Shopify
+// CDN URLs, which FastProductImage renders verbatim, belong in this cache.
+// See PRELOADING.md.
 
 // Check if an image is already in the cache
 export function isImageCached(src: string): boolean {
   if (typeof window === 'undefined') return false
   return window.__simpleImageCache?.has(src) ?? false
-}
-
-// Hook to automatically preload on navigation
-export function useSimplePreloader(pathname: string) {
-  if (typeof window === 'undefined') return
-  
-  // Preload after a short delay to let the page render first
-  setTimeout(() => {
-    preloadForPage(pathname)
-  }, 100)
 }
