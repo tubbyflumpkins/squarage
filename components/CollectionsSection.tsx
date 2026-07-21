@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import PoseBlob from '@/components/PoseBlob'
@@ -67,79 +66,24 @@ const collections: Collection[] = [
   },
 ]
 
+// Each marquee chunk must be wider than any viewport so the -50% loop
+// never shows a gap; non-breaking spaces at the phrase seams keep them
+// from collapsing.
+const MARQUEE_CHUNK = ('made in los angeles' + '\u00A0').repeat(10)
+
 export default function CollectionsSection() {
-  const [hoverAnimatingLetters, setHoverAnimatingLetters] = useState<Set<number>>(new Set())
-  const [initialAnimationStarted] = useState(false)
-  const [initialAnimationCompleted, setInitialAnimationCompleted] = useState(false)
-
-  const randomDelays = useMemo(() => [
-    0.1, 0.3, 0.6, 0.2, // MADE
-    0.0, // space
-    0.5, 0.4, // IN
-    0.0, // space
-    0.7, 0.15, 0.25, // LOS
-    0.0, // space
-    0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95 // ANGELES
-  ], [])
-
-  const handleLetterHover = (index: number) => {
-    if (!hoverAnimatingLetters.has(index) && initialAnimationCompleted) {
-      setHoverAnimatingLetters(prev => new Set(prev).add(index))
-    }
-  }
-
-  const handleAnimationEnd = (index: number, isInitial: boolean = false) => {
-    if (isInitial) {
-      const maxDelay = Math.max(...randomDelays)
-      setTimeout(() => {
-        setInitialAnimationCompleted(true)
-      }, maxDelay * 1000 + 1000)
-    } else {
-      setHoverAnimatingLetters(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(index)
-        return newSet
-      })
-    }
-  }
-
-  // Initial bounce animation disabled — keep code for later re-enable
-  useEffect(() => {
-    setInitialAnimationCompleted(true)
-  }, [randomDelays])
-
   return (
     <>
-      {/* Green animated header section */}
-      <section className="bg-squarage-green">
-        <div className="flex items-center justify-center min-h-0 sm:min-h-[80px] py-2 sm:py-0 px-4 sm:px-6">
-          <div className="max-w-7xl mx-auto w-full">
-            <div className="text-center">
-              <div className="flex justify-center items-center w-full whitespace-nowrap">
-                <div className="tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.25em] lg:tracking-[0.3em]">
-                  {'MADE IN LOS ANGELES'.split('').map((letter, index) => (
-                    <span
-                      key={index}
-                      className={`text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-neue-haas font-black leading-none relative inline-block ${
-                        letter !== ' ' ? 'cursor-pointer' : ''
-                      } ${
-                        letter !== ' ' && (hoverAnimatingLetters.has(index) || (initialAnimationStarted && !initialAnimationCompleted)) ? 'animate-bounce-settle' : ''
-                      }`}
-                      style={{
-                        animationDelay: letter !== ' ' && hoverAnimatingLetters.has(index) ? '0s' : `${randomDelays[index]}s`,
-                        marginRight: letter === ' ' ? '0.15em' : '0'
-                      }}
-                      onMouseEnter={() => letter !== ' ' && handleLetterHover(index)}
-                      onAnimationEnd={() => letter !== ' ' && handleAnimationEnd(index, !initialAnimationCompleted)}
-                    >
-                      <span className="text-white">
-                        {letter === ' ' ? ' ' : letter}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
+      {/* Green marquee banner */}
+      <section className="bg-squarage-green overflow-hidden" aria-label="Made in Los Angeles">
+        <div className="flex h-6 md:h-10 items-center whitespace-nowrap" aria-hidden="true">
+          <div className="flex w-max animate-marquee motion-reduce:animate-none">
+            <span className="text-lg md:text-4xl font-neue-haas font-black leading-none text-white">
+              {MARQUEE_CHUNK}
+            </span>
+            <span className="text-lg md:text-4xl font-neue-haas font-black leading-none text-white">
+              {MARQUEE_CHUNK}
+            </span>
           </div>
         </div>
       </section>

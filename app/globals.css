@@ -176,64 +176,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Collections letter bounce animation */
-@keyframes bounce-settle {
-  0% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* Homepage "made in los angeles" marquee — the track holds two
+   identical chunks, so sliding one chunk width (-50%) loops
+   seamlessly. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
   }
-  12% {
-    transform: translateY(-50px);
-    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
-  }
-  24% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-  32% {
-    transform: translateY(-25px);
-    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
-  }
-  40% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-  46% {
-    transform: translateY(-12px);
-    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
-  }
-  52% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-  56% {
-    transform: translateY(-6px);
-    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
-  }
-  60% {
-    transform: translateY(0);
-    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-  63% {
-    transform: translateY(-3px);
-    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
-  }
-  66% {
-    transform: translateY(0);
-    animation-timing-function: ease-out;
-  }
-  100% {
-    transform: translateY(0);
+  to {
+    transform: translateX(-50%);
   }
 }
 
-.animate-bounce-settle {
-  animation: bounce-settle 2s linear forwards;
-  will-change: transform;
-}
-
-.animate-bounce-settle.finished {
-  will-change: auto;
+.animate-marquee {
+  animation: marquee 60s linear infinite;
 }
 
 /* Shelf Designer — slide-in panel animations */
