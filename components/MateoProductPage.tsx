@@ -41,6 +41,9 @@ const GALLERY_IMAGES: Array<{ src: string; alt: string; width: number; height: n
   { src: '/images/pose/posegallery/6.jpg', alt: 'Orange Mateo dining chair on a hilltop overlooking the downtown Los Angeles skyline', width: 1253, height: 1890 },
 ];
 
+// Mobile's two-column grid pairs the photos differently: 1-2 / 4-3 / 5-6.
+const MOBILE_GALLERY_IMAGES = [0, 1, 3, 2, 4, 5].map((i) => GALLERY_IMAGES[i]);
+
 // Locate the Shopify variant matching (style, color). Tolerant of common
 // option-name spellings ("Style"/"Variant"/"Type" and "Color"/"Colour"/"Finish")
 // since the Shopify product was just created and we want the page to keep
@@ -229,7 +232,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
     </div>
   );
 
-  const gallerySection = (
+  const renderGallery = (images: typeof GALLERY_IMAGES) => (
     <section aria-labelledby="mateo-gallery-heading">
       <h2
         id="mateo-gallery-heading"
@@ -238,7 +241,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
         Gallery
       </h2>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-        {GALLERY_IMAGES.map((img) => (
+        {images.map((img) => (
           <button
             key={img.src}
             type="button"
@@ -341,7 +344,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">
               <ProductDetailsAccordion productType="pose" metafields={product.metafields} />
             </div>
-            <div className="mb-8">{gallerySection}</div>
+            <div className="mb-8">{renderGallery(MOBILE_GALLERY_IMAGES)}</div>
             <div className="mb-8">
               <ProductTrustBadges />
             </div>
@@ -409,7 +412,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               </div>
             </div>
 
-            <div className="mt-12 mb-12">{gallerySection}</div>
+            <div className="mt-12 mb-12">{renderGallery(GALLERY_IMAGES)}</div>
             <div className="mb-12">
               <ProductTrustBadges />
             </div>
