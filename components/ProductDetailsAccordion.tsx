@@ -169,9 +169,9 @@ export default function ProductDetailsAccordion({
               </p>
               <ul className="space-y-2 text-sm font-neue-haas text-squarage-black">
                 <li>• Weight capacity: 250 lbs</li>
-                <li>• Take it outside for the day — just bring it back in when you&apos;re done</li>
-                <li>• Arrives partially disassembled — simple, easy-to-follow instructions included in the box</li>
-                <li>• Assembly takes about 5–10 minutes</li>
+                <li>• Can be used outdoors. Keep stored indoors.</li>
+                <li>• Arrives partially disassembled. Simple, easy-to-follow instructions included in the box.</li>
+                <li>• 5-10 minute assembly</li>
               </ul>
             </>
           ) : productType === 'tiled' ? (
