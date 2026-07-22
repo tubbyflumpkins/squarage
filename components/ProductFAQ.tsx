@@ -33,8 +33,8 @@ export default function ProductFAQ({ productType = 'tiled' }: ProductFAQProps) {
       answer: "Each chair is built from Baltic birch plywood with finger-slot joinery that distributes load across the entire frame. Safe weight capacity is 250 lbs."
     },
     {
-      question: "How durable is the Baltic birch plywood?",
-      answer: "Baltic birch is one of the most stable plywoods made (multi-layer construction with no internal voids), and the finger-slot joinery is structurally sound for daily use. The chair is designed for indoor use only."
+      question: "How durable is the Mateo chair?",
+      answer: "The Mateo chair is made from Baltic birch plywood. Baltic birch is one of the most stable plywoods made (multi-layer construction with no internal voids), and the finger-slot joinery is structurally sound for daily use. The chair is designed for indoor use only."
     },
     {
       question: "Can I customize the size or color?",
