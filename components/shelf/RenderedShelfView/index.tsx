@@ -49,6 +49,11 @@ export default function RenderedShelfView({
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.0;
+        if (process.env.NODE_ENV !== 'production') {
+          // Dev-only leak diagnostics: read __shelfGL.info.memory in the
+          // console — `geometries` must stay flat while scrubbing sliders.
+          (window as unknown as Record<string, unknown>).__shelfGL = gl;
+        }
       }}
     >
       <Suspense fallback={null}>

@@ -111,6 +111,11 @@ export default function RenderedChairView({
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.0;
+        if (process.env.NODE_ENV !== 'production') {
+          // Dev-only leak diagnostics: read __chairGL.info.memory in the
+          // console — `geometries` must stay flat across style switches.
+          (window as unknown as Record<string, unknown>).__chairGL = gl;
+        }
       }}
     >
       <Suspense fallback={null}>
