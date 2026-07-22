@@ -5,6 +5,19 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-07-21 — Mobile OOM crash fix: 3D geometry disposal + GPU/bandwidth diet
+
+On staging (`fb01c7f..faace24`), awaiting Dylan's on-device iPhone verification before fast-forwarding main. Root cause of the Mateo-page crash (iOS Safari blank + auto-reload after repeated style switches, phone heat, 85MB Vercel transfer spikes): the style morph regenerated all ~40 chair BufferGeometries every animation frame for 2s per switch and nothing in the repo ever called `.dispose()` — WebGL buffers aren't GC'd, so six switches leaked ~10,400 GPU geometries (measured: 52 → 10,409 via `renderer.info.memory`) until iOS jetsam-killed the tab. The Vercel spike was the crash-reload loop re-downloading textures, not the switches themselves.
+
+- `ChairMeshes` / `FlatShelfMeshes` / `CornerShelfMeshes`: effect-cleanup disposal of superseded geometry sets (after: 52 → 52 across ten rapid switches). Shelf designer slider drags had the same leak.
+- Mateo page now mounts ONE chair canvas via a matchMedia(1024px) slot instead of two CSS-toggled copies (a breakpoint crossing used to spawn a second permanent WebGL context).
+- Canvas dpr capped at `[1, 2]` everywhere (mobile was rendering at up to 3× — more pixels than desktop).
+- Frameloop pauses (`'never'`) via IntersectionObserver + visibilitychange when a canvas is offscreen or the tab is hidden; resumes where it left off. Also stops QuoteFlow's always-mounted off-viewport shelf canvases (60fps → 0 measured).
+- Textures load per finish on demand (`loadFinishTextures`/`loadEdgeTexture`; `preloadAll*` kept as designer idle warm-up). Mateo/Posé pages fetch only the Birch set: 4 files ≈ 2.4MB mobile, down from 12 files ≈ 12.8MB.
+- New 1024px webp mobile edge textures generated with sharp (mobile previously downloaded the 1.8–2.1MB desktop edge PNGs — there was no mobile variant).
+- Dev-only `window.__chairGL` / `__shelfGL` expose `renderer.info` for leak checks (also over USB Web Inspector against a LAN dev server).
+- Deferred with Dylan's sign-off pending: recompressing the three 8MB desktop 2048² normal-map PNGs to near-lossless webp (needs a side-by-side look first).
+
 ## 2026-07-21 — Mateo page content, Posé hero swap, marquee banner, OG image overhaul
 
 All shipped to production (staging → main, commits `daac236..e5bfc0b`).

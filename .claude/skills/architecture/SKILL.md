@@ -148,8 +148,10 @@ public/images/
 ### Posé Chair Rendering (R3F, no WASM)
 - Pure-TS parametric geometry in `components/chair/ChairVisualizer/geometry.ts` — closed-polygon outlines for sideFrame×2, crosspieces, seat + back slats
 - `ChairMeshes.tsx` extrudes via `buildClosedPolygonGeo` (lives in `components/shelf/RenderedShelfView/buildExtrudedGeometry.ts`); colored finishes tint over Birch roughness/normal maps (`useColorChairMaterial`) so grain reads through paint; `ChairFloor` = shadow disc with radial alpha fade; `CameraOrbitingLight` keeps the key light screen-fixed during orbit; `BoomerangCamera` (in shelf/) takes `autoRotate`/`autoRotateSpeed`; wood textures are `.webp` color/roughness + `.png` normal, shared with shelves via `useWoodMaterial`/`useEdgeMaterial`
-- Used on: `/collections/pose` variant stack (3 chairs) and `/products/mateo-chair` (morphing between presets via `useChairMorph`)
+- Used on: `/collections/pose` variant stack (3 chairs) and `/products/mateo-chair` (morphing between presets via `useChairMorph`; the page mounts exactly ONE canvas, slotted into the mobile or desktop layout branch by matchMedia — never render the chair in both CSS-toggled branches)
 - The 5-chair orbit scene `HeroChairTrio.tsx` is no longer mounted anywhere (hero is a static photo since 2026-07-20)
+- **Geometry lifecycle (2026-07-21 crash fix)**: the morph regenerates every BufferGeometry per animation frame, so `ChairMeshes`/`FlatShelfMeshes`/`CornerShelfMeshes` dispose superseded sets in an effect cleanup — R3F never disposes `geometry=` props and WebGL buffers aren't GC'd; removing that cleanup re-introduces the iOS OOM crash. Verify with dev-only `__chairGL.info.memory.geometries` (must stay flat across style switches)
+- Canvas hygiene: dpr capped `[1, 2]`; frameloop flips to `'never'` while offscreen/tab-hidden (IntersectionObserver + visibilitychange in both `RenderedChairView` and `RenderedShelfView`); wood/edge textures load per finish on demand (`loadFinishTextures`/`loadEdgeTexture`), color-finish chairs pull only the Birch set, `/textures/mobile/` has 1024px variants of everything incl. `*_edge.webp`, and the designer idle-warms all finishes via `preloadAllTextures()`/`preloadAllEdgeTextures()`
 
 ### Cookie Consent
 - CookieConsentContext manages consent; GA and Meta only load after consent
