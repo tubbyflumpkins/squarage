@@ -154,8 +154,12 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
       <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
         Select Style
       </h3>
-      <div className="relative grid grid-cols-3 border-2 border-squarage-green">
-        {/* Sliding selector — fills the active cell and glides between them */}
+      <div className="relative grid grid-cols-3">
+        {/* Sliding selector — a solid cell-sized block that glides to the active cell.
+            Grid lines live on the buttons above it: each button carries a 2px border
+            (collapsed via -ml-0.5), and the active button's border turns green and
+            paints over its neighbors' black lines (z-10), so no black ever shows
+            through the selection. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-squarage-green transition-transform duration-200 ease-out motion-reduce:transition-none"
@@ -169,9 +173,13 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               type="button"
               onClick={() => setSelectedStyle(id)}
               aria-pressed={isActive}
-              className={`relative px-3 md:px-4 py-3 font-medium font-neue-haas text-sm md:text-base transition-colors duration-200 ${
-                index > 0 ? 'border-l-2 border-squarage-green ' : ''
-              }${isActive ? 'text-white' : 'text-squarage-black hover:text-squarage-green'}`}
+              className={`relative border-2 px-3 md:px-4 py-3 font-medium font-neue-haas text-sm md:text-base transition-colors duration-200 ${
+                index > 0 ? '-ml-0.5 ' : ''
+              }${
+                isActive
+                  ? 'z-10 border-squarage-green text-white'
+                  : 'border-squarage-black text-squarage-black hover:text-squarage-green'
+              }`}
             >
               {posePresets[id].name}
             </button>
