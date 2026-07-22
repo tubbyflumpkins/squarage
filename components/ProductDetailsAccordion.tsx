@@ -25,13 +25,21 @@ interface ProductDetailsAccordionProps {
     width: number
     height: number
   } | null
+  // Multiple drawings shown side by side (e.g. the three Mateo variants)
+  dimensionsImages?: Array<{
+    src: string
+    alt: string
+    width: number
+    height: number
+  }>
 }
 
 export default function ProductDetailsAccordion({
   productType,
   dimensions,
   metafields,
-  dimensionsImage
+  dimensionsImage,
+  dimensionsImages
 }: ProductDetailsAccordionProps) {
   const [openItems, setOpenItems] = useState<string[]>([])
 
@@ -121,7 +129,21 @@ export default function ProductDetailsAccordion({
       title: 'Dimensions',
       content: (
         <div className="space-y-2">
-          {dimensionsImage ? (
+          {dimensionsImages && dimensionsImages.length > 0 ? (
+            // Side-by-side drawings, bottom-aligned so they share a ground line
+            <div className="grid grid-cols-3 gap-2 md:gap-4 items-end">
+              {dimensionsImages.map((img) => (
+                <Image
+                  key={img.src}
+                  src={img.src}
+                  alt={img.alt}
+                  width={img.width}
+                  height={img.height}
+                  className="w-full h-auto"
+                />
+              ))}
+            </div>
+          ) : dimensionsImage ? (
             // Layout with centered image (2/3 width) and text below
             <div className="flex flex-col gap-4">
               <div className="w-2/3 mx-auto">
