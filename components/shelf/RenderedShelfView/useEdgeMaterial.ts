@@ -3,11 +3,21 @@ import * as THREE from 'three';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
-const EDGE_TEXTURE_PATHS: Record<WoodFinish, string> = {
-  Walnut: '/textures/walnut_edge.png',
-  Oak: '/textures/oak_edge.png',
-  Birch: '/textures/birch_edge.png',
-};
+// Mobile gets 1024-wide webp edge textures, desktop the full-res
+// originals — mirrors useWoodMaterial's device split.
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+const EDGE_TEXTURE_PATHS: Record<WoodFinish, string> = isMobile
+  ? {
+      Walnut: '/textures/mobile/walnut_edge.webp',
+      Oak: '/textures/mobile/oak_edge.webp',
+      Birch: '/textures/mobile/birch_edge.webp',
+    }
+  : {
+      Walnut: '/textures/walnut_edge.png',
+      Oak: '/textures/oak_edge.png',
+      Birch: '/textures/birch_edge.png',
+    };
 
 const loader = new THREE.TextureLoader();
 
