@@ -104,6 +104,20 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
 
   const morphedParams = useChairMorph(selectedStyle, 2000);
 
+  // Which layout branch hosts the chair canvas (Tailwind lg = 1024px).
+  // Both branches are always in the React tree (CSS-toggled), so rendering
+  // the chair in both would spawn a second live WebGL context the moment
+  // the viewport ever crosses the breakpoint. null until mounted — SSR
+  // renders no canvas anyway (RenderedChairView is ssr:false).
+  const [canvasSlot, setCanvasSlot] = useState<'mobile' | 'desktop' | null>(null);
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const apply = () => setCanvasSlot(mql.matches ? 'desktop' : 'mobile');
+    apply();
+    mql.addEventListener('change', apply);
+    return () => mql.removeEventListener('change', apply);
+  }, []);
+
   // Close lightbox on Escape and lock page scroll while it's open.
   useEffect(() => {
     if (!lightboxImage) return;
@@ -295,16 +309,18 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   // bottom-left direction (and shift the chair lower + leftward
   // within its slot). cameraPadding tightens up to fill the new
   // room with a larger chair instead of more whitespace.
-  const chairCanvas = (
+  const renderChairCanvas = (slot: 'mobile' | 'desktop') => (
     <div className="relative w-full aspect-square">
       <div className="absolute -top-2 -bottom-20 -left-4 right-0 md:-top-12 md:-bottom-56 md:-left-40 md:-right-20">
-        <RenderedChairView
-          params={morphedParams}
-          color={selectedColorHex}
-          autoRotate
-          interactive
-          cameraPadding={0.4}
-        />
+        {canvasSlot === slot && (
+          <RenderedChairView
+            params={morphedParams}
+            color={selectedColorHex}
+            autoRotate
+            interactive
+            cameraPadding={0.4}
+          />
+        )}
       </div>
     </div>
   );
@@ -340,7 +356,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               </Link>
             </div>
 
-            <div className="mb-6">{chairCanvas}</div>
+            <div className="mb-6">{renderChairCanvas('mobile')}</div>
 
             <div className="mb-6">
               <p className="text-2xl font-bold font-neue-haas text-squarage-black mb-2">
@@ -385,7 +401,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                   pinned long enough to overlap the trust-badge section
                   scrolling up beneath it. */}
               <div className="w-1/2 pr-8 max-h-[900px]">
-                <div className="sticky top-32">{chairCanvas}</div>
+                <div className="sticky top-32">{renderChairCanvas('desktop')}</div>
               </div>
               <div className="w-1/2 pl-8">
                 <div className="mb-8">
