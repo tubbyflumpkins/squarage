@@ -17,6 +17,10 @@ export default function ProductFAQ({ productType = 'tiled' }: ProductFAQProps) {
 
   const faqItems: FAQItem[] = productType === 'pose' ? [
     {
+      question: "Can I customize the size or color?",
+      answer: "Absolutely. The Mateo Chair comes in three variants (Posé, Tabouret, and Dîner) with nine colors. We can also adjust dimensions within structural limits or apply a finish outside our standard palette as a custom order. Select \"Custom Order\" or contact us with the details you'd like."
+    },
+    {
       question: "How long will it take to receive my order?",
       answer: "Each piece is handmade in Los Angeles. Standard lead time is 2–3 weeks. Rush options may be available. Contact us if you need a faster turnaround."
     },
@@ -34,11 +38,7 @@ export default function ProductFAQ({ productType = 'tiled' }: ProductFAQProps) {
     },
     {
       question: "How durable is the Mateo chair?",
-      answer: "The Mateo chair is made from Baltic birch plywood. Baltic birch is one of the most stable plywoods made (multi-layer construction with no internal voids), and the finger-slot joinery is structurally sound for daily use. The chair is designed for indoor use only."
-    },
-    {
-      question: "Can I customize the size or color?",
-      answer: "Absolutely. The Mateo Chair comes in three variants (Posé, Tabouret, and Dîner) with nine colors. We can also adjust dimensions within structural limits or apply a finish outside our standard palette as a custom order. Select \"Custom Order\" or contact us with the details you'd like."
+      answer: "The Mateo chair is made from Baltic birch plywood. Baltic birch is one of the most stable plywoods made (multi-layer construction with no internal voids), and the finger-slot joinery is structurally sound for daily use. The chair is not designed for prolonged exposure to the weather. Store indoors after outdoor use."
     },
     {
       question: "What is your return policy?",

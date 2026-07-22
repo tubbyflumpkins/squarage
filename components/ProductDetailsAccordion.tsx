@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { PlusIcon, MinusIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline'
 
 interface AccordionItem {
   id: string
@@ -211,19 +211,14 @@ export default function ProductDetailsAccordion({
       id: 'responsible',
       title: 'Responsible Design',
       content: (
-        <div className="flex gap-4">
-          <div className="flex-shrink-0">
-            <GlobeAltIcon className="w-10 h-10 text-green-600" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-base font-neue-haas text-squarage-black">
-              Our products are made with sustainable wood from forests certified to be responsibly managed, 
-              environmentally sound, and socially beneficial.
-            </p>
-            <p className="text-sm font-neue-haas text-gray-600">
-              We&apos;re committed to minimizing waste and using eco-friendly finishes and materials whenever possible.
-            </p>
-          </div>
+        <div className="space-y-2">
+          <p className="text-base font-neue-haas text-squarage-black">
+            Our products are made with sustainable wood from forests certified to be responsibly managed,
+            environmentally sound, and socially beneficial.
+          </p>
+          <p className="text-sm font-neue-haas text-gray-600">
+            We&apos;re committed to minimizing waste and using eco-friendly finishes and materials whenever possible.
+          </p>
         </div>
       )
     },
@@ -240,7 +235,7 @@ export default function ProductDetailsAccordion({
               <ul className="space-y-2 text-sm font-neue-haas text-squarage-black">
                 <li>• Dust regularly with a soft, dry cloth</li>
                 <li>• Spot-clean with a slightly damp cloth and dry immediately</li>
-                <li>• Indoor use only. Not designed for outdoor exposure</li>
+                <li>• Store indoors or in a dry place overnight</li>
                 <li>• Avoid prolonged direct sunlight to prevent fading</li>
                 <li>• Avoid dragging across rough surfaces</li>
               </ul>
