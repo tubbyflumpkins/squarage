@@ -7,9 +7,11 @@ import { TruckIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/out
 interface ShippingEstimatorProps {
   price: number
   productTitle: string
+  /** 'card' = bordered gray box (default); 'inline' = unboxed, titled like a product page section */
+  variant?: 'card' | 'inline'
 }
 
-export default function ShippingEstimator({ price, productTitle }: ShippingEstimatorProps) {
+export default function ShippingEstimator({ price, productTitle, variant = 'card' }: ShippingEstimatorProps) {
   const [zipCode, setZipCode] = useState('')
   const [shippingStatus, setShippingStatus] = useState<{
     available: boolean
@@ -118,6 +120,61 @@ export default function ShippingEstimator({ price, productTitle }: ShippingEstim
     if (e.key === 'Enter') {
       calculateShipping()
     }
+  }
+
+  if (variant === 'inline') {
+    return (
+      <div className="w-full">
+        <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
+          Delivery
+        </h3>
+        <p className="text-base font-neue-haas text-squarage-black mb-2">
+          Ships to US/EU
+          <span aria-hidden="true" className="mx-3">|</span>
+          Local delivery available in Los Angeles
+        </p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-base font-neue-haas text-squarage-black">
+          <span>Zip code:</span>
+          <input
+            type="text"
+            value={zipCode}
+            onChange={handleZipChange}
+            onKeyDown={handleKeyPress}
+            className="w-16 bg-transparent border-0 border-b-2 border-squarage-black text-center font-neue-haas text-base text-squarage-black focus:outline-none focus:border-squarage-green transition-colors"
+            maxLength={5}
+            aria-label="ZIP code for delivery"
+          />
+          <button
+            onClick={() => calculateShipping()}
+            disabled={isCalculating || zipCode.length < 5}
+            className="font-medium font-neue-haas text-base text-squarage-green hover:underline underline-offset-4 disabled:text-gray-300 disabled:no-underline disabled:cursor-not-allowed transition-colors"
+          >
+            {isCalculating ? 'Checking...' : 'Check'}
+          </button>
+          {shippingStatus && !error && (
+            <span className="flex items-center gap-1">
+              {shippingStatus.available ? (
+                <CheckCircleIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
+              ) : (
+                <XCircleIcon className="w-4 h-4 text-red-600 flex-shrink-0" />
+              )}
+              <span className={`text-sm font-neue-haas ${
+                shippingStatus.available ? 'text-green-700' : 'text-red-700'
+              }`}>
+                {shippingStatus.message}
+                {shippingStatus.isLocal && ' (LA)'}
+              </span>
+            </span>
+          )}
+          {error && (
+            <span className="text-sm text-red-600 font-neue-haas">{error}</span>
+          )}
+        </div>
+        <ul className="list-disc list-inside text-base font-neue-haas text-gray-600">
+          <li>Made to order, ships in 2-4 weeks</li>
+        </ul>
+      </div>
+    )
   }
 
   return (

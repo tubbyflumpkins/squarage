@@ -152,27 +152,45 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   const styleSelector = (
     <div>
       <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
-        Select Style
+        1. Select Style
       </h3>
-      <div className="grid grid-cols-3 gap-2 md:gap-3">
-        {poseVariantOrder.map((id) => {
+      <div className="relative grid grid-cols-3">
+        {/* The active cell's look comes entirely from its button (background +
+            border color), which lands on the same pixel grid as the black lines —
+            crisp at any window width. Buttons share single 2px lines by collapsing
+            borders with -ml-0.5; the button right of the active one turns its left
+            border green so the shared line belongs to the selection. */}
+        {poseVariantOrder.map((id, index) => {
           const isActive = id === selectedStyle;
+          const afterActive = index > 0 && poseVariantOrder[index - 1] === selectedStyle;
           return (
             <button
               key={id}
               type="button"
               onClick={() => setSelectedStyle(id)}
               aria-pressed={isActive}
-              className={`px-3 md:px-4 py-3 border-2 font-medium font-neue-haas text-sm md:text-base transition-all ${
+              className={`relative border-2 px-3 md:px-4 py-3 font-medium font-neue-haas text-sm md:text-base transition-colors duration-200 ${
+                index > 0 ? '-ml-0.5 ' : ''
+              }${
                 isActive
                   ? 'border-squarage-green bg-squarage-green text-white'
-                  : 'border-gray-300 text-squarage-black hover:border-gray-400'
+                  : `${afterActive ? 'border-l-squarage-green ' : ''}border-squarage-black text-squarage-black hover:text-squarage-green`
               }`}
             >
-              {posePresets[id].name}
+              <span className="relative z-10">{posePresets[id].name}</span>
             </button>
           );
         })}
+        {/* Motion accent — glides between cells on change. Inset so it never
+            defines an edge; transformed layers don't pixel-snap like layout does,
+            so it must not be responsible for lining up with the grid. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 p-1 transition-transform duration-200 ease-out motion-reduce:transition-none"
+          style={{ transform: `translateX(${poseVariantOrder.indexOf(selectedStyle) * 100}%)` }}
+        >
+          <div className="h-full w-full bg-squarage-green" />
+        </div>
       </div>
     </div>
   );
@@ -180,9 +198,9 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   const colorSelector = (
     <div>
       <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
-        Select Color
+        2. Select Color:
         {selectedColorName && (
-          <span className="ml-2 text-base font-normal text-gray-600">· {selectedColorName}</span>
+          <span className="ml-2 font-normal text-gray-600">{selectedColorName}</span>
         )}
       </h3>
       <div className="flex flex-wrap gap-3 md:gap-4">
@@ -196,16 +214,16 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               aria-label={finish.name}
               aria-pressed={isActive}
               title={finish.name}
-              className={`relative w-9 h-9 md:w-11 md:h-11 rounded-full transition-transform ${
-                isActive ? 'scale-110' : 'hover:scale-105'
+              className={`relative w-9 h-9 md:w-11 md:h-11 transition-transform ${
+                isActive ? 'scale-125' : 'hover:scale-105'
               }`}
               style={{ backgroundColor: finish.hex }}
             >
               <span
                 aria-hidden="true"
-                className={`absolute inset-0 rounded-full ring-offset-2 ring-offset-cream transition-all ${
+                className={`absolute inset-0 ring-offset-2 ring-offset-cream transition-all ${
                   isActive
-                    ? 'ring-2 ring-squarage-orange'
+                    ? 'ring-2 ring-squarage-green'
                     : 'ring-1 ring-gray-300'
                 }`}
               />
@@ -342,6 +360,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
 
             <div className="mb-6">
               <ShippingEstimator
+                variant="inline"
                 price={parseFloat(selectedVariant?.price.amount || '0')}
                 productTitle={product.title}
               />
@@ -407,6 +426,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
 
                 <div className="mb-8">
                   <ShippingEstimator
+                    variant="inline"
                     price={parseFloat(selectedVariant?.price.amount || '0')}
                     productTitle={product.title}
                   />
