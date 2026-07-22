@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -59,6 +59,34 @@ export default function RenderedChairView({
   }
   const params = paramsProp ?? posePresets[preset!].params;
 
+  // Stop the render loop while the canvas is fully offscreen or the tab is
+  // hidden — the always-on autorotate loop otherwise keeps the GPU busy
+  // (and phones hot) for a canvas nobody can see. Resuming resets the R3F
+  // clock, so the rotation continues from where it stopped.
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    let offscreen = false;
+    let hidden = document.visibilityState === 'hidden';
+    const update = () => setPaused(offscreen || hidden);
+    const io = new IntersectionObserver(([entry]) => {
+      offscreen = !entry.isIntersecting;
+      update();
+    });
+    io.observe(el);
+    const onVisibility = () => {
+      hidden = document.visibilityState === 'hidden';
+      update();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
   const alpha = (params.backAngle * Math.PI) / 180;
   const beta = (params.benchAngle * Math.PI) / 180;
   // Side frames sit inside the seat (x = fw/2 and sW-fw/2); seat slats span
@@ -102,6 +130,8 @@ export default function RenderedChairView({
 
   return (
     <Canvas
+      ref={canvasRef}
+      frameloop={paused ? 'never' : 'always'}
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 35, near: 0.1, far: 2000 }}
       gl={{ antialias: true, alpha: true }}

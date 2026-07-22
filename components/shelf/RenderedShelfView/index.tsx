@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -39,8 +39,37 @@ export default function RenderedShelfView({
   depth,
   length,
 }: RenderedShelfViewProps) {
+  // Stop the render loop while the canvas is fully offscreen or the tab is
+  // hidden. This also covers QuoteFlow's always-mounted copies, which sit
+  // translated off-viewport and otherwise render at 60fps unseen.
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    let offscreen = false;
+    let hidden = document.visibilityState === 'hidden';
+    const update = () => setPaused(offscreen || hidden);
+    const io = new IntersectionObserver(([entry]) => {
+      offscreen = !entry.isIntersecting;
+      update();
+    });
+    io.observe(el);
+    const onVisibility = () => {
+      hidden = document.visibilityState === 'hidden';
+      update();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
   return (
     <Canvas
+      ref={canvasRef}
+      frameloop={paused ? 'never' : 'always'}
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 35, near: 0.1, far: 2000 }}
       gl={{ antialias: true, alpha: true }}
