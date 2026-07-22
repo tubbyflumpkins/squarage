@@ -152,7 +152,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   const styleSelector = (
     <div>
       <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
-        Select Style
+        1. Select Style
       </h3>
       <div className="relative grid grid-cols-3">
         {/* The active cell's look comes entirely from its button (background +
@@ -198,9 +198,9 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   const colorSelector = (
     <div>
       <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
-        Select Color
+        2. Select Color:
         {selectedColorName && (
-          <span className="ml-2 text-base font-normal text-gray-600">· {selectedColorName}</span>
+          <span className="ml-2 font-normal text-gray-600">{selectedColorName}</span>
         )}
       </h3>
       <div className="flex flex-wrap gap-3 md:gap-4">
@@ -214,16 +214,16 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               aria-label={finish.name}
               aria-pressed={isActive}
               title={finish.name}
-              className={`relative w-9 h-9 md:w-11 md:h-11 rounded-full transition-transform ${
-                isActive ? 'scale-110' : 'hover:scale-105'
+              className={`relative w-9 h-9 md:w-11 md:h-11 transition-transform ${
+                isActive ? 'scale-125' : 'hover:scale-105'
               }`}
               style={{ backgroundColor: finish.hex }}
             >
               <span
                 aria-hidden="true"
-                className={`absolute inset-0 rounded-full ring-offset-2 ring-offset-cream transition-all ${
+                className={`absolute inset-0 ring-offset-2 ring-offset-cream transition-all ${
                   isActive
-                    ? 'ring-2 ring-squarage-orange'
+                    ? 'ring-2 ring-squarage-green'
                     : 'ring-1 ring-gray-300'
                 }`}
               />
@@ -360,6 +360,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
 
             <div className="mb-6">
               <ShippingEstimator
+                variant="inline"
                 price={parseFloat(selectedVariant?.price.amount || '0')}
                 productTitle={product.title}
               />
@@ -425,6 +426,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
 
                 <div className="mb-8">
                   <ShippingEstimator
+                    variant="inline"
                     price={parseFloat(selectedVariant?.price.amount || '0')}
                     productTitle={product.title}
                   />
