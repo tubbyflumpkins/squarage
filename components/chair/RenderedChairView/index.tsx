@@ -105,7 +105,7 @@ export default function RenderedChairView({
       shadows={{ type: THREE.PCFShadowMap }}
       camera={{ fov: 35, near: 0.1, far: 2000 }}
       gl={{ antialias: true, alpha: true }}
-      dpr={isMobile ? [1.5, 3] : undefined}
+      dpr={[1, 2]}
       style={{ background: 'transparent' }}
       className={className}
       onCreated={({ gl }) => {
