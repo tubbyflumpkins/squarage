@@ -154,7 +154,15 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
       <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
         Select Style
       </h3>
-      <div className="grid grid-cols-3 gap-2 md:gap-3">
+      <div className="relative grid grid-cols-3 border-2 border-gray-300 divide-x-2 divide-gray-300">
+        {/* Sliding selector pill — sits behind the labels and glides to the active cell */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 px-2 py-1.5 transition-transform duration-200 ease-out motion-reduce:transition-none"
+          style={{ transform: `translateX(${poseVariantOrder.indexOf(selectedStyle) * 100}%)` }}
+        >
+          <div className="h-full w-full rounded-full bg-squarage-green" />
+        </div>
         {poseVariantOrder.map((id) => {
           const isActive = id === selectedStyle;
           return (
@@ -163,10 +171,8 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               type="button"
               onClick={() => setSelectedStyle(id)}
               aria-pressed={isActive}
-              className={`px-3 md:px-4 py-3 border-2 font-medium font-neue-haas text-sm md:text-base transition-all ${
-                isActive
-                  ? 'border-squarage-green bg-squarage-green text-white'
-                  : 'border-gray-300 text-squarage-black hover:border-gray-400'
+              className={`relative px-3 md:px-4 py-3 font-medium font-neue-haas text-sm md:text-base transition-colors duration-200 ${
+                isActive ? 'text-white' : 'text-squarage-black hover:text-squarage-green'
               }`}
             >
               {posePresets[id].name}
