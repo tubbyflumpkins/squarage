@@ -44,13 +44,13 @@ const GALLERY_IMAGES: Array<{ src: string; alt: string; width: number; height: n
 // Mobile's two-column grid pairs the photos differently: 1-2 / 4-3 / 5-6.
 const MOBILE_GALLERY_IMAGES = [0, 1, 3, 2, 4, 5].map((i) => GALLERY_IMAGES[i]);
 
-// Dimension drawings for the three variants, shown side by side in the
-// Dimensions accordion tab.
-const DIMENSIONS_IMAGES = [
-  { src: '/images/pose/dimensions/pose_dimensions.png', alt: 'Posé lounge chair dimensions: 28⅛ inches tall, 27¾ inches deep, 18 inches wide, 12 to 15 inch seat height', width: 603, height: 554 },
-  { src: '/images/pose/dimensions/tabouret_dimensions.png', alt: 'Tabouret stool dimensions: 40 inches tall, 30 inch seat height, 19 inches wide, 16 inches deep', width: 581, height: 763 },
-  { src: '/images/pose/dimensions/diner_dimensions.png', alt: 'Dîner chair dimensions: 34⅝ inches tall, 18 inch seat height, 22¼ inches wide, 18 inches deep', width: 604, height: 689 },
-];
+// Dimension drawing for each style variant — the Dimensions accordion
+// tab shows the one matching the selected style.
+const DIMENSIONS_IMAGES: Record<PoseVariantId, { id: string; src: string; altText: string; width: number; height: number }> = {
+  pose: { id: 'pose-dimensions', src: '/images/pose/dimensions/pose_dimensions.png', altText: 'Posé lounge chair dimensions: 28⅛ inches tall, 27¾ inches deep, 18 inches wide, 12 to 15 inch seat height', width: 603, height: 554 },
+  tabouret: { id: 'tabouret-dimensions', src: '/images/pose/dimensions/tabouret_dimensions.png', altText: 'Tabouret stool dimensions: 40 inches tall, 30 inch seat height, 19 inches wide, 16 inches deep', width: 581, height: 763 },
+  dine: { id: 'dine-dimensions', src: '/images/pose/dimensions/diner_dimensions.png', altText: 'Dîner chair dimensions: 34⅝ inches tall, 18 inch seat height, 22¼ inches wide, 18 inches deep', width: 604, height: 689 },
+};
 
 // Locate the Shopify variant matching (style, color). Tolerant of common
 // option-name spellings ("Style"/"Variant"/"Type" and "Color"/"Colour"/"Finish")
@@ -350,7 +350,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">{cartButton}</div>
 
             <div className="mb-8">
-              <ProductDetailsAccordion productType="pose" metafields={product.metafields} dimensionsImages={DIMENSIONS_IMAGES} />
+              <ProductDetailsAccordion productType="pose" metafields={product.metafields} dimensionsImage={DIMENSIONS_IMAGES[selectedStyle]} />
             </div>
             <div className="mb-8">{renderGallery(MOBILE_GALLERY_IMAGES)}</div>
             <div className="mb-8">
@@ -415,7 +415,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                 <div className="mb-8">{cartButton}</div>
 
                 <div className="mb-8">
-                  <ProductDetailsAccordion productType="pose" metafields={product.metafields} dimensionsImages={DIMENSIONS_IMAGES} />
+                  <ProductDetailsAccordion productType="pose" metafields={product.metafields} dimensionsImage={DIMENSIONS_IMAGES[selectedStyle]} />
                 </div>
               </div>
             </div>
