@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import { generateShelfGeometry } from '@/components/shelf/ShelfVisualizer/geometry';
 import { buildFlatShelfGeo, buildFlatColumnGeo, offsetUVs } from './buildExtrudedGeometry';
@@ -65,6 +65,16 @@ export default function FlatShelfMeshes({ params, finish, opacity = 1, depthBias
 
     return { shelfGeos, columnGeos };
   }, [params, center]);
+
+  // R3F never disposes geometries passed via the `geometry` prop, and
+  // designer slider drags regenerate this set every frame — dispose the
+  // superseded set or the GPU buffers leak (see ChairMeshes.tsx).
+  useEffect(() => {
+    return () => {
+      geometries.shelfGeos.forEach((g) => g.dispose());
+      geometries.columnGeos.forEach((g) => g.dispose());
+    };
+  }, [geometries]);
 
   return (
     <group>

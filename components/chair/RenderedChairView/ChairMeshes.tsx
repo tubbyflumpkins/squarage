@@ -1,5 +1,5 @@
 'use client';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { ChairParams, ChairPiece } from '@/components/chair/ChairVisualizer/types';
 import { generateChairGeometry } from '@/components/chair/ChairVisualizer/geometry';
 import {
@@ -129,6 +129,19 @@ export default function ChairMeshes({ params, finish = 'Walnut', color, center =
       return geo;
     });
   }, [params, center]);
+
+  // R3F never disposes geometries passed via the `geometry` prop (only
+  // objects it constructs itself), and the style morph replaces this array
+  // every animation frame — WebGL buffers are not garbage-collected, so
+  // without explicit disposal each morph leaks ~40 GPU buffer sets per
+  // frame until iOS kills the tab. React runs this cleanup after the commit
+  // that attached the NEW geometries, so it only ever disposes the
+  // superseded set — and the final set on unmount.
+  useEffect(() => {
+    return () => {
+      geometries.forEach((g) => g.dispose());
+    };
+  }, [geometries]);
 
   return (
     <group>
