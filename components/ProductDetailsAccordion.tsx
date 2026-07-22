@@ -168,11 +168,10 @@ export default function ProductDetailsAccordion({
                 with finger-slot joinery, designed to hold up to everyday use.
               </p>
               <ul className="space-y-2 text-sm font-neue-haas text-squarage-black">
-                <li>• Baltic birch plywood construction</li>
-                <li>• Finger-slot joinery for structural strength</li>
-                <li>• Handmade in our Los Angeles studio</li>
-                <li>• Each piece individually crafted and inspected</li>
                 <li>• Weight capacity: 250 lbs</li>
+                <li>• Take it outside for the day — just bring it back in when you&apos;re done</li>
+                <li>• Arrives partially disassembled — simple, easy-to-follow instructions included in the box</li>
+                <li>• Assembly takes about 5–10 minutes</li>
               </ul>
             </>
           ) : productType === 'tiled' ? (
