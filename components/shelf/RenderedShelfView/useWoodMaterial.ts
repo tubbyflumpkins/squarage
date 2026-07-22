@@ -1,6 +1,5 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 import * as THREE from 'three';
-import { preloadAllEdgeTextures } from './useEdgeMaterial';
 
 type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
@@ -63,28 +62,35 @@ function loadTex(path: string, srgb: boolean): Promise<THREE.Texture | null> {
 }
 
 // ---------------------------------------------------------------------------
-// Texture cache — preloads all finishes on first call, serves from cache after
+// Texture cache — loads each finish once on demand, serves from cache after
 // ---------------------------------------------------------------------------
 
 type TexSet = { color: THREE.Texture | null; roughness: THREE.Texture | null; normal: THREE.Texture | null };
 
 const textureCache: Record<string, TexSet> = {};
-let preloadPromise: Promise<void> | null = null;
+const finishLoads: Partial<Record<WoodFinish, Promise<void>>> = {};
 
-function preloadAllTextures(): Promise<void> {
-  if (preloadPromise) return preloadPromise;
-  preloadPromise = Promise.all(
-    (['Walnut', 'Oak', 'Birch'] as WoodFinish[]).map(async (f) => {
-      const paths = TEXTURE_PATHS[f];
-      const [color, roughness, normal] = await Promise.all([
-        loadTex(paths.color, true),
-        loadTex(paths.roughness, false),
-        loadTex(paths.normal, false),
-      ]);
-      textureCache[f] = { color, roughness, normal };
-    }),
+export function loadFinishTextures(finish: WoodFinish): Promise<void> {
+  const existing = finishLoads[finish];
+  if (existing) return existing;
+  const paths = TEXTURE_PATHS[finish];
+  const load = Promise.all([
+    loadTex(paths.color, true),
+    loadTex(paths.roughness, false),
+    loadTex(paths.normal, false),
+  ]).then(([color, roughness, normal]) => {
+    textureCache[finish] = { color, roughness, normal };
+  });
+  finishLoads[finish] = load;
+  return load;
+}
+
+// Warm-up for pages with a finish picker (the shelf designer) so switching
+// finishes never flashes the untextured fallback.
+export function preloadAllTextures(): Promise<void> {
+  return Promise.all(
+    (['Walnut', 'Oak', 'Birch'] as WoodFinish[]).map(loadFinishTextures),
   ).then(() => {});
-  return preloadPromise;
 }
 
 // ---------------------------------------------------------------------------
@@ -145,12 +151,13 @@ function buildColorMaterial(color: string, birchTextures: TexSet): THREE.MeshSta
  * useWoodMaterial — Birch maps are reused as the grain layer.
  */
 export function useColorChairMaterial(color: string): THREE.MeshStandardMaterial {
-  const [, setReady] = useState(false);
+  const [, bump] = useReducer((x: number) => x + 1, 0);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([preloadAllTextures(), preloadAllEdgeTextures()]).then(() => {
-      if (!cancelled) setReady(true);
+    // Only Birch's roughness/normal maps feed the painted-plywood look.
+    loadFinishTextures('Birch').then(() => {
+      if (!cancelled) bump();
     });
     return () => { cancelled = true; };
   }, []);
@@ -170,24 +177,25 @@ export function useColorChairMaterial(color: string): THREE.MeshStandardMaterial
 
 /**
  * Loads PBR wood textures (color, roughness, normal) and builds a
- * MeshStandardMaterial. All finishes are preloaded on first mount so
- * switching between them is instant.
+ * MeshStandardMaterial. Only the requested finish is fetched — pages with
+ * a finish picker warm the rest via preloadAllTextures().
  *
  * Reads from the module-level texture/material caches synchronously to
  * avoid the one-frame stale-state flash that useState + useEffect caused
  * when the finish prop changed mid-animation.
  */
 export function useWoodMaterial(finish: WoodFinish): THREE.MeshStandardMaterial {
-  // Trigger one re-render when textures first finish loading
-  const [, setReady] = useState(false);
+  // Re-render when the requested finish's textures land. A boolean would go
+  // stale once true and swallow the re-render for later-loaded finishes.
+  const [, bump] = useReducer((x: number) => x + 1, 0);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([preloadAllTextures(), preloadAllEdgeTextures()]).then(() => {
-      if (!cancelled) setReady(true);
+    loadFinishTextures(finish).then(() => {
+      if (!cancelled) bump();
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [finish]);
 
   // Read directly from the module-level cache — synchronous, no stale state
   const textures = textureCache[finish] ?? EMPTY_TEX;

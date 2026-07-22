@@ -6,6 +6,8 @@ import { useSavedDesigns, type SavedDesign } from '@/stores/useSavedDesigns';
 import { PRESET_DESIGNS, type PresetDesign } from '@/data/presetDesigns';
 import { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
+import { preloadAllTextures } from '@/components/shelf/RenderedShelfView/useWoodMaterial';
+import { preloadAllEdgeTextures } from '@/components/shelf/RenderedShelfView/useEdgeMaterial';
 import {
   useShelfWasm,
   computeDerivedParams,
@@ -427,6 +429,21 @@ export default function DesignerPage() {
   const { designs, loadDesign, saveDesign, deleteDesign, loadDesigns, resetToNew } = useSavedDesigns();
 
   useEffect(() => { loadDesigns(); }, [loadDesigns]);
+
+  // Textures load per finish on demand; warm the full set while idle so
+  // the finish picker never flashes the untextured fallback.
+  useEffect(() => {
+    const warm = () => {
+      preloadAllTextures();
+      preloadAllEdgeTextures();
+    };
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(warm);
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(warm, 2000);
+    return () => clearTimeout(t);
+  }, []);
 
 
   const set = <K extends keyof DesignParams>(key: K, value: DesignParams[K]) =>

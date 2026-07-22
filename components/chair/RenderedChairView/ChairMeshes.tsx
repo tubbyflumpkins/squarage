@@ -101,8 +101,10 @@ interface ChairMeshesProps {
 export default function ChairMeshes({ params, finish = 'Walnut', color, center = true }: ChairMeshesProps) {
   // Always invoke all four hooks — color finishes pair the tinted face
   // material with Birch's plywood edge so the cut edges still read as ply.
-  const woodMaterial = useWoodMaterial(finish);
-  const woodEdgeMaterial = useEdgeMaterial(finish);
+  // When a color is active the wood-finish pair is unused, so request Birch
+  // there too rather than fetching a texture set the page never renders.
+  const woodMaterial = useWoodMaterial(color ? 'Birch' : finish);
+  const woodEdgeMaterial = useEdgeMaterial(color ? 'Birch' : finish);
   const colorMaterial = useColorChairMaterial(color ?? '#888888');
   const birchEdgeMaterial = useEdgeMaterial('Birch');
 
