@@ -359,11 +359,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">{colorSelector}</div>
 
             <div className="mb-6">
-              <ShippingEstimator
-                variant="inline"
-                price={parseFloat(selectedVariant?.price.amount || '0')}
-                productTitle={product.title}
-              />
+              <ShippingEstimator />
             </div>
 
             <div className="mb-8">{cartButton}</div>
@@ -425,11 +421,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                 <div className="mb-8">{colorSelector}</div>
 
                 <div className="mb-8">
-                  <ShippingEstimator
-                    variant="inline"
-                    price={parseFloat(selectedVariant?.price.amount || '0')}
-                    productTitle={product.title}
-                  />
+                  <ShippingEstimator />
                 </div>
 
                 <div className="mb-8">{cartButton}</div>

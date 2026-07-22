@@ -1,17 +1,9 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import Link from 'next/link'
-import { TruckIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
-interface ShippingEstimatorProps {
-  price: number
-  productTitle: string
-  /** 'card' = bordered gray box (default); 'inline' = unboxed, titled like a product page section */
-  variant?: 'card' | 'inline'
-}
-
-export default function ShippingEstimator({ price, productTitle, variant = 'card' }: ShippingEstimatorProps) {
+export default function ShippingEstimator() {
   const [zipCode, setZipCode] = useState('')
   const [shippingStatus, setShippingStatus] = useState<{
     available: boolean
@@ -65,8 +57,14 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
       .then((geo) => {
         if (cancelled || !geo) return
         if (geo.country === 'US' && /^\d{5}$/.test(geo.postalCode || '')) {
-          setZipCode(geo.postalCode)
-          calculateShipping(geo.postalCode)
+          // Don't clobber anything the user typed while the lookup was in flight.
+          let applied = false
+          setZipCode((prev) => {
+            if (prev) return prev
+            applied = true
+            return geo.postalCode
+          })
+          if (applied) calculateShipping(geo.postalCode)
         }
       })
       .catch(() => {
@@ -82,7 +80,7 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
 
   const calculateShipping = useCallback((zip?: string) => {
     const checkZip = zip || zipCode
-    
+
     if (!checkZip || checkZip.length < 5) {
       setError('Enter valid ZIP')
       return
@@ -98,11 +96,11 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
     // Simulate calculation delay
     setTimeout(() => {
       const zipNum = checkZip.substring(0, 5)
-      
+
       // Check if it's a US ZIP code (basic validation)
       const zipInt = parseInt(zipNum)
       const isUSZip = zipInt >= 1001 && zipInt <= 99950
-      
+
       if (!isUSZip) {
         setShippingStatus({
           available: false,
@@ -110,12 +108,12 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
         })
       } else {
         // LA area ZIP codes (900xx-908xx)
-        const isLA = zipNum.startsWith('900') || zipNum.startsWith('901') || 
-                     zipNum.startsWith('902') || zipNum.startsWith('903') || 
+        const isLA = zipNum.startsWith('900') || zipNum.startsWith('901') ||
+                     zipNum.startsWith('902') || zipNum.startsWith('903') ||
                      zipNum.startsWith('904') || zipNum.startsWith('905') ||
-                     zipNum.startsWith('906') || zipNum.startsWith('907') || 
+                     zipNum.startsWith('906') || zipNum.startsWith('907') ||
                      zipNum.startsWith('908')
-        
+
         if (isLA) {
           setShippingStatus({
             available: true,
@@ -148,115 +146,56 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
     }
   }
 
-  if (variant === 'inline') {
-    return (
-      <div className="w-full">
-        <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
-          Delivery
-        </h3>
-        <p className="text-base font-neue-haas text-squarage-black mb-2">
-          Ships to US/EU
-          <span aria-hidden="true" className="mx-3">|</span>
-          Local delivery available in Los Angeles
-        </p>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-base font-neue-haas text-squarage-black">
-          <span>Zip code:</span>
-          <input
-            type="text"
-            value={zipCode}
-            onChange={handleZipChange}
-            onKeyDown={handleKeyPress}
-            className="w-16 bg-transparent border-0 border-b-2 border-squarage-black text-center font-neue-haas text-base text-squarage-black focus:outline-none focus:border-squarage-green transition-colors"
-            maxLength={5}
-            aria-label="ZIP code for delivery"
-          />
-          <button
-            onClick={() => calculateShipping()}
-            disabled={isCalculating || zipCode.length < 5}
-            className="font-medium font-neue-haas text-base text-squarage-green hover:underline underline-offset-4 disabled:text-gray-300 disabled:no-underline disabled:cursor-not-allowed transition-colors"
-          >
-            {isCalculating ? 'Checking...' : 'Check'}
-          </button>
-          {shippingStatus && !error && (
-            <span className="flex items-center gap-1">
-              {shippingStatus.available ? (
-                <CheckCircleIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
-              ) : (
-                <XCircleIcon className="w-4 h-4 text-red-600 flex-shrink-0" />
-              )}
-              <span className={`text-sm font-neue-haas ${
-                shippingStatus.available ? 'text-green-700' : 'text-red-700'
-              }`}>
-                {shippingStatus.message}
-                {shippingStatus.isLocal && ' (LA)'}
-              </span>
-            </span>
-          )}
-          {error && (
-            <span className="text-sm text-red-600 font-neue-haas">{error}</span>
-          )}
-        </div>
-        <ul className="list-disc list-inside text-base font-neue-haas text-gray-600">
-          <li>Made to order, ships in 2-4 weeks</li>
-        </ul>
-      </div>
-    )
-  }
-
   return (
-    <div className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3">
-      {/* Combined Header and Input Row */}
-      <div className="flex items-center gap-2 mb-2">
-        <TruckIcon className="w-4 h-4 text-gray-600" />
-        <span className="text-xs font-medium font-neue-haas text-gray-700">
-          Delivery
-        </span>
+    <div className="w-full">
+      <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
+        Delivery
+      </h3>
+      <p className="text-base font-neue-haas text-squarage-black mb-2">
+        Ships to US/EU
+        <span aria-hidden="true" className="mx-3">|</span>
+        Local delivery available in Los Angeles
+      </p>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-base font-neue-haas text-squarage-black">
+        <span>Zip code:</span>
         <input
           type="text"
           value={zipCode}
           onChange={handleZipChange}
-          onKeyPress={handleKeyPress}
-          placeholder="ZIP code"
-          className="w-20 px-2 py-1 border border-gray-300 rounded bg-white font-neue-haas text-xs placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-squarage-orange focus:border-transparent"
+          onKeyDown={handleKeyPress}
+          className="w-16 bg-transparent border-0 border-b-2 border-squarage-black text-center font-neue-haas text-base text-squarage-black focus:outline-none focus:border-squarage-green transition-colors"
           maxLength={5}
-          aria-label="ZIP code for shipping"
+          aria-label="ZIP code for delivery"
         />
         <button
           onClick={() => calculateShipping()}
           disabled={isCalculating || zipCode.length < 5}
-          className="px-3 py-1 bg-squarage-black text-white rounded font-neue-haas text-xs font-medium hover:bg-squarage-orange transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="font-medium font-neue-haas text-base text-squarage-green hover:underline underline-offset-4 disabled:text-gray-300 disabled:no-underline disabled:cursor-not-allowed transition-colors"
         >
-          {isCalculating ? '...' : 'Check'}
+          {isCalculating ? 'Checking...' : 'Check'}
         </button>
-
-        {/* Inline Status */}
         {shippingStatus && !error && (
-          <div className="flex items-center gap-1 flex-1">
+          <span className="flex items-center gap-1">
             {shippingStatus.available ? (
-              <CheckCircleIcon className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+              <CheckCircleIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
             ) : (
-              <XCircleIcon className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
+              <XCircleIcon className="w-4 h-4 text-red-600 flex-shrink-0" />
             )}
-            <span className={`text-xs font-neue-haas ${
+            <span className={`text-sm font-neue-haas ${
               shippingStatus.available ? 'text-green-700' : 'text-red-700'
             }`}>
               {shippingStatus.message}
               {shippingStatus.isLocal && ' (LA)'}
             </span>
-          </div>
+          </span>
         )}
-        
         {error && (
-          <span className="text-xs text-red-600 font-neue-haas">{error}</span>
+          <span className="text-sm text-red-600 font-neue-haas">{error}</span>
         )}
       </div>
-
-      {/* Info Text */}
-      <div className="flex flex-wrap gap-x-2 text-xs font-neue-haas text-gray-500">
-        <span>Made to order</span>
-        <span>•</span>
-        <span>Ships in 2-3 weeks</span>
-      </div>
+      <ul className="list-disc list-inside text-base font-neue-haas text-gray-600">
+        <li>Made to order, ships in 2-4 weeks</li>
+      </ul>
     </div>
   )
 }

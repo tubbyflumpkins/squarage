@@ -513,10 +513,7 @@ export default function ProductPage({ product }: ProductPageProps) {
 
               {/* Shipping Estimator */}
               <div className="mb-6">
-                <ShippingEstimator 
-                  price={parseFloat(selectedVariant?.price.amount || '0')}
-                  productTitle={product.title}
-                />
+                <ShippingEstimator />
               </div>
 
               {/* Add to Cart Button */}
@@ -711,10 +708,7 @@ export default function ProductPage({ product }: ProductPageProps) {
 
                 {/* Shipping Estimator */}
                 <div className="mb-8">
-                  <ShippingEstimator 
-                    price={parseFloat(selectedVariant?.price.amount || '0')}
-                    productTitle={product.title}
-                  />
+                  <ShippingEstimator />
                 </div>
 
                 {/* Add to Cart Button */}
