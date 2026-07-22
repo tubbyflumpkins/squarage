@@ -130,7 +130,7 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
         </h3>
         <p className="text-base font-neue-haas text-squarage-black mb-2">
           Ships to US/EU
-          <span aria-hidden="true" className="mx-3 text-gray-300">|</span>
+          <span aria-hidden="true" className="mx-3">|</span>
           Local delivery available in Los Angeles
         </p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-base font-neue-haas text-squarage-black">
