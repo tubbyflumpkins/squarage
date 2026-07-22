@@ -155,18 +155,14 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
         Select Style
       </h3>
       <div className="relative grid grid-cols-3">
-        {/* Sliding selector — a solid cell-sized block that glides to the active cell.
-            Grid lines live on the buttons above it: each button carries a 2px border
-            (collapsed via -ml-0.5), and the active button's border turns green and
-            paints over its neighbors' black lines (z-10), so no black ever shows
-            through the selection. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-squarage-green transition-transform duration-200 ease-out motion-reduce:transition-none"
-          style={{ transform: `translateX(${poseVariantOrder.indexOf(selectedStyle) * 100}%)` }}
-        />
+        {/* The active cell's look comes entirely from its button (background +
+            border color), which lands on the same pixel grid as the black lines —
+            crisp at any window width. Buttons share single 2px lines by collapsing
+            borders with -ml-0.5; the button right of the active one turns its left
+            border green so the shared line belongs to the selection. */}
         {poseVariantOrder.map((id, index) => {
           const isActive = id === selectedStyle;
+          const afterActive = index > 0 && poseVariantOrder[index - 1] === selectedStyle;
           return (
             <button
               key={id}
@@ -177,14 +173,24 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                 index > 0 ? '-ml-0.5 ' : ''
               }${
                 isActive
-                  ? 'z-10 border-squarage-green text-white'
-                  : 'border-squarage-black text-squarage-black hover:text-squarage-green'
+                  ? 'border-squarage-green bg-squarage-green text-white'
+                  : `${afterActive ? 'border-l-squarage-green ' : ''}border-squarage-black text-squarage-black hover:text-squarage-green`
               }`}
             >
-              {posePresets[id].name}
+              <span className="relative z-10">{posePresets[id].name}</span>
             </button>
           );
         })}
+        {/* Motion accent — glides between cells on change. Inset so it never
+            defines an edge; transformed layers don't pixel-snap like layout does,
+            so it must not be responsible for lining up with the grid. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 p-1 transition-transform duration-200 ease-out motion-reduce:transition-none"
+          style={{ transform: `translateX(${poseVariantOrder.indexOf(selectedStyle) * 100}%)` }}
+        >
+          <div className="h-full w-full bg-squarage-green" />
+        </div>
       </div>
     </div>
   );
