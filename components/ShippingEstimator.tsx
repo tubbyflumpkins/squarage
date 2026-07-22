@@ -152,7 +152,7 @@ export default function ShippingEstimator() {
         Delivery
       </h3>
       <p className="text-base font-neue-haas text-squarage-black mb-2">
-        Ships to US/EU
+        Ships anywhere in the USA
         <span aria-hidden="true" className="mx-3">|</span>
         Local delivery available in Los Angeles
       </p>
