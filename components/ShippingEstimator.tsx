@@ -22,8 +22,13 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
   const [error, setError] = useState<string | null>(null)
   const [autoChecked, setAutoChecked] = useState(false)
 
-  // Try to get ZIP from various sources on mount
+  // Fill the ZIP on mount: a previously saved ZIP wins; otherwise ask
+  // /api/geo for an approximate one from Vercel's IP geolocation headers
+  // (US only — the checker only understands US ZIPs). Does nothing when
+  // neither source is available, e.g. on localhost.
   useEffect(() => {
+    if (autoChecked) return
+
     const getStoredZip = () => {
       // Check localStorage first
       const storedZip = localStorage.getItem('userZipCode')
@@ -44,13 +49,34 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
     }
 
     const storedZip = getStoredZip()
-    if (storedZip && !autoChecked) {
+    if (storedZip) {
       setZipCode(storedZip)
       // Auto-calculate for stored ZIP
       setTimeout(() => {
         calculateShipping(storedZip)
         setAutoChecked(true)
       }, 500)
+      return
+    }
+
+    let cancelled = false
+    fetch('/api/geo')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((geo) => {
+        if (cancelled || !geo) return
+        if (geo.country === 'US' && /^\d{5}$/.test(geo.postalCode || '')) {
+          setZipCode(geo.postalCode)
+          calculateShipping(geo.postalCode)
+        }
+      })
+      .catch(() => {
+        // Geo headers unavailable (localhost) or network hiccup — leave the field empty.
+      })
+      .finally(() => {
+        if (!cancelled) setAutoChecked(true)
+      })
+    return () => {
+      cancelled = true
     }
   }, [autoChecked])
 
@@ -130,7 +156,7 @@ export default function ShippingEstimator({ price, productTitle, variant = 'card
         </h3>
         <p className="text-base font-neue-haas text-squarage-black mb-2">
           Ships to US/EU
-          <span aria-hidden="true" className="mx-3 text-gray-300">|</span>
+          <span aria-hidden="true" className="mx-3">|</span>
           Local delivery available in Los Angeles
         </p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-base font-neue-haas text-squarage-black">
