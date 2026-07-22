@@ -154,7 +154,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
       <h3 className="text-lg md:text-xl font-medium font-neue-haas text-squarage-black mb-3 md:mb-4">
         Select Style
       </h3>
-      <div className="relative grid grid-cols-3 border-2 border-gray-300">
+      <div className="relative grid grid-cols-3 border-2 border-squarage-green">
         {/* Sliding selector — fills the active cell and glides between them */}
         <div
           aria-hidden="true"
@@ -170,7 +170,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
               onClick={() => setSelectedStyle(id)}
               aria-pressed={isActive}
               className={`relative px-3 md:px-4 py-3 font-medium font-neue-haas text-sm md:text-base transition-colors duration-200 ${
-                index > 0 ? 'border-l-2 border-gray-300 ' : ''
+                index > 0 ? 'border-l-2 border-squarage-green ' : ''
               }${isActive ? 'text-white' : 'text-squarage-black hover:text-squarage-green'}`}
             >
               {posePresets[id].name}
