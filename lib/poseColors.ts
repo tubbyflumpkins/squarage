@@ -29,6 +29,28 @@ export function finishNameForHex(hex: string): string | undefined {
   return POSE_FINISHES.find((f) => f.hex.toLowerCase() === target)?.name;
 }
 
+// URL-friendly color identifier: lowercase with diacritics stripped, so
+// "Rosé" reads as plain "rose" in a shared link.
+export function poseColorSlug(name: string): string {
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+export function poseColorSlugForHex(hex: string): string | undefined {
+  const name = finishNameForHex(hex);
+  return name ? poseColorSlug(name) : undefined;
+}
+
+// Resolve a ?color= URL param to a finish. Accepts the slug name (what the
+// site writes now, e.g. "merlot") and legacy hex values ("#7B3542") so
+// previously shared links keep working.
+export function finishForColorParam(raw: string): PoseFinish | undefined {
+  const value = raw.trim();
+  const byHex = POSE_FINISHES.find((f) => f.hex.toLowerCase() === value.toLowerCase());
+  if (byHex) return byHex;
+  const slug = poseColorSlug(value);
+  return POSE_FINISHES.find((f) => poseColorSlug(f.name) === slug);
+}
+
 export function pickDistinctRandomColors(count: number): string[] {
   const pool = [...POSE_COLOR_PALETTE];
   for (let i = pool.length - 1; i > 0; i--) {

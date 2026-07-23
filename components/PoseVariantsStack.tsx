@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { posePresets, poseVariantOrder } from '@/lib/posePresets';
-import { POSE_COLOR_PALETTE, pickDistinctRandomColors } from '@/lib/poseColors';
+import { POSE_COLOR_PALETTE, pickDistinctRandomColors, poseColorSlugForHex } from '@/lib/poseColors';
 
 const RenderedChairView = dynamic(() => import('@/components/chair/RenderedChairView'), {
   ssr: false,
@@ -30,7 +30,7 @@ export default function PoseVariantsStack() {
           const color = colors[index];
           // First row: chair on the RIGHT, title on the LEFT. Alternates.
           const reversed = index % 2 === 0;
-          const href = `/products/mateo-chair?style=${id}&color=${encodeURIComponent(color)}`;
+          const href = `/products/mateo-chair?style=${id}&color=${poseColorSlugForHex(color) ?? encodeURIComponent(color)}`;
           return (
             <Link
               key={id}

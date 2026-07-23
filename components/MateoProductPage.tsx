@@ -17,7 +17,7 @@ import StickyAddToCart from '@/components/StickyAddToCart';
 import ProductDetailsAccordion from '@/components/ProductDetailsAccordion';
 import ProductTrustBadges from '@/components/ProductTrustBadges';
 import { posePresets, poseVariantOrder, type PoseVariantId } from '@/lib/posePresets';
-import { POSE_FINISHES, finishNameForHex } from '@/lib/poseColors';
+import { POSE_FINISHES, finishNameForHex, finishForColorParam, poseColorSlug } from '@/lib/poseColors';
 import { useChairMorph } from '@/hooks/useChairMorph';
 
 const RenderedChairView = dynamic(() => import('@/components/chair/RenderedChairView'), {
@@ -91,8 +91,8 @@ export default function MateoProductPage({ products }: MateoProductPageProps) {
   const initialColor = useMemo<string>(() => {
     const raw = searchParams.get('color');
     if (!raw) return DEFAULT_COLOR_HEX;
-    const matched = POSE_FINISHES.find((f) => f.hex.toLowerCase() === raw.toLowerCase());
-    return matched ? matched.hex : DEFAULT_COLOR_HEX;
+    // Accepts the color-name slug ("merlot") or a legacy hex ("#7B3542").
+    return finishForColorParam(raw)?.hex ?? DEFAULT_COLOR_HEX;
   }, [searchParams]);
 
   const [selectedStyle, setSelectedStyle] = useState<PoseVariantId>(initialStyle);
@@ -149,15 +149,16 @@ export default function MateoProductPage({ products }: MateoProductPageProps) {
   // Keep the address bar in sync with the selection so a copied URL always
   // shares exactly what's on screen. Native replaceState (no navigation, no
   // server round-trip) — Next keeps useSearchParams consistent with it.
+  // Color is written as its readable name slug ("merlot"), not the hex.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     params.set('style', selectedStyle);
-    params.set('color', selectedColorHex);
+    params.set('color', selectedColorName ? poseColorSlug(selectedColorName) : selectedColorHex);
     const next = `${window.location.pathname}?${params.toString()}`;
     if (`${window.location.pathname}${window.location.search}` !== next) {
       window.history.replaceState(null, '', next);
     }
-  }, [selectedStyle, selectedColorHex]);
+  }, [selectedStyle, selectedColorHex, selectedColorName]);
 
   const handleAddToCart = async () => {
     if (!selectedVariant || isAddingToCart) return;
