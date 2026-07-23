@@ -146,6 +146,19 @@ export default function MateoProductPage({ products }: MateoProductPageProps) {
   // toggling styles reports each chair product to Meta exactly once.
   useMetaViewContent(selectedProduct);
 
+  // Keep the address bar in sync with the selection so a copied URL always
+  // shares exactly what's on screen. Native replaceState (no navigation, no
+  // server round-trip) — Next keeps useSearchParams consistent with it.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('style', selectedStyle);
+    params.set('color', selectedColorHex);
+    const next = `${window.location.pathname}?${params.toString()}`;
+    if (`${window.location.pathname}${window.location.search}` !== next) {
+      window.history.replaceState(null, '', next);
+    }
+  }, [selectedStyle, selectedColorHex]);
+
   const handleAddToCart = async () => {
     if (!selectedVariant || isAddingToCart) return;
     setIsAddingToCart(true);
