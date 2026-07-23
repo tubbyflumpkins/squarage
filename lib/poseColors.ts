@@ -7,11 +7,12 @@ export interface PoseFinish {
   hex: string;
 }
 
-// Aligned to the Shopify product `mateo-chair`'s Color option values so each
-// hex resolves to a real Shopify variant.
+// Aligned to the Color option values shared by the three Mateo Shopify
+// products (mateo-pose / mateo-tabouret / mateo-diner) so each hex resolves
+// to a real Shopify variant.
 export const POSE_FINISHES: readonly PoseFinish[] = [
   { name: 'Squarage', hex: '#4A9B4E' },
-  { name: 'Rose', hex: '#E0908A' },
+  { name: 'Rosé', hex: '#E0908A' },
   { name: 'Sky', hex: '#7EB5D5' },
   { name: 'Mint', hex: '#8FB89A' },
   { name: 'Yellow', hex: '#F0DC73' },

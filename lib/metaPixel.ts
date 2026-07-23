@@ -125,18 +125,20 @@ export function trackMetaEvent(eventName: MetaEventName, customData: MetaCustomD
   }
 }
 
-// Fire ViewContent once per product-page mount. Consent is checked at call
-// time inside trackMetaEvent; the ref guards StrictMode double-effects.
+// Fire ViewContent once per distinct product viewed on a page. Consent is
+// checked at call time inside trackMetaEvent; the Set guards StrictMode
+// double-effects and, on the Mateo page (where the product prop switches
+// with the style toggle), re-fires only for products not yet seen.
 export function useMetaViewContent(product: {
   id: string
   title: string
   handle: string
   variants: Array<{ id: string; price: { amount: string; currencyCode: string } }>
 }): void {
-  const trackedHandle = useRef<string | null>(null)
+  const trackedHandles = useRef<Set<string>>(new Set())
   useEffect(() => {
-    if (trackedHandle.current === product.handle) return
-    trackedHandle.current = product.handle
+    if (trackedHandles.current.has(product.handle)) return
+    trackedHandles.current.add(product.handle)
     const firstVariant = product.variants?.[0]
     trackMetaEvent('ViewContent', {
       content_ids: [firstVariant?.id || product.id],
