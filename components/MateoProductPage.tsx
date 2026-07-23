@@ -26,7 +26,10 @@ const RenderedChairView = dynamic(() => import('@/components/chair/RenderedChair
 });
 
 interface MateoProductPageProps {
-  product: SerializedProduct;
+  // One serialized Shopify product per chair style — the style toggle
+  // switches products, not variants. null = that style failed to load and
+  // its button renders disabled.
+  products: Record<PoseVariantId, SerializedProduct | null>;
 }
 
 const DEFAULT_COLOR_HEX = '#4A9B4E'; // Squarage green
@@ -52,42 +55,39 @@ const DIMENSIONS_IMAGES: Record<PoseVariantId, { id: string; src: string; altTex
   dine: { id: 'dine-dimensions', src: '/images/pose/dimensions/diner_dimensions.png', altText: 'Dîner chair dimensions: 34⅝ inches tall, 18 inch seat height, 22¼ inches wide, 18 inches deep', width: 604, height: 689 },
 };
 
-// Locate the Shopify variant matching (style, color). Tolerant of common
-// option-name spellings ("Style"/"Variant"/"Type" and "Color"/"Colour"/"Finish")
-// since the Shopify product was just created and we want the page to keep
-// working if the option is renamed later. Color is matched via the named
-// finish (e.g. "Squarage") we get from the hex.
-function findMateoVariant(
+// Locate the Shopify variant matching the selected color. Each style is its
+// own Color-only Shopify product, so style picks the product and color picks
+// the variant within it. Tolerant of common option-name spellings
+// ("Color"/"Colour"/"Finish") so the page keeps working if the option is
+// renamed later. Color is matched via the named finish (e.g. "Squarage")
+// we get from the hex.
+function findMateoColorVariant(
   product: SerializedProduct,
-  styleName: string,
   colorName: string | undefined,
 ): SerializedProduct['variants'][number] | undefined {
   if (!colorName) return undefined;
-  const styleNamesLower = ['style', 'variant', 'type', 'shape'];
   const colorNamesLower = ['color', 'colour', 'finish'];
-  return product.variants.find((v) => {
-    const matchesStyle = v.selectedOptions.some(
-      (o) => styleNamesLower.includes(o.name.toLowerCase()) && o.value === styleName,
-    );
-    const matchesColor = v.selectedOptions.some(
+  return product.variants.find((v) =>
+    v.selectedOptions.some(
       (o) => colorNamesLower.includes(o.name.toLowerCase()) && o.value === colorName,
-    );
-    return matchesStyle && matchesColor;
-  });
+    ),
+  );
 }
 
-export default function MateoProductPage({ product }: MateoProductPageProps) {
-  useMetaViewContent(product);
+export default function MateoProductPage({ products }: MateoProductPageProps) {
   const searchParams = useSearchParams();
   const { addToCart } = useCart();
 
-  // Initial selection from URL params (deep-link from collection page).
+  // Initial selection from URL params (deep-links from the collection page
+  // and the catalog cards), restricted to styles whose product loaded.
   const initialStyle = useMemo<PoseVariantId>(() => {
     const raw = searchParams.get('style');
-    return raw && (poseVariantOrder as readonly string[]).includes(raw)
-      ? (raw as PoseVariantId)
-      : DEFAULT_STYLE;
-  }, [searchParams]);
+    if (raw && (poseVariantOrder as readonly string[]).includes(raw) && products[raw as PoseVariantId]) {
+      return raw as PoseVariantId;
+    }
+    if (products[DEFAULT_STYLE]) return DEFAULT_STYLE;
+    return poseVariantOrder.find((id) => products[id]) ?? DEFAULT_STYLE;
+  }, [searchParams, products]);
   const initialColor = useMemo<string>(() => {
     const raw = searchParams.get('color');
     if (!raw) return DEFAULT_COLOR_HEX;
@@ -134,11 +134,17 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
   }, [lightboxImage]);
 
   const selectedColorName = finishNameForHex(selectedColorHex);
-  const selectedStyleName = posePresets[selectedStyle].name;
+  // Non-null: the route 404s before rendering when all three products are
+  // missing, and style selection is restricted to loaded products.
+  const selectedProduct = (products[selectedStyle] ?? products[initialStyle])!;
   const selectedVariant = useMemo(
-    () => findMateoVariant(product, selectedStyleName, selectedColorName),
-    [product, selectedStyleName, selectedColorName],
+    () => findMateoColorVariant(selectedProduct, selectedColorName),
+    [selectedProduct, selectedColorName],
   );
+
+  // Fires once per distinct product viewed (the hook keeps a seen-set), so
+  // toggling styles reports each chair product to Meta exactly once.
+  useMetaViewContent(selectedProduct);
 
   const handleAddToCart = async () => {
     if (!selectedVariant || isAddingToCart) return;
@@ -152,9 +158,9 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
     }
   };
 
-  const collection = product.collections?.find((c) => c.handle === 'pose')
-    ?? product.collections?.[0]
-    ?? { handle: 'pose', title: 'Posé Collection' };
+  // All three Mateo products live in the Posé collection; the serializer
+  // doesn't emit collections, so this is a constant.
+  const collection = { handle: 'pose', title: 'Posé Collection' };
 
   const titleNode = (
     <>
@@ -177,18 +183,22 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
         {poseVariantOrder.map((id, index) => {
           const isActive = id === selectedStyle;
           const afterActive = index > 0 && poseVariantOrder[index - 1] === selectedStyle;
+          const isAvailable = products[id] !== null;
           return (
             <button
               key={id}
               type="button"
-              onClick={() => setSelectedStyle(id)}
+              onClick={() => isAvailable && setSelectedStyle(id)}
+              disabled={!isAvailable}
               aria-pressed={isActive}
               className={`relative border-2 px-3 md:px-4 py-3 font-medium font-neue-haas text-sm md:text-base transition-colors duration-200 ${
                 index > 0 ? '-ml-0.5 ' : ''
               }${
                 isActive
                   ? 'border-squarage-green bg-squarage-green text-white'
-                  : `${afterActive ? 'border-l-squarage-green ' : ''}border-squarage-black text-squarage-black hover:text-squarage-green`
+                  : `${afterActive ? 'border-l-squarage-green ' : ''}border-squarage-black text-squarage-black ${
+                      isAvailable ? 'hover:text-squarage-green' : 'opacity-40 cursor-not-allowed'
+                    }`
               }`}
             >
               <span className="relative z-10">{posePresets[id].name}</span>
@@ -329,10 +339,10 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
     <main className="min-h-screen bg-cream">
       {selectedVariant && (
         <StickyAddToCart
-          product={{ title: product.title, images: product.images }}
+          product={{ title: selectedProduct.title, images: selectedProduct.images }}
           selectedVariant={selectedVariant}
           onAddToCart={handleAddToCart}
-          variantLabel="Style"
+          variantLabel="Color"
           isVisible={showStickyCart}
         />
       )}
@@ -364,9 +374,9 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                   ? formatPrice(selectedVariant.price.amount, selectedVariant.price.currencyCode)
                   : '—'}
               </p>
-              {product.description && (
+              {selectedProduct.description && (
                 <p className="text-base font-neue-haas text-squarage-black leading-relaxed">
-                  {product.description}
+                  {selectedProduct.description}
                 </p>
               )}
             </div>
@@ -381,7 +391,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
             <div className="mb-8">{cartButton}</div>
 
             <div className="mb-8">
-              <ProductDetailsAccordion productType="pose" metafields={product.metafields} dimensionsImage={DIMENSIONS_IMAGES[selectedStyle]} />
+              <ProductDetailsAccordion productType="pose" metafields={selectedProduct.metafields} dimensionsImage={DIMENSIONS_IMAGES[selectedStyle]} />
             </div>
             <div className="mb-8">{renderGallery(MOBILE_GALLERY_IMAGES)}</div>
             <div className="mb-8">
@@ -427,9 +437,9 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                   </p>
                 </div>
 
-                {product.description && (
+                {selectedProduct.description && (
                   <p className="text-lg font-neue-haas text-squarage-black leading-relaxed mb-8">
-                    {product.description}
+                    {selectedProduct.description}
                   </p>
                 )}
 
@@ -443,7 +453,7 @@ export default function MateoProductPage({ product }: MateoProductPageProps) {
                 <div className="mb-8">{cartButton}</div>
 
                 <div className="mb-8">
-                  <ProductDetailsAccordion productType="pose" metafields={product.metafields} dimensionsImage={DIMENSIONS_IMAGES[selectedStyle]} />
+                  <ProductDetailsAccordion productType="pose" metafields={selectedProduct.metafields} dimensionsImage={DIMENSIONS_IMAGES[selectedStyle]} />
                 </div>
               </div>
             </div>

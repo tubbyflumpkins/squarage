@@ -1,11 +1,13 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import ProductPage from '@/components/ProductPage'
 import WarpedProductPage from '@/components/WarpedProductPage'
 import MateoProductPage from '@/components/MateoProductPage'
 import { shopifyApi } from '@/lib/shopify'
 import StructuredData, { generateProductSchema, generateBreadcrumbSchema } from '@/components/StructuredData'
-import { SerializedProduct } from '@/lib/productTypes'
+import { SerializedProduct, serializeShopifyProduct } from '@/lib/productTypes'
+import { MATEO_UNIFIED_HANDLE, MATEO_PRODUCT_HANDLES, mateoStyleForHandle, mateoUnifiedUrl } from '@/lib/mateoProducts'
+import { poseVariantOrder, type PoseVariantId } from '@/lib/posePresets'
 import { cache } from 'react'
 
 // This route stays fully dynamic (SSR per request): MateoProductPage reads
@@ -20,15 +22,55 @@ interface ProductPageProps {
   params: Promise<{
     handle: string
   }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params
-  
+
+  // The per-style Mateo handles 308-redirect to the unified page (see the
+  // page component) — this metadata is never served for a rendered page.
+  if (mateoStyleForHandle(handle)) {
+    return { title: 'Posé Collection | Squarage Studio' }
+  }
+
+  // The unified Mateo handle is virtual — no Shopify product exists behind
+  // it, so never fetch it. Title is pinned to the retired master product's
+  // output; description borrows the Posé product's copy (fetch shared with
+  // the page render via cache()).
+  if (handle === MATEO_UNIFIED_HANDLE) {
+    const pose = await getProduct(MATEO_PRODUCT_HANDLES.pose).catch(() => null)
+    const title = 'Posé Collection | Squarage Studio'
+    const description = pose?.description
+      || 'Handcrafted Posé Collection from Squarage Studio. Made in Los Angeles with premium materials and traditional craftsmanship.'
+    // Dedicated square share crop (gallery lead photo) instead of the
+    // Shopify render; resolved against metadataBase (www).
+    const image = '/images/og/mateo-chair.jpg'
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `https://www.squarage.com/products/${MATEO_UNIFIED_HANDLE}`,
+      },
+      openGraph: {
+        title,
+        description,
+        images: [{ url: image, alt: 'Posé Collection' }],
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [image],
+      },
+    }
+  }
+
   try {
     const product = await getProduct(handle)
-    
+
     if (!product) {
       return {
         title: 'Product Not Found | Squarage Studio',
@@ -38,11 +80,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
     const title = `${product.title} | Squarage Studio`
     const description = product.description || `Handcrafted ${product.title} from Squarage Studio. Made in Los Angeles with premium materials and traditional craftsmanship.`
-    // Mateo gets a dedicated square share crop (gallery lead photo) instead
-    // of the Shopify render; resolved against metadataBase (www).
-    const image = handle === 'mateo-chair'
-      ? '/images/og/mateo-chair.jpg'
-      : product.images?.[0]?.src
+    const image = product.images?.[0]?.src
 
     return {
       title,
@@ -72,12 +110,25 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 }
 
-export default async function ProductPageRoute({ params }: ProductPageProps) {
+export default async function ProductPageRoute({ params, searchParams }: ProductPageProps) {
   const { handle } = await params
-  
+
+  // The real per-style Mateo handles permanently redirect into the unified
+  // page. Kept outside any try/catch: permanentRedirect works by throwing.
+  const aliasStyle = mateoStyleForHandle(handle)
+  if (aliasStyle) {
+    const sp = await searchParams
+    const color = typeof sp.color === 'string' ? sp.color : undefined
+    permanentRedirect(mateoUnifiedUrl(aliasStyle, color))
+  }
+
+  if (handle === MATEO_UNIFIED_HANDLE) {
+    return renderMateoUnifiedPage(await searchParams)
+  }
+
   try {
     const product = await getProduct(handle)
-    
+
     if (!product) {
       notFound()
       return // Ensure we don't continue execution
@@ -88,103 +139,93 @@ export default async function ProductPageRoute({ params }: ProductPageProps) {
       collection.handle === 'warped'
     ) || false
 
-    // The Mateo chair has its own custom page (3D morphing chair, no static images).
-    const isMateoProduct = handle === 'mateo-chair'
-
     // Serialize the product data to plain object for client component
-  const serializedProduct: SerializedProduct = {
-    id: String(product.id),
-    title: String(product.title),
-    handle: String(product.handle),
-    description: String(product.description || ''),
-    descriptionHtml: String(product.descriptionHtml || ''),
-    availableForSale: Boolean(product.availableForSale),
-    createdAt: String(product.createdAt),
-    updatedAt: String(product.updatedAt),
-    productType: String(product.productType || ''),
-    vendor: String(product.vendor || ''),
-    tags: Array.isArray(product.tags) ? product.tags.map(tag => String(tag)) : [],
-    options: product.options?.filter((option: any) => option && option.id).map((option: any) => ({
-      id: String(option.id),
-      name: String(option.name || ''),
-      values: option.values?.map((value: any) => 
-        typeof value === 'string' ? value : value?.value || String(value || '')
-      ) || []
-    })) || [],
-    variants: product.variants?.filter((variant: any) => variant && variant.id).map((variant: any) => ({
-      id: String(variant.id),
-      title: String(variant.title || ''),
-      availableForSale: Boolean(variant.available), // Use 'available' field instead of 'availableForSale'
-      price: {
-        amount: String(variant.price?.amount || '0'),
-        currencyCode: String(variant.price?.currencyCode || 'USD')
-      },
-      compareAtPrice: variant.compareAtPrice ? {
-        amount: String(variant.compareAtPrice.amount || '0'),
-        currencyCode: String(variant.compareAtPrice.currencyCode || 'USD')
-      } : null,
-      selectedOptions: variant.selectedOptions?.map((option: any) => ({
-        name: String(option?.name || ''),
-        value: String(option?.value || '')
-      })) || [],
-      image: variant.image ? {
-        id: String(variant.image.id || ''),
-        src: String(variant.image.src || ''),
-        altText: String(variant.image.altText || '')
-      } : null
-    })) || [],
-    images: product.images?.filter((image: any) => image && image.id && image.src).map((image: any) => ({
-      id: String(image.id),
-      src: String(image.src),
-      altText: image.altText ? String(image.altText) : '',
-      width: Number(image.width) || 800,
-      height: Number(image.height) || 800
-    })) || [],
-    metafields: product.metafields?.filter((metafield: any) => metafield && metafield.id).map((metafield: any) => ({
-      id: String(metafield.id),
-      namespace: String(metafield.namespace || ''),
-      key: String(metafield.key || ''),
-      value: String(metafield.value || ''),
-      type: String(metafield.type || '')
-    })) || []
+    const serializedProduct = serializeShopifyProduct(product)
+
+    // Generate structured data for this product
+    const productSchema = generateProductSchema({
+      name: serializedProduct.title,
+      description: serializedProduct.description || `Handcrafted ${serializedProduct.title} from Squarage Studio`,
+      image: serializedProduct.images[0]?.src || '/images/logo_main.png',
+      price: serializedProduct.variants[0]?.price?.amount || '0',
+      currency: 'USD',
+      availability: serializedProduct.availableForSale ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      brand: 'Squarage Studio',
+      url: `https://www.squarage.com/products/${handle}`,
+      sku: serializedProduct.variants[0]?.id,
+    })
+
+    const breadcrumbSchema = generateBreadcrumbSchema([
+      { name: 'Home', url: 'https://www.squarage.com' },
+      { name: 'Products', url: 'https://www.squarage.com/products' },
+      { name: serializedProduct.title, url: `https://www.squarage.com/products/${handle}` },
+    ])
+
+    return (
+      <>
+        <StructuredData data={productSchema} />
+        <StructuredData data={breadcrumbSchema} />
+        {isWarpedProduct ? (
+          <WarpedProductPage product={serializedProduct} />
+        ) : (
+          <ProductPage product={serializedProduct} />
+        )}
+      </>
+    )
+  } catch (error) {
+    console.error('Error loading product:', error)
+    notFound()
+    return
+  }
+}
+
+// The unified Mateo page: one page, three real Shopify products (one per
+// style). A missing/failed product degrades to a disabled style button in
+// MateoProductPage; only all-three-missing 404s.
+async function renderMateoUnifiedPage(sp: { [key: string]: string | string[] | undefined }) {
+  const fetched = await Promise.all(
+    poseVariantOrder.map((id) => getProduct(MATEO_PRODUCT_HANDLES[id]).catch(() => null))
+  )
+  const products = Object.fromEntries(
+    poseVariantOrder.map((id, i) => [id, fetched[i] ? serializeShopifyProduct(fetched[i]) : null])
+  ) as Record<PoseVariantId, SerializedProduct | null>
+
+  if (poseVariantOrder.every((id) => !products[id])) {
+    notFound()
   }
 
-  // Generate structured data for this product
+  // JSON-LD mirrors the deep-linked style (default Posé); URLs stay pinned
+  // to the unified handle.
+  const styleParam = typeof sp.style === 'string' ? sp.style : undefined
+  const requestedStyle = styleParam && (poseVariantOrder as readonly string[]).includes(styleParam)
+    ? (styleParam as PoseVariantId)
+    : 'pose'
+  const schemaProduct = (products[requestedStyle]
+    ?? products[poseVariantOrder.find((id) => products[id])!])!
+
   const productSchema = generateProductSchema({
-    name: serializedProduct.title,
-    description: serializedProduct.description || `Handcrafted ${serializedProduct.title} from Squarage Studio`,
-    image: serializedProduct.images[0]?.src || '/images/logo_main.png',
-    price: serializedProduct.variants[0]?.price?.amount || '0',
+    name: schemaProduct.title,
+    description: schemaProduct.description || `Handcrafted ${schemaProduct.title} from Squarage Studio`,
+    image: schemaProduct.images[0]?.src || '/images/logo_main.png',
+    price: schemaProduct.variants[0]?.price?.amount || '0',
     currency: 'USD',
-    availability: serializedProduct.availableForSale ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    availability: schemaProduct.availableForSale ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     brand: 'Squarage Studio',
-    url: `https://www.squarage.com/products/${handle}`,
-    sku: serializedProduct.variants[0]?.id,
+    url: `https://www.squarage.com/products/${MATEO_UNIFIED_HANDLE}`,
+    sku: schemaProduct.variants[0]?.id,
   })
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://www.squarage.com' },
     { name: 'Products', url: 'https://www.squarage.com/products' },
-    { name: serializedProduct.title, url: `https://www.squarage.com/products/${handle}` },
+    { name: schemaProduct.title, url: `https://www.squarage.com/products/${MATEO_UNIFIED_HANDLE}` },
   ])
 
   return (
     <>
       <StructuredData data={productSchema} />
       <StructuredData data={breadcrumbSchema} />
-      {isMateoProduct ? (
-        <MateoProductPage product={serializedProduct} />
-      ) : isWarpedProduct ? (
-        <WarpedProductPage product={serializedProduct} />
-      ) : (
-        <ProductPage product={serializedProduct} />
-      )}
+      <MateoProductPage products={products} />
     </>
   )
-  
-  } catch (error) {
-    console.error('Error loading product:', error)
-    notFound()
-    return
-  }
 }
