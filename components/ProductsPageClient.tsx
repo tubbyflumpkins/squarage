@@ -131,18 +131,19 @@ export default function ProductsPageClient({
         break
       case 'featured':
       default:
-        // Simple order - Warped collection first, then Tiled collection,
-        // then anything not in either (e.g. the Posé collection) so no
-        // product is hidden from the default view
+        // Simple order - Posé collection first, then Warped, then Tiled,
+        // then anything not in any of them so no product is hidden from
+        // the default view
         if (selectedCollection === 'all' && !searchQuery) {
+          const poseProducts = collectionProducts['pose'] || []
           const warpedProducts = collectionProducts['warped'] || []
           const tiledProducts = collectionProducts['tiled'] || []
           const collected = new Set(
-            [...warpedProducts, ...tiledProducts].map((p) => String(p.id))
+            [...poseProducts, ...warpedProducts, ...tiledProducts].map((p) => String(p.id))
           )
           const rest = allProducts.filter((p) => !collected.has(String(p.id)))
 
-          filtered = [...warpedProducts, ...tiledProducts, ...rest]
+          filtered = [...poseProducts, ...warpedProducts, ...tiledProducts, ...rest]
         }
         break
     }

@@ -13,9 +13,16 @@ interface ProductCardProps {
   selectedFinish?: string
 }
 
+// Shared by the hover slideshow and the Mateo auto-cycle so both run at the
+// same rate.
+const CYCLE_INTERVAL_MS = 1200
+
 export default function ProductCard({ product, className = '', selectedFinish }: ProductCardProps) {
   const [hovering, setHovering] = useState(false)
   const [hoverImageIndex, setHoverImageIndex] = useState(0)
+  const [cycleIndex, setCycleIndex] = useState(0)
+  const [inView, setInView] = useState(false)
+  const rootRef = useRef<HTMLAnchorElement>(null)
   // Hover-capable (desktop) only, set after mount: the crossfade stack decodes
   // every product image at full resolution, which blows iOS Safari's per-tab
   // decoded-image budget and white-screens the page on phones — where the
@@ -66,8 +73,42 @@ export default function ProductCard({ product, className = '', selectedFinish }:
     return images
   }, [product.images, selectedFinish])
 
-  // The first image is the default display image
-  const displayImage = allImages[0] || null
+  // The three Mateo chair cards color-cycle on their own: every Shopify image
+  // is the chair in a different color, so the card shuffles through them
+  // (random start, random order) instead of waiting for hover.
+  const autoCycle = mateoStyleForHandle(String(product.handle)) !== undefined && allImages.length > 1
+
+  // Random starting image, and only cycle while the card is on screen.
+  useEffect(() => {
+    if (!autoCycle) return
+    setCycleIndex(Math.floor(Math.random() * allImages.length))
+    const el = rootRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setInView(true)
+      return
+    }
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [autoCycle, allImages.length])
+
+  useEffect(() => {
+    if (!autoCycle || !inView) return
+    const timer = setInterval(() => {
+      setCycleIndex((prev) => {
+        // Uniform pick over all images except the one showing
+        let next = Math.floor(Math.random() * (allImages.length - 1))
+        if (next >= prev) next++
+        return next
+      })
+    }, CYCLE_INTERVAL_MS)
+    return () => clearInterval(timer)
+  }, [autoCycle, inView, allImages.length])
+
+  // The default display image. Touch devices never mount the crossfade stack
+  // (decoded-image budget — see enableHoverStack above), so auto-cycling
+  // there swaps the single base image in place instead.
+  const displayImage = (autoCycle && !enableHoverStack ? allImages[cycleIndex] : allImages[0]) || allImages[0] || null
 
   // Check if device supports hover (desktop)
   const isHoverDevice = useCallback(() => {
@@ -88,13 +129,18 @@ export default function ProductCard({ product, className = '', selectedFinish }:
     if (allImages.length <= 1) return
 
     setHovering(true)
+
+    // Auto-cycling cards are already rotating on their own — hover only
+    // keeps the scale effect
+    if (autoCycle) return
+
     setHoverImageIndex(0)
 
     // Start cycling through images
     intervalRef.current = setInterval(() => {
       setHoverImageIndex(prev => (prev + 1) % allImages.length)
-    }, 1200)
-  }, [isHoverDevice, allImages.length, product])
+    }, CYCLE_INTERVAL_MS)
+  }, [isHoverDevice, allImages.length, product, autoCycle])
 
   const handleMouseLeave = useCallback(() => {
     setHovering(false)
@@ -110,8 +156,13 @@ export default function ProductCard({ product, className = '', selectedFinish }:
   // straight there with the style preselected (no redirect hop).
   const mateoStyle = mateoStyleForHandle(String(product.handle))
 
+  // Which stacked image is visible: the auto-cycle drives it for Mateo
+  // cards; everything else shows on hover only.
+  const activeStackIndex = autoCycle ? cycleIndex : hovering ? hoverImageIndex : -1
+
   return (
     <Link
+      ref={rootRef}
       href={mateoStyle ? mateoUnifiedUrl(mateoStyle) : `/products/${product.handle}`}
       className={`block ${className}`}
       onMouseEnter={handleMouseEnter}
@@ -138,8 +189,8 @@ export default function ProductCard({ product, className = '', selectedFinish }:
               <div
                 key={img.src}
                 className="absolute inset-0 transition-opacity duration-500 ease-in-out"
-                style={{ opacity: hovering && hoverImageIndex === index ? 1 : 0 }}
-                aria-hidden={!(hovering && hoverImageIndex === index)}
+                style={{ opacity: activeStackIndex === index ? 1 : 0 }}
+                aria-hidden={activeStackIndex !== index}
               >
                 <FastProductImage
                   src={img.src}
