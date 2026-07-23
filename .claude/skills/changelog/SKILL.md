@@ -5,6 +5,18 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-07-23 — Mateo split into 3 Shopify products behind the unchanged unified page
+
+Dylan split the single `mateo-chair` Shopify product (Style × Color variants) into three standalone products — `mateo-pose` "Mateo Posé", `mateo-tabouret` "Mateo Tabouret", `mateo-diner` "Mateo Diner" (each Color-only, 9 finishes, $650, all in the `pose` collection, each with its own image set) — so they show as individual catalog listings and for Shopify backend reasons (per-product weight etc.). The old master product ("Posé Collection") is slated for deletion; the site must never fetch it.
+
+- `/products/mateo-chair` is now a **virtual handle**: the route special-cases it, fetches the three real products (`Promise.all` over the cached `getProduct`), and passes `products: Record<PoseVariantId, SerializedProduct | null>` to `MateoProductPage`. The Style toggle switches products; color-only variant matching (`findMateoColorVariant`) picks the add-to-cart GID. A missing product = disabled style button; only all-three-missing 404s.
+- New `lib/mateoProducts.ts` is the single source of truth for the style↔handle mapping (`MATEO_UNIFIED_HANDLE`, `MATEO_PRODUCT_HANDLES`, `mateoStyleForHandle`, `mateoUnifiedUrl`), used by the route, `ProductCard`, and the sitemap.
+- Direct visits to the three real handles 308-redirect (`permanentRedirect`, kept OUTSIDE the route's try/catch — it works by throwing) to `/products/mateo-chair?style=…`, preserving `?color=`. Catalog cards link straight to the unified URL, so there's no hop from `/products`. `/collections/pose` deep links were already `?style=&color=` and needed no change.
+- `generateMetadata` for `mateo-chair` no longer fetches by handle: title pinned to "Posé Collection | Squarage Studio", description borrowed from `mateo-pose`, OG crop `/images/og/mateo-chair.jpg` unchanged. JSON-LD reflects the `?style=` product (default Posé) with URLs pinned to the unified handle.
+- Finish rename: `Rose` → `Rosé` in `lib/poseColors.ts` to byte-match the new products' Color option values (exact-match variant lookup; a mismatch renders that swatch "Unavailable").
+- Serializer extracted from the route into `serializeShopifyProduct` (`lib/productTypes.ts`). `useMetaViewContent` guard is now a Set, so the Mateo page fires ViewContent once per distinct product viewed (per-product Meta IDs instead of the old first-variant-only event). Sticky bar label changed Style → Color (variant titles are color names now). Sitemap: static `mateo-chair` entry, three real handles filtered out.
+- Verified on localhost: 308s (+color passthrough), per-style cart adds land distinct products/variant GIDs (incl. Rosé), pose deep links, metadata/JSON-LD/sitemap, Warped/Tiled pages unaffected; tsc + lint clean. Interim: until the old product is deleted, `/products` shows a redundant "Posé Collection" card that links to the unified page (harmless).
+
 ## 2026-07-21 — Mobile OOM crash fix: 3D geometry disposal + GPU/bandwidth diet
 
 Shipped to production 2026-07-22 (staging → main, `fb01c7f..8f629ac`). Root cause of the Mateo-page crash (iOS Safari blank + auto-reload after repeated style switches, phone heat, 85MB Vercel transfer spikes): the style morph regenerated all ~40 chair BufferGeometries every animation frame for 2s per switch and nothing in the repo ever called `.dispose()` — WebGL buffers aren't GC'd, so six switches leaked ~10,400 GPU geometries (measured: 52 → 10,409 via `renderer.info.memory`) until iOS jetsam-killed the tab. The Vercel spike was the crash-reload loop re-downloading textures, not the switches themselves.

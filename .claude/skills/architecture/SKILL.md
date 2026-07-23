@@ -12,7 +12,7 @@ description: Full project structure for the Squarage site — routes, components
 |-------|-------------|
 | `/` | Homepage (static hero, marquee banner, collections, about, custom CTA) |
 | `/products` | All products grid (server-rendered catalog, ISR 10 min) |
-| `/products/[handle]` | Product page (ProductPage / WarpedProductPage / MateoProductPage by collection) |
+| `/products/[handle]` | Product page (ProductPage default, WarpedProductPage by `warped` collection, MateoProductPage for the virtual `mateo-chair` handle — backed by 3 Shopify products; the real handles `mateo-pose`/`mateo-tabouret`/`mateo-diner` 308-redirect to `/products/mateo-chair?style=…`) |
 | `/collections/tiled` | Tiled collection (CarroHeroSection hero) |
 | `/collections/warped` | Warped collection |
 | `/collections/warped/designer` | 3D shelf designer |
@@ -50,7 +50,10 @@ components/
                               #   the Shopify image list (filename/alt contains "dimensions")
   MateoProductPage.tsx        # Mateo chair page: 3D morphing chair, photo gallery with
                               #   lightbox (posegallery/, mobile order 1-2/4-3/5-6),
-                              #   per-style dimension drawing in the Dimensions tab
+                              #   per-style dimension drawing in the Dimensions tab.
+                              #   Takes products: Record<PoseVariantId, SerializedProduct|null>
+                              #   — the Style toggle switches Shopify PRODUCTS (color-only
+                              #   variant matching); null product = disabled style button
   ProductDetailsAccordion.tsx # Dimensions/Details/Responsible Design/Care tabs;
                               #   optional dimensionsImage prop (Warped: from Shopify,
                               #   Mateo: local per-style drawing keyed by selectedStyle)
@@ -87,7 +90,11 @@ lib/
   cookieCategories.ts         # Consent categories + CONSENT_STORAGE_KEY/CONSENT_VERSION
   emailCapture.ts, policies.ts
   posePresets.ts              # Posé params; PoseVariantId = 'pose' | 'tabouret' | 'dine'
-  poseColors.ts               # COLOR_FINISH_HEX palette + random picker
+  poseColors.ts               # COLOR_FINISH_HEX palette + random picker (names match the
+                              #   Mateo products' Shopify Color option values, incl. "Rosé")
+  mateoProducts.ts            # style<->handle map for the 3 Mateo Shopify products +
+                              #   mateoUnifiedUrl(); used by the product route, ProductCard,
+                              #   and sitemap
 
 wasm-shelf-geometry/          # Rust crate → WASM (rebuild: npm run wasm:build)
   src/lib.rs                  # 4 wasm_bindgen exports: generate_flat_mesh_data,
@@ -127,6 +134,7 @@ public/images/
 - Cart persisted via localStorage (`shopify_checkout_id`); cleared on checkout handoff
 - Cart mutation failures throw and surface via `state.error` in CartDrawer
 - Warped dimension drawings live in Shopify product media (filename contains "dimensions"); Mateo's live in the repo under `public/images/pose/dimensions/`
+- **Mateo = 3 Shopify products, 1 page**: `mateo-pose`/`mateo-tabouret`/`mateo-diner` (Color-only variants, all in the `pose` collection) feed the unified `/products/mateo-chair` page — that handle is virtual (no Shopify product; never fetch it). Style/handle mapping lives in `lib/mateoProducts.ts`; catalog cards link to `/products/mateo-chair?style=…`; the real handles 308-redirect there (redirect must stay OUTSIDE the route's try/catch — it works by throwing)
 
 ### Meta Pixel + Conversions API
 - Gated on `marketing` cookie consent — no pixel, no CAPI, client or server, without it
@@ -136,7 +144,7 @@ public/images/
 
 ### SEO / Social share images
 - Canonical host `https://www.squarage.com`; apex redirects to www
-- `app/sitemap.ts` (static routes + Shopify products) and `app/robots.ts` — add new routes to the sitemap
+- `app/sitemap.ts` (static routes + Shopify products) and `app/robots.ts` — add new routes to the sitemap. The three Mateo product handles are filtered out (they redirect); `/products/mateo-chair` is a static entry
 - OG crops in `public/images/og/` (all 1200×630 unless noted):
   - `home.jpg` — Posé poolside hero crop (homepage, contact, custom, customer-service)
   - `products.jpg` — orange Mateo chair at the LA River (Posé homepage tile source)
