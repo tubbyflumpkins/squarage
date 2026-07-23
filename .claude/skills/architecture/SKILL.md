@@ -11,7 +11,7 @@ description: Full project structure for the Squarage site — routes, components
 | Route | Description |
 |-------|-------------|
 | `/` | Homepage (static hero, marquee banner, collections, about, custom CTA) |
-| `/products` | All products grid (server-rendered catalog, ISR 10 min) |
+| `/products` | All products grid (server-rendered catalog, ISR 10 min — Shopify edits can take ~10 min to appear). Featured order: Posé → Warped → Tiled; the 3 Mateo chair cards auto-cycle their color images (random start/order, 1.2s, pauses offscreen; touch swaps the single base image instead of mounting the crossfade stack) |
 | `/products/[handle]` | Product page (ProductPage default, WarpedProductPage by `warped` collection, MateoProductPage for the virtual `mateo-chair` handle — backed by 3 Shopify products; the real handles `mateo-pose`/`mateo-tabouret`/`mateo-diner` 308-redirect to `/products/mateo-chair?style=…`) |
 | `/collections/tiled` | Tiled collection (CarroHeroSection hero) |
 | `/collections/warped` | Warped collection |
@@ -134,7 +134,7 @@ public/images/
 - Cart persisted via localStorage (`shopify_checkout_id`); cleared on checkout handoff
 - Cart mutation failures throw and surface via `state.error` in CartDrawer
 - Warped dimension drawings live in Shopify product media (filename contains "dimensions"); Mateo's live in the repo under `public/images/pose/dimensions/`
-- **Mateo = 3 Shopify products, 1 page**: `mateo-pose`/`mateo-tabouret`/`mateo-diner` (Color-only variants, all in the `pose` collection) feed the unified `/products/mateo-chair` page — that handle is virtual (no Shopify product; never fetch it). Style/handle mapping lives in `lib/mateoProducts.ts`; catalog cards link to `/products/mateo-chair?style=…`; the real handles 308-redirect there (redirect must stay OUTSIDE the route's try/catch — it works by throwing)
+- **Mateo = 3 Shopify products, 1 page**: `mateo-pose`/`mateo-tabouret`/`mateo-diner` (Color-only variants, all in the `pose` collection) feed the unified `/products/mateo-chair` page — that handle is virtual (the old master product was deleted from Shopify 2026-07-23; never fetch it). Style/handle mapping lives in `lib/mateoProducts.ts`; catalog cards link to `/products/mateo-chair?style=…`; the real handles 308-redirect there (redirect must stay OUTSIDE the route's try/catch — it works by throwing)
 
 ### Meta Pixel + Conversions API
 - Gated on `marketing` cookie consent — no pixel, no CAPI, client or server, without it

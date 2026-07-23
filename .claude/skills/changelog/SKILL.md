@@ -5,9 +5,18 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-07-23 — Catalog: Posé first + auto color-cycling Mateo cards
+
+Shipped to production same day (`ebcf3ca`), ahead of the Mateo Meta ads launch (ad set optimizes for AddToCart; both pixel channels verified live on production with a shared dedupe eventID before launch).
+
+- `/products` featured sort is now Posé → Warped → Tiled (`ProductsPageClient`).
+- The three Mateo chair cards color-cycle on their own (`ProductCard`): every Shopify image is the chair in a different color, so each card starts on a random image and jumps to a random different one every 1.2s — the same `CYCLE_INTERVAL_MS` as the hover slideshow, shared so the rates can't drift. Hover on these cards keeps only the scale effect. Cycling pauses while a card is offscreen (IntersectionObserver).
+- iOS guard: touch devices swap the single base image in place instead of mounting the 9-layer crossfade stack (the stack's decoded-image cost is the documented iPhone white-screen risk), so mobile cuts between colors rather than crossfading.
+- Same day: the retired "Posé Collection" Shopify product was deleted (its interim catalog card disappeared once the 10-min ISR cache expired), and a dead Datahash CAPI Gateway that had every page logging a 422 console error was removed by cancelling the Datahash subscription — Meta-side config, no code change.
+
 ## 2026-07-23 — Mateo split into 3 Shopify products behind the unchanged unified page
 
-Dylan split the single `mateo-chair` Shopify product (Style × Color variants) into three standalone products — `mateo-pose` "Mateo Posé", `mateo-tabouret` "Mateo Tabouret", `mateo-diner` "Mateo Diner" (each Color-only, 9 finishes, $650, all in the `pose` collection, each with its own image set) — so they show as individual catalog listings and for Shopify backend reasons (per-product weight etc.). The old master product ("Posé Collection") is slated for deletion; the site must never fetch it.
+Dylan split the single `mateo-chair` Shopify product (Style × Color variants) into three standalone products — `mateo-pose` "Mateo Posé", `mateo-tabouret` "Mateo Tabouret", `mateo-diner` "Mateo Diner" (each Color-only, 9 finishes, $650, all in the `pose` collection, each with its own image set) — so they show as individual catalog listings and for Shopify backend reasons (per-product weight etc.). Shipped to production same day (staging → main, `4b83ebc..8af6970`). The old master product ("Posé Collection") was then deleted from Shopify; the site must never fetch that handle.
 
 - `/products/mateo-chair` is now a **virtual handle**: the route special-cases it, fetches the three real products (`Promise.all` over the cached `getProduct`), and passes `products: Record<PoseVariantId, SerializedProduct | null>` to `MateoProductPage`. The Style toggle switches products; color-only variant matching (`findMateoColorVariant`) picks the add-to-cart GID. A missing product = disabled style button; only all-three-missing 404s.
 - New `lib/mateoProducts.ts` is the single source of truth for the style↔handle mapping (`MATEO_UNIFIED_HANDLE`, `MATEO_PRODUCT_HANDLES`, `mateoStyleForHandle`, `mateoUnifiedUrl`), used by the route, `ProductCard`, and the sitemap.
@@ -15,7 +24,7 @@ Dylan split the single `mateo-chair` Shopify product (Style × Color variants) i
 - `generateMetadata` for `mateo-chair` no longer fetches by handle: title pinned to "Posé Collection | Squarage Studio", description borrowed from `mateo-pose`, OG crop `/images/og/mateo-chair.jpg` unchanged. JSON-LD reflects the `?style=` product (default Posé) with URLs pinned to the unified handle.
 - Finish rename: `Rose` → `Rosé` in `lib/poseColors.ts` to byte-match the new products' Color option values (exact-match variant lookup; a mismatch renders that swatch "Unavailable").
 - Serializer extracted from the route into `serializeShopifyProduct` (`lib/productTypes.ts`). `useMetaViewContent` guard is now a Set, so the Mateo page fires ViewContent once per distinct product viewed (per-product Meta IDs instead of the old first-variant-only event). Sticky bar label changed Style → Color (variant titles are color names now). Sitemap: static `mateo-chair` entry, three real handles filtered out.
-- Verified on localhost: 308s (+color passthrough), per-style cart adds land distinct products/variant GIDs (incl. Rosé), pose deep links, metadata/JSON-LD/sitemap, Warped/Tiled pages unaffected; tsc + lint clean. Interim: until the old product is deleted, `/products` shows a redundant "Posé Collection" card that links to the unified page (harmless).
+- Verified on localhost and again on production: 308s (+color passthrough), per-style cart adds land distinct products/variant GIDs (incl. Rosé), pose deep links, metadata/JSON-LD/sitemap, Warped/Tiled pages unaffected; tsc + lint clean.
 
 ## 2026-07-21 — Mobile OOM crash fix: 3D geometry disposal + GPU/bandwidth diet
 
