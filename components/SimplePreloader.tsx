@@ -61,7 +61,9 @@ export default function SimplePreloader() {
           preloadShopifyCollection(collection)
         }
       } else if (href.includes('/products/')) {
-        const productHandle = href.split('/').pop()
+        // Strip query/hash — the Mateo catalog cards link to
+        // /products/mateo-chair?style=…
+        const productHandle = href.split('/').pop()?.split(/[?#]/)[0]
         if (productHandle) {
           preloadShopifyProduct(productHandle)
         }

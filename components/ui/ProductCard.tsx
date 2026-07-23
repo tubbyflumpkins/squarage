@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Product } from 'shopify-buy'
+import { mateoStyleForHandle, mateoUnifiedUrl } from '@/lib/mateoProducts'
 import { preloadProductImages, isProductPreloaded } from '@/lib/productImagePreload'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import FastProductImage from '@/components/FastProductImage'
@@ -105,9 +106,13 @@ export default function ProductCard({ product, className = '', selectedFinish }:
     }
   }, [])
 
+  // The three Mateo style products share one unified page — their cards link
+  // straight there with the style preselected (no redirect hop).
+  const mateoStyle = mateoStyleForHandle(String(product.handle))
+
   return (
     <Link
-      href={`/products/${product.handle}`}
+      href={mateoStyle ? mateoUnifiedUrl(mateoStyle) : `/products/${product.handle}`}
       className={`block ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
