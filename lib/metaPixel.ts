@@ -1,6 +1,6 @@
-// Client-side Meta Pixel helpers. The pixel only loads and fires after the
-// user grants "marketing" cookie consent — both the browser pixel and the
-// Conversions API relay are gated on it at call time.
+// Client-side Meta Pixel helpers. Consent is opt-out: the pixel loads and
+// fires by default, and an explicit "marketing" rejection stops both the
+// browser pixel and the Conversions API relay at call time.
 //
 // Every event goes out through BOTH channels (browser fbq + /api/meta-events →
 // Conversions API) with a shared eventId so Meta deduplicates the pair. See
@@ -38,15 +38,18 @@ export function generateMetaEventId(): string {
 
 // Read marketing consent straight from the stored consent blob so non-React
 // code paths (cart actions, checkout handoff) can check it at call time.
+// Opt-out model: only an explicit stored rejection blocks tracking. No blob
+// (visitor never touched the banner) means the default applies — granted.
 export function hasMarketingConsent(): boolean {
   if (typeof window === 'undefined') return false
   try {
     const stored = localStorage.getItem(CONSENT_STORAGE_KEY)
-    if (!stored) return false
+    if (!stored) return true
     const parsed = JSON.parse(stored)
-    return parsed.version === CONSENT_VERSION && parsed.consent?.marketing === true
+    if (parsed.version !== CONSENT_VERSION) return true
+    return parsed.consent?.marketing !== false
   } catch {
-    return false
+    return true
   }
 }
 

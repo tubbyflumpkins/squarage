@@ -153,12 +153,12 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
         window.dataLayer.push(arguments)
       }
       
-      // Set default consent state
+      // Set default consent state (opt-out model: granted until rejected)
       window.gtag('consent', 'default', {
-        'analytics_storage': 'denied',
-        'ad_storage': 'denied',
-        'functionality_storage': 'denied',
-        'personalization_storage': 'denied',
+        'analytics_storage': defaultConsentState.analytics ? 'granted' : 'denied',
+        'ad_storage': defaultConsentState.marketing ? 'granted' : 'denied',
+        'functionality_storage': defaultConsentState.functional ? 'granted' : 'denied',
+        'personalization_storage': defaultConsentState.marketing ? 'granted' : 'denied',
         'wait_for_update': 2000, // Wait up to 2 seconds for consent update
       })
     }

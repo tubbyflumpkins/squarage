@@ -24,6 +24,8 @@ export default function ConsentAwareAnalytics() {
 
 function ConsentAwareAnalyticsContent() {
   const hasAnalyticsConsent = useHasConsent('analytics')
+  const hasMarketingConsent = useHasConsent('marketing')
+  const hasFunctionalConsent = useHasConsent('functional')
 
   // Initialize Google Consent Mode
   useEffect(() => {
@@ -32,17 +34,17 @@ function ConsentAwareAnalyticsContent() {
       window.gtag = function() {
         window.dataLayer.push(arguments)
       }
-      
+
       // Set initial consent state
       window.gtag('consent', 'default', {
         'analytics_storage': hasAnalyticsConsent ? 'granted' : 'denied',
-        'ad_storage': 'denied',
-        'functionality_storage': 'denied',
-        'personalization_storage': 'denied',
+        'ad_storage': hasMarketingConsent ? 'granted' : 'denied',
+        'functionality_storage': hasFunctionalConsent ? 'granted' : 'denied',
+        'personalization_storage': hasMarketingConsent ? 'granted' : 'denied',
         'wait_for_update': 2000,
       })
     }
-  }, [hasAnalyticsConsent])
+  }, [hasAnalyticsConsent, hasMarketingConsent, hasFunctionalConsent])
 
   // Update consent when it changes
   useEffect(() => {

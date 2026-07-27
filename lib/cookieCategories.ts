@@ -45,9 +45,13 @@ export type ConsentState = {
   marketing: boolean
 }
 
+// Opt-out model: everything on by default. We're a US company not selling
+// into the EU; the banner and preferences modal let visitors turn categories
+// off, and a stored rejection is always respected. Revisit if we ever target
+// EU customers (GDPR requires opt-in defaults).
 export const defaultConsentState: ConsentState = {
-  necessary: true,  // Always true
-  functional: false, // GDPR requires opt-in
-  analytics: false,  // GDPR requires opt-in
-  marketing: false   // GDPR requires opt-in
+  necessary: true, // Always true
+  functional: true,
+  analytics: true,
+  marketing: true
 }

@@ -17,11 +17,13 @@ export function isMetaCapiConfigured(): boolean {
 }
 
 // Server-side read of the consent cookie written by CookieConsentContext.
-// Any parse failure means "no consent" — never send by default.
+// Opt-out model: the cookie only exists after the visitor interacts with the
+// banner, so a missing/unreadable cookie means the default applies — granted.
+// Only an explicit stored rejection blocks sending.
 export function hasMarketingConsentCookie(request: NextRequest): boolean {
   try {
     const raw = request.cookies.get(CONSENT_STORAGE_KEY)?.value
-    if (!raw) return false
+    if (!raw) return true
     let text = raw
     try {
       text = decodeURIComponent(raw)
@@ -29,9 +31,10 @@ export function hasMarketingConsentCookie(request: NextRequest): boolean {
       // Value was not URI-encoded; use it as-is
     }
     const parsed = JSON.parse(text)
-    return parsed.version === CONSENT_VERSION && parsed.consent?.marketing === true
+    if (parsed.version !== CONSENT_VERSION) return true
+    return parsed.consent?.marketing !== false
   } catch {
-    return false
+    return true
   }
 }
 
