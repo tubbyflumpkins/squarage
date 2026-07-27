@@ -163,4 +163,5 @@ public/images/
 
 ### Cookie Consent
 - CookieConsentContext manages consent; opt-out model — everything granted by default, tracking stops on explicit rejection (US audience; GDPR opt-in needed before selling into the EU)
+- No banner (retired 2026-07-27, `CookieBanner.tsx` kept unmounted): disclosure lives in the privacy policy (`public/policies/privacy-policy.md`, names GA/Clarity/Meta Pixel + hashed-email form events), opt-out via the footer "Cookie Preferences" → ManageCookiesModal
 - See COOKIE_CONSENT_DOCUMENTATION.md

@@ -18,9 +18,8 @@ Cookie consent system for Squarage Studio. **Opt-out model** (since 2026-07-27):
 - Persistent consent storage (localStorage + cookies)
 
 ✅ **User Experience**
+- No banner (retired 2026-07-27): disclosure lives in the privacy policy, opt-out in the footer "Cookie Preferences" modal
 - Clean design matching Squarage's aesthetic
-- Mobile-responsive banner and modal
-- Footer link for managing preferences
 - Clear, accessible UI with proper ARIA labels
 
 ## Cookie Categories
@@ -45,12 +44,13 @@ Cookie consent system for Squarage Studio. **Opt-out model** (since 2026-07-27):
 
 ```
 /context/CookieConsentContext.tsx    # Core consent state management
-/components/CookieBanner.tsx         # Bottom banner component
-/components/ManageCookiesModal.tsx   # Preferences modal
+/components/ManageCookiesModal.tsx   # Preferences modal (opened from footer)
 /components/ConsentAwareAnalytics.tsx # Conditional script loading
-/lib/cookieCategories.ts            # Category definitions
+/lib/cookieCategories.ts            # Category definitions + defaults
 /app/layout.tsx                     # Integration point
-/components/Footer.tsx              # Cookie preferences link
+/components/Footer.tsx              # Cookie Preferences button
+/components/CookieBanner.tsx         # RETIRED, unmounted; keep for EU pivot
+/public/policies/privacy-policy.md   # Tracking disclosure lives here
 ```
 
 ## How It Works
@@ -58,7 +58,7 @@ Cookie consent system for Squarage Studio. **Opt-out model** (since 2026-07-27):
 ### Initial Load
 1. User visits site for first time
 2. CookieConsentContext checks localStorage/cookies
-3. If no consent found, shows banner — but tracking is already active (opt-out default)
+3. No banner is shown; tracking is active immediately (opt-out default). The privacy policy discloses the tools and points to the footer Cookie Preferences opt-out.
 4. Consent readers treat "no stored choice" as granted: `useHasConsent` (React), `hasMarketingConsent()` (client, non-React call sites), `hasMarketingConsentCookie()` (server, CAPI routes). Only an explicit stored rejection blocks.
 
 ### User Accepts All

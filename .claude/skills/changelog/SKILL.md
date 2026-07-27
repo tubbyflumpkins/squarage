@@ -15,6 +15,8 @@ Day 2 of the Mateo ad test surfaced the smoking gun: Meta counted 30 link clicks
 - Verified via Playwright on localhost with cleared storage (the first pass was invalid — the browser profile had stored accept-all consent from 2026-07-21): fresh visitor with banner untouched → fbevents.js + 2× `/tr/` (PageView, ViewContent) + 2× `/api/meta-events` 200; after Reject All + reload → zero Meta requests. Build + lint clean (`4a0d6bf`).
 - Note for reading ad metrics: all Meta data before this deploy undercounts landings/ViewContent to ~zero; judge the creative test only on post-deploy data.
 
+Same day, follow-up (`fd5de3c`, `5cf879e`): the cookie banner was retired entirely — under opt-out it gated nothing, and it stacked with the email popup on paid landings. `CookieBanner.tsx` stays in the repo unmounted (EU pivot insurance); the footer "Cookie Preferences" modal is the opt-out path. The privacy policy was rewritten to actually disclose tracking: the old copy claimed "we do not track your activity" and "never provide your information to advertisers" while GA, Clarity, and the Meta Pixel were live — with no banner, the policy is the sole disclosure mechanism, so it now names the tools, explains hashed-email form events, and points to the footer opt-out. Dylan confirmed the US-only posture; small-business thresholds mean CCPA-family laws likely don't apply at current scale.
+
 ## 2026-07-23 — Catalog: Posé first + auto color-cycling Mateo cards
 
 Shipped to production same day (`ebcf3ca`), ahead of the Mateo Meta ads launch (ad set optimizes for AddToCart; both pixel channels verified live on production with a shared dedupe eventID before launch).
