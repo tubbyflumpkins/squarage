@@ -5,6 +5,16 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-07-27 — Cookie consent flipped to opt-out; fixes untracked Meta ad clicks
+
+Day 2 of the Mateo ad test surfaced the smoking gun: Meta counted 30 link clicks but 0 Landing Page Views / 0 ViewContent. Root cause was NOT a missing pixel on the product page (it's in the root layout) — it was the opt-in consent defaults: the pixel, CAPI relay, GA, and Clarity were all blocked until a visitor clicked "Accept All", which cold ad traffic in the Instagram/Facebook in-app browser never does. The only recorded events came from already-consented sessions (Dylan + localhost dev). Meta was optimizing AddToCart against an event it could never see.
+
+- `defaultConsentState` (lib/cookieCategories.ts) now grants functional/analytics/marketing by default; the banner still shows and "Reject All"/preferences still work, and stored rejections are respected. US-only rationale documented in the file — GDPR opt-in needed before selling into the EU.
+- Every consent reader treats "no stored choice" as granted, only an explicit `marketing: false` blocks: `hasMarketingConsent()` (client blob, lib/metaPixel.ts), `hasMarketingConsentCookie()` (server cookie, lib/metaCapi.ts — the CAPI relay + contact/quote routes previously rejected first-time visitors who have no consent cookie at all), and the Google Consent Mode defaults in CookieConsentContext + ConsentAwareAnalytics (were hardcoded all-denied).
+- No CONSENT_VERSION bump on purpose: bumping would wipe stored rejections.
+- Verified via Playwright on localhost with cleared storage (the first pass was invalid — the browser profile had stored accept-all consent from 2026-07-21): fresh visitor with banner untouched → fbevents.js + 2× `/tr/` (PageView, ViewContent) + 2× `/api/meta-events` 200; after Reject All + reload → zero Meta requests. Build + lint clean (`4a0d6bf`).
+- Note for reading ad metrics: all Meta data before this deploy undercounts landings/ViewContent to ~zero; judge the creative test only on post-deploy data.
+
 ## 2026-07-23 — Catalog: Posé first + auto color-cycling Mateo cards
 
 Shipped to production same day (`ebcf3ca`), ahead of the Mateo Meta ads launch (ad set optimizes for AddToCart; both pixel channels verified live on production with a shared dedupe eventID before launch).

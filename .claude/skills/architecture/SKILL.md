@@ -137,7 +137,7 @@ public/images/
 - **Mateo = 3 Shopify products, 1 page**: `mateo-pose`/`mateo-tabouret`/`mateo-diner` (Color-only variants, all in the `pose` collection) feed the unified `/products/mateo-chair` page — that handle is virtual (the old master product was deleted from Shopify 2026-07-23; never fetch it). Style/handle mapping lives in `lib/mateoProducts.ts`; catalog cards link to `/products/mateo-chair?style=…`; the real handles 308-redirect there (redirect must stay OUTSIDE the route's try/catch — it works by throwing)
 
 ### Meta Pixel + Conversions API
-- Gated on `marketing` cookie consent — no pixel, no CAPI, client or server, without it
+- `marketing` consent is opt-out (2026-07-27): pixel + CAPI fire by default, client and server; only an explicit banner/preferences rejection blocks them
 - Every event goes out on BOTH channels (browser `fbq` + CAPI) sharing one `eventID` for dedupe — never fire one channel without the other
 - Events: PageView (MetaPixel), ViewContent (product templates), AddToCart (CartContext), InitiateCheckout (CartSummary), Contact + Lead (contact/quote API routes, hashed email)
 - Purchase is NOT tracked here — checkout lives on Shopify; connect the pixel in Shopify admin
@@ -162,5 +162,5 @@ public/images/
 - Canvas hygiene: dpr capped `[1, 2]`; frameloop flips to `'never'` while offscreen/tab-hidden (IntersectionObserver + visibilitychange in both `RenderedChairView` and `RenderedShelfView`); wood/edge textures load per finish on demand (`loadFinishTextures`/`loadEdgeTexture`), color-finish chairs pull only the Birch set, `/textures/mobile/` has 1024px variants of everything incl. `*_edge.webp`, and the designer idle-warms all finishes via `preloadAllTextures()`/`preloadAllEdgeTextures()`
 
 ### Cookie Consent
-- CookieConsentContext manages consent; GA and Meta only load after consent
+- CookieConsentContext manages consent; opt-out model — everything granted by default, tracking stops on explicit rejection (US audience; GDPR opt-in needed before selling into the EU)
 - See COOKIE_CONSENT_DOCUMENTATION.md

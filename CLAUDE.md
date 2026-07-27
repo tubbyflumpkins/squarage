@@ -17,7 +17,7 @@
 - **Rust/WASM** (`wasm-shelf-geometry`) for shelf geometry; chair geometry is pure TS
 - **Zustand** (saved designs); React Context for cart, cookie consent, email capture
 - **react-hook-form** + **zod**; **Nodemailer** (Zoho SMTP); **Swiper.js** (Warped carousels)
-- **Google Analytics** + **Meta Pixel/CAPI**, both gated on cookie consent
+- **Google Analytics** + **Meta Pixel/CAPI**; cookie consent is opt-out — tracking fires by default, an explicit rejection stops it
 
 ## Key Conventions
 

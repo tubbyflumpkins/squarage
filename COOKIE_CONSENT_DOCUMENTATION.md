@@ -1,17 +1,18 @@
 # Cookie Consent System Documentation
 
 ## Overview
-A fully functional, legally compliant cookie consent system for Squarage Studio that meets GDPR and CCPA requirements.
+Cookie consent system for Squarage Studio. **Opt-out model** (since 2026-07-27): all categories are granted by default and tracking fires immediately; the banner and preferences modal let visitors reject, and a stored rejection is always respected. Squarage is a US company not selling into the EU — flip `defaultConsentState` back to opt-in (or add geo-based defaults) before targeting EU customers, since GDPR requires opt-in.
+
+> Why opt-out: the original opt-in defaults meant the Meta Pixel never fired for paid ad traffic (visitors don't touch the banner), so Meta reported clicks with zero tracked landings and couldn't optimize.
 
 ## Features
 ✅ **Legal Compliance**
-- GDPR-compliant opt-in system (all non-essential cookies OFF by default)
-- CCPA-compliant opt-out mechanism
+- CCPA-compliant opt-out mechanism (US audience)
 - Granular consent for 4 cookie categories
 - Easy consent withdrawal
 
 ✅ **Functional Implementation**
-- Actually blocks tracking scripts until consent is granted
+- Blocks tracking scripts after an explicit rejection (client and server-side)
 - Google Consent Mode v2 integration
 - Microsoft Clarity conditional loading
 - Persistent consent storage (localStorage + cookies)
@@ -28,18 +29,17 @@ A fully functional, legally compliant cookie consent system for Squarage Studio 
    - Essential for website functionality
    - Shopping cart, authentication, security
 
-2. **Functional Cookies** (Opt-in)
+2. **Functional Cookies** (On by default, opt-out)
    - User preferences and settings
    - Language, recently viewed products
 
-3. **Analytics Cookies** (Opt-in)
+3. **Analytics Cookies** (On by default, opt-out)
    - Google Analytics (GA4)
    - Microsoft Clarity
    - Site usage and performance metrics
 
-4. **Marketing Cookies** (Opt-in)
-   - Future advertising/remarketing services
-   - Currently not implemented
+4. **Marketing Cookies** (On by default, opt-out)
+   - Meta Pixel + Conversions API (see `lib/metaPixel.ts` / `lib/metaCapi.ts`)
 
 ## File Structure
 
@@ -58,8 +58,8 @@ A fully functional, legally compliant cookie consent system for Squarage Studio 
 ### Initial Load
 1. User visits site for first time
 2. CookieConsentContext checks localStorage/cookies
-3. If no consent found, shows banner
-4. Google/Clarity scripts held in "denied" state
+3. If no consent found, shows banner — but tracking is already active (opt-out default)
+4. Consent readers treat "no stored choice" as granted: `useHasConsent` (React), `hasMarketingConsent()` (client, non-React call sites), `hasMarketingConsentCookie()` (server, CAPI routes). Only an explicit stored rejection blocks.
 
 ### User Accepts All
 1. All categories set to "granted"
@@ -88,8 +88,8 @@ A fully functional, legally compliant cookie consent system for Squarage Studio 
 ## Google Analytics Setup
 
 The system uses Google Consent Mode v2:
-- Default state: "denied" for all categories
-- Updates to "granted" when user consents
+- Default state mirrors `defaultConsentState` (granted under the opt-out model)
+- Updates to "denied" when the user rejects
 - GA4 ID: `G-ZCYJMQJLE1`
 - Anonymized IPs enabled
 
