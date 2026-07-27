@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import ConsentAwareAnalytics from './ConsentAwareAnalytics'
-import CookieBanner from './CookieBanner'
 import ManageCookiesModal from './ManageCookiesModal'
 import MetaPixel from './MetaPixel'
 
@@ -18,11 +17,13 @@ export default function CookieConsentWrapper() {
     return null
   }
   
+  // No cookie banner: consent is opt-out (US audience) and the privacy policy
+  // plus the footer "Cookie Preferences" button carry disclosure and opt-out.
+  // CookieBanner.tsx is kept unmounted in case an EU pivot needs it back.
   return (
     <>
       <ConsentAwareAnalytics />
       <MetaPixel />
-      <CookieBanner />
       <ManageCookiesModal />
     </>
   )
