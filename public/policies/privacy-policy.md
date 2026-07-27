@@ -12,6 +12,8 @@ When you place an order with Squarage, we collect only the information necessary
 
 We do not collect or store any payment information. All payments are processed securely through Shopify, our trusted e-commerce platform. Your credit card and payment details are never seen by Squarage.
 
+We also collect basic site usage data through the tools described in the Cookies, Analytics, and Advertising section below.
+
 ## How We Use Your Information
 
 We use the information you provide for the following limited purposes:
@@ -20,7 +22,7 @@ We use the information you provide for the following limited purposes:
 - To arrange delivery and provide you with updates about your shipment.
 - To respond to customer service inquiries or requests.
 
-That's it. We do not sell, trade, rent, or misuse your personal information — ever.
+That's it. We do not sell, trade, or rent your personal information.
 
 ## Data Security
 
@@ -32,7 +34,17 @@ Because payments are handled by Shopify, you also benefit from their advanced se
 
 We share your delivery information only with service providers directly involved in fulfilling your order, such as UPS or our local delivery team. These partners are given only the details they need to perform their services, and nothing more.
 
-We never provide your information to advertisers, data brokers, or unrelated third parties.
+We never provide your information to data brokers. The analytics and advertising tools we use are described in the next section.
+
+## Cookies, Analytics, and Advertising
+
+We use cookies and similar technologies to understand how the site is used and to measure our advertising. Specifically:
+
+- **Google Analytics** and **Microsoft Clarity** help us see how visitors use the site so we can improve it.
+- The **Meta Pixel** helps us measure how our ads on Facebook and Instagram perform.
+- If you submit a contact or quote form, we may share a hashed (scrambled) version of your email with Meta to measure ad performance. Meta cannot read the email itself.
+
+You can turn any of this off at any time. Click **Cookie Preferences** in the footer of any page.
 
 ## Your Rights
 
@@ -46,7 +58,7 @@ To exercise these rights, please contact us at **info@squarage.com**.
 
 ## Commitment Against Data Misuse
 
-We are fully aware of how personal information can be misused in today's digital world. Squarage takes a clear stance: your data will never be used for anything other than ensuring you receive your furniture safely and smoothly. We do not track your activity, build customer profiles, or use your personal details for hidden marketing purposes.
+We are fully aware of how personal information can be misused in today's digital world. Squarage takes a clear stance: your data is used to get your furniture to you, to improve our site, and to measure our ads. Nothing else. We do not sell your data, and you can opt out of analytics and advertising cookies at any time using the Cookie Preferences link in the footer.
 
 ## Updates to This Policy
 
