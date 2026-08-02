@@ -326,6 +326,27 @@ export default function MateoProductPage({ products }: MateoProductPageProps) {
     </section>
   );
 
+  const madeByHand = (
+    <section>
+      <h2 className="text-2xl lg:text-3xl font-bold font-neue-haas text-squarage-black mb-6">
+        Made by hand in Los Angeles
+      </h2>
+      <div className="space-y-6 text-xl md:text-2xl font-medium font-neue-haas text-brown-medium leading-relaxed">
+        <p>
+          The Mateo chair was designed in house and is manufactured by hand in our Los Feliz
+          studio. We cut everything on our own CNC machine and finish it all by hand. Nothing is
+          mass produced, nothing is outsourced. Every Mateo that leaves the shop is one we
+          actually built.
+        </p>
+        <p>
+          Squarage was started as a passion project to bring a sense of playfulness and whimsy to
+          the objects around us. We believe that a piece only has a soul if it&rsquo;s made locally
+          by people who love the process. That&rsquo;s us.
+        </p>
+      </div>
+    </section>
+  );
+
   // The layout slot stays aspect-square so the page grid math is
   // unchanged; an absolute-positioned wrapper extends the actual
   // canvas past the slot bounds. Top + right are anchored; bottom
@@ -408,6 +429,7 @@ export default function MateoProductPage({ products }: MateoProductPageProps) {
               <ProductDetailsAccordion productType="pose" metafields={selectedProduct.metafields} dimensionsImage={DIMENSIONS_IMAGES[selectedStyle]} />
             </div>
             <div className="mb-8">{renderGallery(MOBILE_GALLERY_IMAGES)}</div>
+            <div className="mb-8">{madeByHand}</div>
             <div className="mb-8">
               <ProductTrustBadges />
             </div>
@@ -473,6 +495,7 @@ export default function MateoProductPage({ products }: MateoProductPageProps) {
             </div>
 
             <div className="mt-12 mb-12">{renderGallery(GALLERY_IMAGES)}</div>
+            <div className="mb-12">{madeByHand}</div>
             <div className="mb-12">
               <ProductTrustBadges />
             </div>
