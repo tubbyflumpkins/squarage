@@ -106,7 +106,6 @@ Design: "${data.designName}"
 
 Specs:
 ${specRows.map(([k, v]) => `  ${k}: ${v}`).join('\n')}
-  Estimated Price: $${Math.round(specs.estimatedPrice)}
 
 ---
 Saved Design JSON (paste into localStorage key "squarage-saved-designs"):
@@ -148,16 +147,6 @@ ${new Date().toLocaleString()}
       <table style="width: 100%; border-collapse: collapse;">
         ${specRowsHtml}
       </table>
-
-      <!-- Estimated Total -->
-      <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #333333;">
-        <table style="width: 100%;">
-          <tr>
-            <td style="font-size: 16px; font-weight: 700; color: #333333;">Estimated Total</td>
-            <td style="font-size: 24px; font-weight: 700; color: #333333; text-align: right;">$${Math.round(specs.estimatedPrice)}</td>
-          </tr>
-        </table>
-      </div>
     </div>
 
     <!-- Customer Info -->
