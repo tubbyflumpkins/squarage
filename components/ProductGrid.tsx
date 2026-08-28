@@ -12,6 +12,8 @@ interface ProductGridProps {
   className?: string
   children?: React.ReactNode
   selectedFinish?: string
+  /** Product id -> collection label, used by the hover title overlay */
+  collectionNameById?: Record<string, string>
 }
 
 export default function ProductGrid({
@@ -21,6 +23,7 @@ export default function ProductGrid({
   className = "",
   children,
   selectedFinish,
+  collectionNameById,
 }: ProductGridProps) {
   // Enhanced preloading: Start immediately when products are available
   useEffect(() => {
@@ -112,6 +115,7 @@ export default function ProductGrid({
             key={product.id}
             product={product}
             selectedFinish={selectedFinish}
+            collectionName={collectionNameById?.[String(product.id)]}
           />
         ))}
         {children}

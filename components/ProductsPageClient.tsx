@@ -89,6 +89,17 @@ export default function ProductsPageClient({
     fetchProducts()
   }, [initialProducts.length])
 
+  // Product id -> collection label, for the hover title overlay on each card
+  const collectionNameById = useMemo(() => {
+    const map: Record<string, string> = {}
+    ;(Object.keys(collectionLabels) as Array<Exclude<CollectionOption, 'all'>>).forEach((key) => {
+      (collectionProducts[key] || []).forEach((product) => {
+        map[String(product.id)] = collectionLabels[key]
+      })
+    })
+    return map
+  }, [collectionProducts])
+
   // Filter and sort products based on user selections
   const filteredAndSortedProducts = useMemo(() => {
     // Start with the appropriate product set
@@ -313,6 +324,7 @@ export default function ProductsPageClient({
         <ProductGrid
           products={filteredAndSortedProducts}
           loading={loading}
+          collectionNameById={collectionNameById}
           emptyMessage={
             searchQuery || selectedCollection !== 'all'
               ? "No products found. Try adjusting your search or filters."

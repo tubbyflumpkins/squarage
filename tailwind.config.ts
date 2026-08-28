@@ -11,6 +11,7 @@ const config: Config = {
       fontFamily: {
         'neue-haas': ['neue-haas-grotesk', 'sans-serif'],
         'soap': ['Soap Regular', 'serif'],
+        'marola': ['Marola', 'serif'],
         'sans': ['neue-haas-grotesk', 'system-ui', 'sans-serif'],
       },
       colors: {

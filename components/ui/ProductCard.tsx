@@ -4,20 +4,21 @@ import Link from 'next/link'
 import { Product } from 'shopify-buy'
 import { mateoStyleForHandle, mateoUnifiedUrl } from '@/lib/mateoProducts'
 import { preloadProductImages, isProductPreloaded } from '@/lib/productImagePreload'
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo, useId } from 'react'
 import FastProductImage from '@/components/FastProductImage'
 
 interface ProductCardProps {
   product: Product
   className?: string
   selectedFinish?: string
+  collectionName?: string
 }
 
 // Shared by the hover slideshow and the Mateo auto-cycle so both run at the
 // same rate.
-const CYCLE_INTERVAL_MS = 1200
+const CYCLE_INTERVAL_MS = 2200
 
-export default function ProductCard({ product, className = '', selectedFinish }: ProductCardProps) {
+export default function ProductCard({ product, className = '', selectedFinish, collectionName }: ProductCardProps) {
   const [hovering, setHovering] = useState(false)
   const [hoverImageIndex, setHoverImageIndex] = useState(0)
   const [cycleIndex, setCycleIndex] = useState(0)
@@ -126,9 +127,9 @@ export default function ProductCard({ product, className = '', selectedFinish }:
       preloadProductImages(product)
     }
 
-    if (allImages.length <= 1) return
-
     setHovering(true)
+
+    if (allImages.length <= 1) return
 
     // Auto-cycling cards are already rotating on their own — hover only
     // keeps the scale effect
@@ -159,6 +160,26 @@ export default function ProductCard({ product, className = '', selectedFinish }:
   // Which stacked image is visible: the auto-cycle drives it for Mateo
   // cards; everything else shows on hover only.
   const activeStackIndex = autoCycle ? cycleIndex : hovering ? hoverImageIndex : -1
+
+  // Hover title overlay: hand-lettered look in Marola, set on a shallow arc
+  // and tilted. The tilt is seeded off the product id so each card keeps its
+  // own angle instead of every card leaning the same way.
+  const overlayId = useId().replace(/:/g, '')
+  const tilt = useMemo(() => {
+    const key = String(product.id)
+    let hash = 0
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0
+    return {
+      top: -3 - (hash % 55) / 10,
+      bottom: 2 + ((hash >> 5) % 50) / 10,
+    }
+  }, [product.id])
+
+  // Marola is a serif at roughly 0.46em average advance; shrink the type so
+  // long titles still land inside the card instead of running off the edge.
+  const fitFontSize = (text: string) => Math.min(12, 88 / Math.max(text.length * 0.46, 1))
+
+  const collectionLine = collectionName ? `${collectionName} Collection` : ''
 
   return (
     <Link
@@ -207,6 +228,50 @@ export default function ProductCard({ product, className = '', selectedFinish }:
             <span className="text-gray-400 font-neue-haas">No Image</span>
           </div>
         )}
+
+        {/* Hover overlay: collection curving across the top, product name
+            across the bottom right. Kept clear of the middle of the image. */}
+        <div
+          className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300 ease-out"
+          style={{ opacity: hovering ? 1 : 0 }}
+          aria-hidden
+        >
+          {collectionLine && (
+            <svg
+              viewBox="0 0 100 24"
+              className="absolute left-[3%] top-[1%] w-[92%] overflow-visible"
+              style={{ transform: `rotate(${tilt.top}deg)` }}
+            >
+              <path id={`${overlayId}-top`} d="M 1 19 Q 50 6 99 15" fill="none" />
+              <text
+                fill="#4A9B4E"
+                fontSize={fitFontSize(collectionLine)}
+                style={{ fontFamily: 'Marola, serif' }}
+              >
+                <textPath href={`#${overlayId}-top`} startOffset="0%">
+                  {collectionLine}
+                </textPath>
+              </text>
+            </svg>
+          )}
+
+          <svg
+            viewBox="0 0 100 24"
+            className="absolute right-[3%] bottom-[1%] w-[92%] overflow-visible"
+            style={{ transform: `rotate(${tilt.bottom}deg)` }}
+          >
+            <path id={`${overlayId}-bottom`} d="M 1 8 Q 50 21 99 12" fill="none" />
+            <text
+              fill="#4A9B4E"
+              fontSize={fitFontSize(product.title)}
+              style={{ fontFamily: 'Marola, serif' }}
+            >
+              <textPath href={`#${overlayId}-bottom`} startOffset="100%" textAnchor="end">
+                {product.title}
+              </textPath>
+            </text>
+          </svg>
+        </div>
       </div>
 
       {/* Product Info - Name and Price aligned with image edges */}

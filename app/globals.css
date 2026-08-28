@@ -150,6 +150,15 @@ html, body {
   font-display: swap;
 }
 
+/* Marola Font */
+@font-face {
+  font-family: 'Marola';
+  src: url('/fonts/Marola.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --foreground-rgb: 51, 51, 51;
   --background-start-rgb: 255, 250, 244;
