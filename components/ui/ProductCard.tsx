@@ -28,28 +28,28 @@ const CYCLE_INTERVAL_MS = 2200
 // inside the viewBox even in the worst case (max font size, full-width text,
 // widest glyph, full ascender and descender); scripts/verifyOverlayBounds.mjs
 // re-checks that and fails if a new line style breaks it.
-const OVERLAY_VIEWBOX_HEIGHT = 34
-const OVERLAY_ORIGIN_Y = 17
-const OVERLAY_MAX_FONT_SIZE = 9
-const OVERLAY_TEXT_WIDTH = 88
+const OVERLAY_VIEWBOX_HEIGHT = 38
+const OVERLAY_ORIGIN_Y = 19
+const OVERLAY_MAX_FONT_SIZE = 11
+const OVERLAY_TEXT_WIDTH = 84
 
 // Each style is one tilt paired with an arc that bows to suit it. Cards take
 // their top and bottom line from different offsets into this list, so the two
 // lines on a card never share a style and neighbouring cards never match.
 export const OVERLAY_LINE_STYLES = [
-  { tilt: -9, arc: 'M 2 22.0 Q 50 18.6 98 21.2' },
-  { tilt: 5.5, arc: 'M 2 18.8 Q 50 22.2 98 19.6' },
-  { tilt: -3, arc: 'M 2 20.6 Q 50 18.5 98 22.2' },
-  { tilt: 10, arc: 'M 2 21.8 Q 50 19.4 98 18.6' },
-  { tilt: -6.5, arc: 'M 2 19.0 Q 50 21.9 98 22.0' },
-  { tilt: 8, arc: 'M 2 22.2 Q 50 20.0 98 19.0' },
-  { tilt: -4.5, arc: 'M 2 18.6 Q 50 21.4 98 21.8' },
+  { tilt: -9, arc: 'M 2 24.0 Q 50 20.6 98 23.2' },
+  { tilt: 5.5, arc: 'M 2 20.8 Q 50 24.2 98 21.6' },
+  { tilt: -3, arc: 'M 2 22.6 Q 50 20.5 98 24.2' },
+  { tilt: 10, arc: 'M 2 23.8 Q 50 21.4 98 20.6' },
+  { tilt: -6.5, arc: 'M 2 21.0 Q 50 23.9 98 24.0' },
+  { tilt: 8, arc: 'M 2 24.2 Q 50 22.0 98 21.0' },
+  { tilt: -4.5, arc: 'M 2 20.6 Q 50 23.4 98 23.8' },
 ]
 
 // How much of the card the overlay spans. Text is centred in its own box, so
 // a narrower box pulls the line toward the edge that box is pinned to. 5 and
 // 7 are coprime, so width and tilt only repeat every 35 cards.
-const OVERLAY_WIDTHS = ['84%', '78%', '88%', '74%', '82%']
+const OVERLAY_WIDTHS = ['92%', '86%', '96%', '82%', '90%']
 
 
 export default function ProductCard({ product, className = '', selectedFinish, collectionName, index = 0 }: ProductCardProps) {
@@ -266,7 +266,7 @@ export default function ProductCard({ product, className = '', selectedFinish, c
           {collectionLine && (
             <svg
               viewBox={`0 0 100 ${OVERLAY_VIEWBOX_HEIGHT}`}
-              className="absolute left-[2%] top-0"
+              className="absolute left-[1%] top-0"
               style={{ width: topWidth }}
             >
               <defs>
@@ -288,7 +288,7 @@ export default function ProductCard({ product, className = '', selectedFinish, c
 
           <svg
             viewBox={`0 0 100 ${OVERLAY_VIEWBOX_HEIGHT}`}
-            className="absolute right-[2%] bottom-0"
+            className="absolute right-[1%] bottom-0"
             style={{ width: bottomWidth }}
           >
             <defs>
