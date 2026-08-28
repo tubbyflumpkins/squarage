@@ -6,6 +6,7 @@ import { mateoStyleForHandle, mateoUnifiedUrl } from '@/lib/mateoProducts'
 import { preloadProductImages, isProductPreloaded } from '@/lib/productImagePreload'
 import { useState, useEffect, useRef, useCallback, useMemo, useId } from 'react'
 import FastProductImage from '@/components/FastProductImage'
+import { marolaTextWidth } from '@/lib/marolaMetrics'
 
 interface ProductCardProps {
   product: Product
@@ -20,19 +21,36 @@ interface ProductCardProps {
 // same rate.
 const CYCLE_INTERVAL_MS = 2200
 
-// Hover-title layouts, applied by grid position (index % length). Each entry
-// pairs a tilt with an arc that bows the same way, so the two lines never read
-// as the same lockup twice in a row. 7 entries so the cycle doesn't line up
-// with the 2- or 3-column grid.
-const OVERLAY_VARIANTS = [
-  { topTilt: -7.5, bottomTilt: 4.5, topArc: 'M 1 20 Q 50 5 99 14', bottomArc: 'M 1 7 Q 50 22 99 11', topWidth: '92%', bottomWidth: '90%' },
-  { topTilt: 4.5, bottomTilt: -6.5, topArc: 'M 1 12 Q 50 23 99 17', bottomArc: 'M 1 15 Q 50 3 99 9', topWidth: '88%', bottomWidth: '94%' },
-  { topTilt: -3, bottomTilt: 9.5, topArc: 'M 1 17 Q 50 8 99 19', bottomArc: 'M 1 9 Q 50 19 99 7', topWidth: '94%', bottomWidth: '86%' },
-  { topTilt: -11, bottomTilt: 2.5, topArc: 'M 1 21 Q 50 9 99 12', bottomArc: 'M 1 6 Q 50 20 99 14', topWidth: '86%', bottomWidth: '92%' },
-  { topTilt: 7, bottomTilt: 6, topArc: 'M 1 11 Q 50 21 99 14', bottomArc: 'M 1 12 Q 50 22 99 8', topWidth: '90%', bottomWidth: '88%' },
-  { topTilt: -5, bottomTilt: -9, topArc: 'M 1 18 Q 50 4 99 17', bottomArc: 'M 1 16 Q 50 5 99 12', topWidth: '93%', bottomWidth: '91%' },
-  { topTilt: 2.5, bottomTilt: 11, topArc: 'M 1 14 Q 50 20 99 11', bottomArc: 'M 1 10 Q 50 21 99 6', topWidth: '87%', bottomWidth: '94%' },
+// Hover-title geometry. Rotation happens on a <g> *inside* the SVG rather
+// than on the element, so the box never moves and the browser's default
+// `overflow: hidden` on <svg> is a hard backstop — a tilted line physically
+// cannot escape the image. The numbers below are chosen so the ink stays
+// inside the viewBox even in the worst case (max font size, full-width text,
+// widest glyph, full ascender and descender); scripts/verifyOverlayBounds.mjs
+// re-checks that and fails if a new line style breaks it.
+const OVERLAY_VIEWBOX_HEIGHT = 34
+const OVERLAY_ORIGIN_Y = 17
+const OVERLAY_MAX_FONT_SIZE = 9
+const OVERLAY_TEXT_WIDTH = 88
+
+// Each style is one tilt paired with an arc that bows to suit it. Cards take
+// their top and bottom line from different offsets into this list, so the two
+// lines on a card never share a style and neighbouring cards never match.
+export const OVERLAY_LINE_STYLES = [
+  { tilt: -9, arc: 'M 2 22.0 Q 50 18.6 98 21.2' },
+  { tilt: 5.5, arc: 'M 2 18.8 Q 50 22.2 98 19.6' },
+  { tilt: -3, arc: 'M 2 20.6 Q 50 18.5 98 22.2' },
+  { tilt: 10, arc: 'M 2 21.8 Q 50 19.4 98 18.6' },
+  { tilt: -6.5, arc: 'M 2 19.0 Q 50 21.9 98 22.0' },
+  { tilt: 8, arc: 'M 2 22.2 Q 50 20.0 98 19.0' },
+  { tilt: -4.5, arc: 'M 2 18.6 Q 50 21.4 98 21.8' },
 ]
+
+// How much of the card the overlay spans. Text is centred in its own box, so
+// a narrower box pulls the line toward the edge that box is pinned to. 5 and
+// 7 are coprime, so width and tilt only repeat every 35 cards.
+const OVERLAY_WIDTHS = ['84%', '78%', '88%', '74%', '82%']
+
 
 export default function ProductCard({ product, className = '', selectedFinish, collectionName, index = 0 }: ProductCardProps) {
   const [hovering, setHovering] = useState(false)
@@ -181,11 +199,15 @@ export default function ProductCard({ product, className = '', selectedFinish, c
   // and tilted. The layout comes from the card's grid position, so a card
   // always looks the same but never matches its neighbour.
   const overlayId = useId().replace(/:/g, '')
-  const variant = OVERLAY_VARIANTS[index % OVERLAY_VARIANTS.length]
+  const topStyle = OVERLAY_LINE_STYLES[index % OVERLAY_LINE_STYLES.length]
+  const bottomStyle = OVERLAY_LINE_STYLES[(index + 3) % OVERLAY_LINE_STYLES.length]
+  const topWidth = OVERLAY_WIDTHS[index % OVERLAY_WIDTHS.length]
+  const bottomWidth = OVERLAY_WIDTHS[(index + 2) % OVERLAY_WIDTHS.length]
 
-  // Marola is a serif at roughly 0.46em average advance; shrink the type so
-  // long titles still land inside the card instead of running off the edge.
-  const fitFontSize = (text: string) => Math.min(12, 88 / Math.max(text.length * 0.46, 1))
+  // Sized off Marola's real advance widths, so a long title shrinks to fit
+  // instead of running past the edge of the card.
+  const fitFontSize = (text: string) =>
+    Math.min(OVERLAY_MAX_FONT_SIZE, OVERLAY_TEXT_WIDTH / Math.max(marolaTextWidth(text), 0.001))
 
   const collectionLine = collectionName ? `${collectionName} Collection` : ''
 
@@ -235,7 +257,7 @@ export default function ProductCard({ product, className = '', selectedFinish, c
         )}
 
         {/* Hover overlay: collection curving across the top, product name
-            across the bottom right. Kept clear of the middle of the image. */}
+            across the bottom right. Both stay clear of the middle. */}
         <div
           className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300 ease-out"
           style={{ opacity: hovering ? 1 : 0 }}
@@ -243,38 +265,46 @@ export default function ProductCard({ product, className = '', selectedFinish, c
         >
           {collectionLine && (
             <svg
-              viewBox="0 0 100 24"
-              className="absolute left-[3%] top-[1%] overflow-visible"
-              style={{ width: variant.topWidth, transform: `rotate(${variant.topTilt}deg)` }}
+              viewBox={`0 0 100 ${OVERLAY_VIEWBOX_HEIGHT}`}
+              className="absolute left-[2%] top-0"
+              style={{ width: topWidth }}
             >
-              <path id={`${overlayId}-top`} d={variant.topArc} fill="none" />
-              <text
-                fill="#4A9B4E"
-                fontSize={fitFontSize(collectionLine)}
-                style={{ fontFamily: 'Marola, serif' }}
-              >
-                <textPath href={`#${overlayId}-top`} startOffset="0%">
-                  {collectionLine}
-                </textPath>
-              </text>
+              <defs>
+                <path id={`${overlayId}-top`} d={topStyle.arc} />
+              </defs>
+              <g transform={`rotate(${topStyle.tilt} 50 ${OVERLAY_ORIGIN_Y})`}>
+                <text
+                  fill="#4A9B4E"
+                  fontFamily="Marola, serif"
+                  fontSize={fitFontSize(collectionLine)}
+                >
+                  <textPath href={`#${overlayId}-top`} startOffset="50%" textAnchor="middle">
+                    {collectionLine}
+                  </textPath>
+                </text>
+              </g>
             </svg>
           )}
 
           <svg
-            viewBox="0 0 100 24"
-            className="absolute right-[3%] bottom-[1%] overflow-visible"
-            style={{ width: variant.bottomWidth, transform: `rotate(${variant.bottomTilt}deg)` }}
+            viewBox={`0 0 100 ${OVERLAY_VIEWBOX_HEIGHT}`}
+            className="absolute right-[2%] bottom-0"
+            style={{ width: bottomWidth }}
           >
-            <path id={`${overlayId}-bottom`} d={variant.bottomArc} fill="none" />
-            <text
-              fill="#4A9B4E"
-              fontSize={fitFontSize(product.title)}
-              style={{ fontFamily: 'Marola, serif' }}
-            >
-              <textPath href={`#${overlayId}-bottom`} startOffset="100%" textAnchor="end">
-                {product.title}
-              </textPath>
-            </text>
+            <defs>
+              <path id={`${overlayId}-bottom`} d={bottomStyle.arc} />
+            </defs>
+            <g transform={`rotate(${bottomStyle.tilt} 50 ${OVERLAY_ORIGIN_Y})`}>
+              <text
+                fill="#4A9B4E"
+                fontFamily="Marola, serif"
+                fontSize={fitFontSize(product.title)}
+              >
+                <textPath href={`#${overlayId}-bottom`} startOffset="50%" textAnchor="middle">
+                  {product.title}
+                </textPath>
+              </text>
+            </g>
           </svg>
         </div>
       </div>
