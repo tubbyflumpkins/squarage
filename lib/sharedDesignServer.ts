@@ -39,13 +39,8 @@ const design = z.discriminatedUnion('variant', [
 
 const cents = z.number().int().min(0).max(100_000_000)
 
-const sharedDesignSchema = z.object({
-  version: z.literal(1),
-  token: z.string().regex(TOKEN_PATTERN),
+const optionFields = {
   status: z.enum(['open', 'paid']),
-  customerName: z.string().max(255),
-  customerEmail: z.string().max(255).nullable().optional(),
-  notes: z.string().max(5000),
   price: z.object({ amountCents: cents, currency: z.literal('USD') }),
   shipping: z.discriminatedUnion('mode', [
     z.object({ mode: z.literal('calculated') }),
@@ -60,8 +55,44 @@ const sharedDesignSchema = z.object({
     maxAngleDeg: z.number().min(-180).max(180),
     tiltDeg: z.number().min(0).max(90),
   }),
+}
+
+const linkFields = {
+  token: z.string().regex(TOKEN_PATTERN),
+  status: z.enum(['open', 'paid']),
+  customerName: z.string().max(255),
+  customerEmail: z.string().max(255).nullable().optional(),
+  notes: z.string().max(5000),
   updatedAt: z.string(),
+}
+
+// Version 2: a link with one or more options
+const linkSchemaV2 = z.object({
+  version: z.literal(2),
+  ...linkFields,
+  options: z.array(z.object({
+    optionNumber: z.number().int().min(1).max(99),
+    ...optionFields,
+    // A wireframe is a few KB; anything huge is not one
+    svgPreview: z.string().max(200_000).nullable().optional(),
+  })).min(1).max(12),
 })
+
+// Version 1: a single design at the top level. Labs sent this before links had options; kept
+// so a link never breaks while the two sites deploy at different moments.
+const linkSchemaV1 = z.object({ version: z.literal(1), ...linkFields, ...optionFields })
+
+const sharedDesignSchema = z.discriminatedUnion('version', [linkSchemaV2, linkSchemaV1])
+
+function normalise(parsed: z.infer<typeof sharedDesignSchema>): SharedDesign {
+  if (parsed.version === 2) {
+    const { version: _v, ...link } = parsed
+    return { ...link, options: [...link.options].sort((a, b) => a.optionNumber - b.optionNumber) }
+  }
+  const { version: _v, token, status, customerName, customerEmail, notes, updatedAt, ...option } = parsed
+  // In version 1 the one status spoke for both the link and its only design
+  return { token, status, customerName, customerEmail, notes, updatedAt, options: [{ optionNumber: 1, status, ...option }] }
+}
 
 export type SharedDesignResult =
   | { status: 'ok'; share: SharedDesign }
@@ -91,7 +122,7 @@ export async function fetchSharedDesign(token: string): Promise<SharedDesignResu
       console.error('Shared design payload did not match the contract:', parsed.error.issues.slice(0, 3))
       return { status: 'unavailable' }
     }
-    return { status: 'ok', share: parsed.data satisfies SharedDesign }
+    return { status: 'ok', share: normalise(parsed.data) }
   } catch (error) {
     console.error('Shared design fetch threw:', error)
     return { status: 'unavailable' }

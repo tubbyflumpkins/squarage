@@ -15,6 +15,8 @@ const getShare = cache((token: string) => fetchSharedDesign(token))
 
 interface SharedDesignPageProps {
   params: Promise<{ token: string }>
+  // ?option=2 opens a link with several options on that one (labs' draft orders link this way)
+  searchParams: Promise<{ option?: string | string[] }>
 }
 
 export async function generateMetadata({ params }: SharedDesignPageProps): Promise<Metadata> {
@@ -33,8 +35,10 @@ export async function generateMetadata({ params }: SharedDesignPageProps): Promi
   }
 }
 
-export default async function SharedDesignPage({ params }: SharedDesignPageProps) {
+export default async function SharedDesignPage({ params, searchParams }: SharedDesignPageProps) {
   const { token } = await params
+  const { option } = await searchParams
+  const initialOption = typeof option === 'string' && /^\d{1,2}$/.test(option) ? Number(option) : undefined
   const result = await getShare(token)
 
   // Outside any try/catch: notFound() works by throwing
@@ -53,5 +57,5 @@ export default async function SharedDesignPage({ params }: SharedDesignPageProps
     )
   }
 
-  return <SharedDesignView share={result.share} />
+  return <SharedDesignView share={result.share} initialOption={initialOption} />
 }

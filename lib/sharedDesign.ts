@@ -1,9 +1,10 @@
 // A custom design shared with a customer: the read-only /custom/[token] page.
 //
 // Labs (labs.squarage.com) owns the data. Dylan adjusts a quoted shelf there, sets the price,
-// optional shipping and notes, and labs creates a Shopify draft order for it. This site only
-// reads labs' public JSON (version 1 of the contract below, mirrored from labs'
-// src/lib/shares/types.ts) and sends the customer to the draft order's checkout.
+// optional shipping and notes, and labs creates a Shopify draft order for it. A link can carry
+// several OPTIONS (each its own design, price and draft order) under one customer and one set
+// of notes. This site only reads labs' public JSON (version 2 of the contract, mirrored from
+// labs' src/lib/shares/types.ts) and sends the customer to the chosen option's checkout.
 // Safe to import from client components: the fetcher lives in lib/sharedDesignServer.ts.
 
 export type WoodFinish = 'Walnut' | 'Oak' | 'Birch'
@@ -43,21 +44,31 @@ export type SharedDesignShape =
   | { collection: 'warped'; finish: WoodFinish; variant: 'console'; params: SharedFlatParams; surfaceHeight: number | null }
   | { collection: 'warped'; finish: WoodFinish; variant: 'corner'; params: SharedCornerParams }
 
+export interface SharedOption {
+  /** "Option 2". Permanent on labs' side: removing an option never renumbers the rest. */
+  optionNumber: number
+  status: 'open' | 'paid'
+  price: { amountCents: number; currency: 'USD' }
+  shipping: { mode: 'calculated' } | { mode: 'fixed'; amountCents: number }
+  /** Shopify checkout for this option's draft order. Null once paid, or if checkout is not set up yet. */
+  checkoutUrl: string | null
+  design: SharedDesignShape
+  camera: { initialRotationDeg: number; minAngleDeg: number; maxAngleDeg: number; tiltDeg: number }
+  /** Labs' wireframe of the design. Only ever shown through an <img> data URI, never injected as markup. */
+  svgPreview?: string | null
+}
+
 export interface SharedDesign {
-  version: 1
   token: string
+  /** Paid once any option is; labs then sends only the option that was bought. */
   status: 'open' | 'paid'
   customerName: string
   /** The customer's own address, shown under their name. Optional: labs may not have one. */
   customerEmail?: string | null
-  /** Plain text from Dylan. Rendered with whitespace preserved, never as HTML. */
+  /** Plain text from Dylan, shared by every option. Rendered with whitespace preserved, never as HTML. */
   notes: string
-  price: { amountCents: number; currency: 'USD' }
-  shipping: { mode: 'calculated' } | { mode: 'fixed'; amountCents: number }
-  /** Shopify checkout for this design's draft order. Null once paid, or if checkout is not set up yet. */
-  checkoutUrl: string | null
-  design: SharedDesignShape
-  camera: { initialRotationDeg: number; minAngleDeg: number; maxAngleDeg: number; tiltDeg: number }
+  /** At least one, in option order. With exactly one there is no option UI at all. */
+  options: SharedOption[]
   updatedAt: string
 }
 
