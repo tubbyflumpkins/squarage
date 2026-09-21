@@ -5,6 +5,19 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-09-20 — Console in the Shelf Builder, and customer links for custom designs
+
+Two pieces of work, built together with labs (its changelog has the other half).
+
+**Console in the designer.** Standard / Corner / Console. The media console is the flat shelf with its top turned into a surface (`ShelfParams.consoleTop`): whole-defaults swap on the toggle (48 × 26 × 14), height from 16", depth to 20", Surface Height in the spec cell, a Console preset, console-aware Get Quote (review card, saved JSON with `collection` + `variant` so labs loads it as a console, email with Type and Surface Height; `specs.variant` is optional so old clients still validate). No Rust rebuild: the WASM has no input clamps, and only the console thumbnail is drawn in TypeScript (`lib/warped/flatSvgPreview.ts`).
+
+- The flat render path was synced from labs first (last sync was 2026-03-07): `geometry.ts` verbatim, `slotGeometry.ts` with import paths rewritten, new `lib/warped/shelfLayout.ts`. Proven with the new `scripts/verifyShelfGeometry.ts`: corner byte-identical, flat front edges moved by up to 0.12" (0.39" near a rounded end) from labs' quadratic end ghost points — approved by Dylan, since labs is what gets cut — and the layout refactor itself changed nothing. `scripts/verifyConsoleGeometry.ts` (99 checks) covers the console. Meshes, materials, camera and `buildExtrudedGeometry` were left alone (this site is ahead of labs there).
+- Checked in Playwright: toggle fits at 360 / 375, slider limits, defaults swap both ways, save → console thumbnail → reload, a pre-console saved design loads as standard, spec cell at a 700px-tall viewport.
+
+**`/custom/[token]`.** Dylan shares a design from labs with a price, optional shipping and notes; the customer gets the designer's grid with nothing to edit — dimensions left (in / cm), the shelf in the middle (drag to rotate, `hooks/useBoomerangRotation.ts`), his notes right — and **Pay Now** where Get Quote sits, opening the Shopify draft-order checkout labs created. Paid and no-checkout states; bad, unknown and revoked tokens 404; mobile gets the notes and price under the numbers and a sticky `Pay Now · $price` bar. Data comes from labs server-to-server (`lib/sharedDesignServer.ts`, new env `LABS_API_URL`); this site still has no database and no Shopify Admin token. noindex, own canonical, not in the sitemap, and the email popup is suppressed there.
+
+- Not yet exercised against a real draft order: labs needs the Shopify scopes and env vars first (see labs' changelog). Until then a shared page shows the "Checkout is not ready yet" fallback.
+
 ## 2026-07-27 — Cookie consent flipped to opt-out; fixes untracked Meta ad clicks
 
 Day 2 of the Mateo ad test surfaced the smoking gun: Meta counted 30 link clicks but 0 Landing Page Views / 0 ViewContent. Root cause was NOT a missing pixel on the product page (it's in the root layout) — it was the opt-in consent defaults: the pixel, CAPI relay, GA, and Clarity were all blocked until a visitor clicked "Accept All", which cold ad traffic in the Instagram/Facebook in-app browser never does. The only recorded events came from already-consented sessions (Dylan + localhost dev). Meta was optimizing AddToCart against an event it could never see.

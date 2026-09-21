@@ -15,9 +15,10 @@ description: Full project structure for the Squarage site — routes, components
 | `/products/[handle]` | Product page (ProductPage default, WarpedProductPage by `warped` collection, MateoProductPage for the virtual `mateo-chair` handle — backed by 3 Shopify products; the real handles `mateo-pose`/`mateo-tabouret`/`mateo-diner` 308-redirect to `/products/mateo-chair?style=…`) |
 | `/collections/tiled` | Tiled collection (CarroHeroSection hero) |
 | `/collections/warped` | Warped collection |
-| `/collections/warped/designer` | 3D shelf designer |
+| `/collections/warped/designer` | 3D shelf designer: Standard / Corner / Console |
 | `/collections/pose` | Posé collection (static poolside hero + blob title, 3 auto-rotating variant chairs) |
 | `/custom` | Custom project request flow |
+| `/custom/[token]` | A custom design Dylan shared with one customer: the designer's grid, read-only, with Pay Now (Shopify draft-order checkout). Data from labs. noindex, NOT in the sitemap |
 | `/contact` | Contact page |
 | `/customer-service` | Customer service (shipping, returns, FAQ) |
 | `/coming-soon` | Coming soon placeholder |
@@ -69,6 +70,14 @@ components/
   GoogleAnalytics / ConsentAwareAnalytics / MetaPixel
   EmailCapturePopup, AnimatedLogo, StructuredData
   Warped* / Carro*            # Warped & Carro collection components
+  shelf/                      # Warped shelf geometry + rendering. Synced from labs by file copy:
+    ShelfVisualizer/          #   geometry.ts is labs' file verbatim (2026-09-20), types.ts too
+    CornerShelfVisualizer/    #   corner geometry (code-identical to labs')
+    RenderedShelfView/        #   R3F Canvas; slotGeometry.ts = labs' with import paths rewritten.
+                              #   Meshes, materials, BoomerangCamera and buildExtrudedGeometry are
+                              #   this site's own (ahead of labs in places): never overwrite them
+    QuoteFlow.tsx             #   Get Quote overlay (takes isConsole)
+    SharedDesignView.tsx      #   /custom/[token]: the designer's grid with nothing to edit
   chair/                      # Posé chair geometry + rendering (parallel to shelf/)
     ChairVisualizer/          # Pure TS: types + generateChairGeometry()
     RenderedChairView/        # R3F Canvas wrapper, ChairMeshes, ChairFloor,
@@ -85,6 +94,13 @@ lib/
   simplePreloader.ts          # Core preloading (preloadImage, preloadImages, isImageCached)
   shopifyPreloader.ts         # Shopify product image caching
   shelfGeometryWasm.ts        # WASM wrapper — lazy loading, useShelfWasm() hook
+  warped/shelfLayout.ts       # Where a flat shelf's pieces sit (standard + console): labs' file
+                              #   minus its production-only tenon helpers
+  warped/flatSvgPreview.ts    # TS thumbnail for console designs (the WASM projection
+                              #   does not know the console)
+  sharedDesign.ts             # Shared-design contract v1 (mirrors labs' src/lib/shares/types.ts)
+                              #   + formatMoney (keeps cents). Client-safe
+  sharedDesignServer.ts       # Server only: zod schema + fetchSharedDesign(token) from LABS_API_URL
   wasm-pkg/                   # Committed WASM build output (no Rust needed on Vercel)
   metaPixel.ts / metaCapi.ts  # Meta Pixel client half / Conversions API server half
   cookieCategories.ts         # Consent categories + CONSENT_STORAGE_KEY/CONSENT_VERSION
@@ -102,6 +118,11 @@ wasm-shelf-geometry/          # Rust crate → WASM (rebuild: npm run wasm:build
                               #   compute_derived_params
   src/{types,catmull_rom,flat,corner,mesh_builder,projection,derived_params}.rs
 
+hooks/useBoomerangRotation.ts # The designer's idle sweep + drag rotation, parameterised
+                              #   (the designer keeps its own inline copy)
+scripts/verifyShelfGeometry.ts   # npx tsx … write|check <baseline.json>: fingerprints flat + corner
+                                 #   render pieces so a labs sync can prove what moved
+scripts/verifyConsoleGeometry.ts # npx tsx …: the console's render structure
 context/                      # CartContext, CookieConsentContext, EmailCaptureContext
 stores/useSavedDesigns.ts     # Zustand store for saved shelf designs
 ```
@@ -135,6 +156,11 @@ public/images/
 - Cart mutation failures throw and surface via `state.error` in CartDrawer
 - Warped dimension drawings live in Shopify product media (filename contains "dimensions"); Mateo's live in the repo under `public/images/pose/dimensions/`
 - **Mateo = 3 Shopify products, 1 page**: `mateo-pose`/`mateo-tabouret`/`mateo-diner` (Color-only variants, all in the `pose` collection) feed the unified `/products/mateo-chair` page — that handle is virtual (the old master product was deleted from Shopify 2026-07-23; never fetch it). Style/handle mapping lives in `lib/mateoProducts.ts`; catalog cards link to `/products/mateo-chair?style=…`; the real handles 308-redirect there (redirect must stay OUTSIDE the route's try/catch — it works by throwing)
+
+### Warped console + shared custom designs
+- **Console** = the flat shelf with `ShelfParams.consoleTop` (first and last columns full height with the top slotted in, inner columns stopping under it; with two columns or fewer it is the standard shelf). In the designer it is `DesignParams.isConsole`: the toggle swaps whole defaults entering or leaving it (48 × 26 × 14), height runs from 16" and depth to 20" (`rangesFor`, labs' `warpedShelfRanges`), and the spec cell shows Surface Height (`consoleSurfaceHeight`). Derived values still come from WASM `computeDerivedParams({ isCorner: false })` — it has no input clamps, so no Rust rebuild. It saves as `shelfType: 'flat'` + `variant: 'console'` + `collection: 'warped'` (what labs' importer needs); saved designs without a `variant` predate it and load by `shelfType`. `/api/quote` takes an optional `specs.variant`.
+- **Geometry sync rule**: labs cuts the parts, so labs' flat geometry is the truth. To re-sync: write a baseline with `scripts/verifyShelfGeometry.ts`, copy the three files listed under `components/shelf/` and `lib/warped/` above, `check` the baseline (it prints what moved), then run `scripts/verifyConsoleGeometry.ts`. The 2026-09-20 sync moved front edges by up to 0.12" (0.39" near a rounded end: labs' quadratic end ghost points) and nothing else. The WASM thumbnails still use the old ghost points (sub-pixel at tile size).
+- **`/custom/[token]`**: labs (labs.squarage.com) owns the data — Dylan shares a design from its /design page with a customer name, price, optional shipping and notes, and labs creates a Shopify **draft order** (custom line item, discounts off). This site has no database and no Admin token: the server page calls `fetchSharedDesign` (labs' `GET /api/public/shares/[token]`, `cache: 'no-store'`, 8 s timeout, zod-bounded) and renders `SharedDesignView`; `not_found` → `notFound()` (outside any try/catch), `unavailable` → a try-again message. The payload carries **resolved** render params (never recompute amplitude or offsets here: the WASM ranges differ from labs'). Pay Now fires `InitiateCheckout` then goes to the draft order's `invoiceUrl`; a paid share shows "Paid. Thank you." and one without a checkout points to /contact. The page sets its own canonical (the `/custom` layout's would be wrong), is noindex, is deliberately absent from `app/sitemap.ts`, and the email popup is suppressed on it (`EmailCaptureContext`: the welcome code is a discount against a quote).
 
 ### Meta Pixel + Conversions API
 - `marketing` consent is opt-out (2026-07-27): pixel + CAPI fire by default, client and server; only an explicit banner/preferences rejection blocks them

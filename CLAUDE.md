@@ -29,6 +29,8 @@
 - **Catalog fetches request 250 items** — the SDK silently defaults to 20; never call fetchAll/fetchAllWithProducts bare
 - **Cart mutation failures throw** from lib/shopify.ts and surface via `state.error` in CartDrawer — don't reintroduce return-null-on-error
 - **Meta events fire on BOTH channels** (browser `fbq` + CAPI) with a shared `eventID`; Purchase is tracked in Shopify admin, not here
+- **Shelf geometry is synced from labs by file copy** (`~/code/labs`, which cuts the parts): `components/shelf/ShelfVisualizer/geometry.ts` + `types.ts` verbatim, `RenderedShelfView/slotGeometry.ts` with import paths rewritten, `lib/warped/shelfLayout.ts` minus labs' production helpers. Never edit those by hand; never overwrite the meshes, materials, `BoomerangCamera` or `buildExtrudedGeometry` from labs. Around a sync run `npx tsx scripts/verifyShelfGeometry.ts write|check <baseline>` and `npx tsx scripts/verifyConsoleGeometry.ts`
+- **`/custom/[token]` is private by obscurity**: noindex, its own canonical, and deliberately NOT in `app/sitemap.ts` (the one exception to the rule above). Its data comes from labs; never recompute a shared design's amplitude or offsets here
 - **Copy style** (per Dylan): short sentences, no em dashes in customer-facing copy
 
 ## Design System
@@ -50,6 +52,7 @@
 | `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel / dataset ID |
 | `META_CONVERSIONS_API_ACCESS_TOKEN` | Meta CAPI token (server-side events) |
 | `META_TEST_EVENT_CODE` | Optional — routes CAPI to Test Events; unset in production |
+| `LABS_API_URL` | Server only. Origin of labs (e.g. `https://labs.squarage.com`): `/custom/[token]` reads shared designs from it. Set it for Preview too, pointing at labs production |
 
 ## Development Commands
 
