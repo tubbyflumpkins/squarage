@@ -5,6 +5,14 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-09-21 — Shared designs can carry a moved middle shelf
+
+In labs Dylan can now move the middle of three shelves up or down on a flat shelf (console or standard), trading height between the two openings. Customers cannot: **the public Shelf Builder has no control for it and its output is unchanged** (`scripts/verifyShelfGeometry.ts` byte-identical before and after).
+
+- Re-synced from labs: `lib/warped/shelfLayout.ts` (`middleShelfShift`, `resolveMiddleShelfShift`, `shelfSpacings`; still minus labs' production helpers) and one line of `ShelfVisualizer/types.ts`. `geometry.ts` and `slotGeometry.ts` did not change: they already read shelf heights from `shelfLayout`, so the shelf's wave and the columns' slots follow on their own.
+- `/custom/[token]`: the option's flat params carry `middleShelfShift` (labs sends it already held inside its limit; absent on older links, which default to 0) and `SharedDesignView` passes it to the viewer. The Dimensions box shows **Top Shelf Height** and **Bottom Shelf Height** in place of Shelf Height whenever the openings differ.
+- `scripts/verifyConsoleGeometry.ts` gained the render checks for it (109 checks).
+
 ## 2026-09-21 — Shared design links carry several options
 
 Dylan can now put more than one design on a customer's link (labs' Share dialog has an "Add to" picker; its changelog has that half). On `/custom/[token]`:
