@@ -48,6 +48,8 @@ export interface SharedDesign {
   token: string
   status: 'open' | 'paid'
   customerName: string
+  /** The customer's own address, shown under their name. Optional: labs may not have one. */
+  customerEmail?: string | null
   /** Plain text from Dylan. Rendered with whitespace preserved, never as HTML. */
   notes: string
   price: { amountCents: number; currency: 'USD' }
@@ -73,4 +75,11 @@ export const SHARED_VARIANT_LABELS: Record<SharedDesignShape['variant'], string>
   standard: 'Standard',
   corner: 'Corner Unit',
   console: 'Console',
+}
+
+/** The piece's name in the page title: "Warped Console prepared for …". */
+export const SHARED_PRODUCT_NAMES: Record<SharedDesignShape['variant'], string> = {
+  standard: 'Warped Shelf',
+  corner: 'Warped Corner Shelf',
+  console: 'Warped Console',
 }

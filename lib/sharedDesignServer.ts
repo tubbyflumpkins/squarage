@@ -44,6 +44,7 @@ const sharedDesignSchema = z.object({
   token: z.string().regex(TOKEN_PATTERN),
   status: z.enum(['open', 'paid']),
   customerName: z.string().max(255),
+  customerEmail: z.string().max(255).nullable().optional(),
   notes: z.string().max(5000),
   price: z.object({ amountCents: cents, currency: z.literal('USD') }),
   shipping: z.discriminatedUnion('mode', [
