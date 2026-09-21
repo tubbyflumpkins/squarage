@@ -72,6 +72,21 @@ for (const v of VARIATIONS) {
   if (columnCount <= 2) check(`${v.name} is the standard shelf`, serialize(geo) === serialize(standard));
 }
 
+// --- The middle of three shelves moved off centre (set by labs on shared designs, never by the builder)
+for (const consoleTop of [true, false]) {
+  const base = { ...CONSOLE, consoleTop };
+  const shifted = { ...base, middleShelfShift: 3 };
+  const even = generateShelfGeometry(base);
+  const moved = generateShelfGeometry(shifted);
+  const tag = consoleTop ? 'console' : 'standard';
+  check(`${tag} shift moves the middle shelf up 3"`, near(moved.shelves[1].frontEdge[0].z, even.shelves[1].frontEdge[0].z + 3));
+  check(`${tag} shift leaves the outer shelves and the columns alone`, serialize([moved.shelves[0], moved.shelves[2], moved.columns]) === serialize([even.shelves[0], even.shelves[2], even.columns]));
+  const slotZs = addFlatColumnSlots(moved.columns[0], shifted).backEdge.filter((p) => p.y > 1e-9).map((p) => p.z);
+  check(`${tag} shift: the column is slotted where the shelf now is`, [0.25, -0.25].every((d) => slotZs.some((z) => near(z, moved.shelves[1].frontEdge[0].z + d))));
+  check(`${tag} shift is ignored with four shelves`, serialize(generateShelfGeometry({ ...shifted, shelfCount: 4 })) === serialize(generateShelfGeometry({ ...base, shelfCount: 4 })));
+  check(`${tag} no shift, zero shift: the same shelf`, serialize(generateShelfGeometry({ ...base, middleShelfShift: 0 })) === serialize(even));
+}
+
 // --- Without the flag nothing is a console
 const plain = shelfLayout({ ...CONSOLE, consoleTop: false });
 check('standard layout has no top and full-height columns', plain.topIndex === null && plain.columns.every((c) => !c.underTop && c.topZ === CONSOLE.height) && consoleSurfaceHeight({ ...CONSOLE, consoleTop: false }) === null);

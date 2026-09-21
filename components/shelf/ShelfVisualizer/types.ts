@@ -22,6 +22,7 @@ export interface ShelfParams {
   roundLeft: boolean;   // When true, left edge curve starts at y=0 (wall) for rounded corner
   roundRight: boolean;  // When true, right edge curve starts at y=0 (wall) for rounded corner
   consoleTop?: boolean; // Console: the top shelf sits flush on the columns as a surface (see lib/warped/shelfLayout)
+  middleShelfShift?: number; // Three shelves only: inches the middle shelf sits above centre (see lib/warped/shelfLayout)
 }
 
 export interface ShelfGeometry {
