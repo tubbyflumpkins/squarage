@@ -21,6 +21,8 @@ const flatParams = z.object({
   shelfCount: count, columnCount: count,
   shelfOffset: offset, columnOffset: offset,
   roundLeft: z.boolean(), roundRight: z.boolean(), consoleTop: z.boolean(),
+  // Absent on links shared before the middle shelf could move
+  middleShelfShift: z.number().min(-100).max(100).optional().default(0),
 })
 
 const cornerParams = z.object({

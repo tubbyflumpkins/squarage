@@ -23,6 +23,8 @@ export interface SharedFlatParams {
   roundLeft: boolean
   roundRight: boolean
   consoleTop: boolean
+  /** Inches the middle of three shelves sits above centre, already held inside labs' limit. 0 = centred. */
+  middleShelfShift: number
 }
 
 export interface SharedCornerParams {

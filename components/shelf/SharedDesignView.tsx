@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { trackMetaEvent } from '@/lib/metaPixel'
 import { useBoomerangRotation } from '@/hooks/useBoomerangRotation'
 import { formatMoney, SHARED_PRODUCT_NAMES, SHARED_VARIANT_LABELS, type SharedDesign, type SharedOption } from '@/lib/sharedDesign'
-import { shelfSpacing } from '@/lib/warped/shelfLayout'
+import { shelfSpacings } from '@/lib/warped/shelfLayout'
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types'
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types'
 
@@ -62,6 +62,8 @@ function ShelfViewer({ option }: { option: SharedOption }) {
       roundLeft: design.variant === 'corner' ? false : design.params.roundLeft,
       roundRight: design.variant === 'corner' ? false : design.params.roundRight,
       consoleTop: design.variant === 'console',
+      // The middle of three shelves, moved off centre in labs. The public builder never sets this.
+      ...(design.variant !== 'corner' && design.params.middleShelfShift ? { middleShelfShift: design.params.middleShelfShift } : {}),
     }
     const corner: CornerShelfParams = {
       width: p.width, length: p.length, depth: p.depth, height: p.height,
@@ -127,7 +129,11 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
 
   // The openings, as labs' Measurements panel reads them: centre to centre of the shelves, and
   // of the columns. A corner's columns fan across two walls, so it has no single width.
-  const shelfHeight = p.shelfCount > 1 ? shelfSpacing(p) : null
+  // The shelf heights are all equal unless labs moved the middle of three shelves: then the
+  // top and bottom openings are read out separately.
+  const gaps = shelfSpacings(p)
+  const evenGaps = gaps.every((g) => Math.abs(g - gaps[0]) < 1e-9)
+  const shelfHeight = gaps.length > 0 ? gaps[0] : null
   const shelfWidth = !isCorner && p.columnCount > 1 ? (p.width - 2 * p.columnOffset) / (p.columnCount - 1) : null
 
   const payNow = () => {
@@ -302,7 +308,13 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
             {/* The openings, set apart: what fits on a shelf */}
             {(shelfHeight !== null || shelfWidth !== null) && (
               <div className="flex flex-col gap-2 pt-3">
-                {shelfHeight !== null && <SpecRow label="Shelf Height" value={dim(shelfHeight)} />}
+                {shelfHeight !== null && evenGaps && <SpecRow label="Shelf Height" value={dim(shelfHeight)} />}
+                {!evenGaps && (
+                  <>
+                    <SpecRow label="Top Shelf Height" value={dim(gaps[gaps.length - 1])} />
+                    <SpecRow label="Bottom Shelf Height" value={dim(gaps[0])} />
+                  </>
+                )}
                 {shelfWidth !== null && <SpecRow label="Shelf Width" value={dim(shelfWidth)} />}
               </div>
             )}
