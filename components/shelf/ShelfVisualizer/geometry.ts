@@ -111,12 +111,19 @@ function centripetalInterpolate5Flat(points: XY[], u: number): XY {
   if (total < 1e-10) return points[2];
   const k = raw.map(r => r / total);
 
-  // Ghost point BEFORE P0 — reflect P1 across P0 to continue the curve naturally
-  const ghostBefore: XY = { x: 2 * points[0].x - points[1].x, y: 2 * points[0].y - points[1].y };
+  // Ghost point BEFORE P0 — quadratic extrapolation through P0, P1, P2
+  // (reflection locks tangent to P0→P1 direction; quadratic lets the wave shape dictate arrival)
+  const ghostBefore: XY = {
+    x: 2 * points[0].x - points[1].x,
+    y: (8 * points[0].y - 6 * points[1].y + points[2].y) / 3,
+  };
   const kBefore = k[0] - Math.pow(dist(ghostBefore, points[0]), ALPHA) / total;
 
-  // Ghost point AFTER P4 — reflect P3 across P4 to continue the curve naturally
-  const ghostAfter: XY = { x: 2 * points[4].x - points[3].x, y: 2 * points[4].y - points[3].y };
+  // Ghost point AFTER P4 — quadratic extrapolation through P4, P3, P2
+  const ghostAfter: XY = {
+    x: 2 * points[4].x - points[3].x,
+    y: (8 * points[4].y - 6 * points[3].y + points[2].y) / 3,
+  };
   const kAfter = k[4] + Math.pow(dist(points[4], ghostAfter), ALPHA) / total;
 
   const t = Math.max(0, Math.min(1, u));
