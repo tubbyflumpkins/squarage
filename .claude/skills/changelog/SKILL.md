@@ -5,6 +5,10 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-09-22 — Shared design page: the button reads Place Order
+
+Dylan's wording: "Pay Now" became **Place Order** on `/custom/[token]` (desktop button, and the mobile bar's `Place Order · Option 2 · $2,400`). Older entries below still say Pay Now; it is the same button.
+
 ## 2026-09-21 — Shared designs can carry a moved middle shelf
 
 In labs Dylan can now move the middle of three shelves up or down on a flat shelf (console or standard), trading height between the two openings. Customers cannot: **the public Shelf Builder has no control for it and its output is unchanged** (`scripts/verifyShelfGeometry.ts` byte-identical before and after).

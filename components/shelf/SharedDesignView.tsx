@@ -96,11 +96,11 @@ function ShelfViewer({ option }: { option: SharedOption }) {
 /**
  * A design Dylan has prepared for one customer: the Shelf Builder's layout with nothing to
  * edit. Dimensions on the left, the shelf in the middle (drag to rotate), and on the right a
- * title bar ("Warped Console prepared for …", their email under it), his notes, and Pay Now
+ * title bar ("Warped Console prepared for …", their email under it), his notes, and Place Order
  * where the builder has Get Quote. A link can carry several options: they are buttons over the
  * viewer (labs' wireframe on each), the shelf, the numbers, the title and the price follow the
  * one picked, the notes are shared, and the pay box says which option it is for. The design,
- * prices and notes come from labs (lib/sharedDesign.ts); Pay Now opens the Shopify checkout
+ * prices and notes come from labs (lib/sharedDesign.ts); Place Order opens the Shopify checkout
  * labs created for that option.
  */
 export default function SharedDesignView({ share, initialOption }: { share: SharedDesign; initialOption?: number }) {
@@ -194,10 +194,10 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
         </p>
       )
     }
-    const mobileLabel = hasOptions ? `Pay Now · ${optionLabel} · ${formatMoney(price.amountCents)}` : `Pay Now · ${formatMoney(price.amountCents)}`
+    const mobileLabel = hasOptions ? `Place Order · ${optionLabel} · ${formatMoney(price.amountCents)}` : `Place Order · ${formatMoney(price.amountCents)}`
     return (
       <button onClick={payNow} disabled={leaving} className={`${payButtonClass} ${size === 'desktop' ? 'mt-5 py-4 text-2xl' : 'py-3 text-xl'}`}>
-        {leaving ? 'Opening checkout...' : size === 'desktop' ? 'Pay Now' : mobileLabel}
+        {leaving ? 'Opening checkout...' : size === 'desktop' ? 'Place Order' : mobileLabel}
       </button>
     )
   }
@@ -363,7 +363,7 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
           </div>
         </div>
 
-        {/* BOTTOM RIGHT — what is being paid for, its price, and Pay Now where the builder has Get Quote */}
+        {/* BOTTOM RIGHT — what is being paid for, its price, and Place Order where the builder has Get Quote */}
         <div className="hidden md:flex md:order-4 border-l border-t border-squarage-black px-7 py-6 flex-col justify-between">
           <div className="flex flex-col gap-4">
             {hasOptions && <p className="text-[28px] leading-none font-bold tracking-[0.01em] text-squarage-black">{optionLabel} selected</p>}
