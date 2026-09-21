@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import { submitEmailSubscription } from '@/lib/emailCapture'
 
 interface EmailCaptureContextType {
@@ -20,7 +21,12 @@ const STORAGE_KEY_SUBMITTED = 'email_popup_submitted'
 const STORAGE_KEY_LAST_VISIT = 'email_popup_last_visit'
 const STORAGE_KEY_DISCOUNT = 'email_popup_discount_code'
 
+// A customer on their own design link (/custom/[token]) is there to pay a quoted price: no
+// newsletter popup over it, and no welcome discount offered against a quote.
+const isSharedDesignPath = (pathname: string | null) => /^\/custom\/[^/]+/.test(pathname ?? '')
+
 export function EmailCaptureProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname()
   const [showPopup, setShowPopup] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
@@ -124,7 +130,7 @@ export function EmailCaptureProvider({ children }: { children: ReactNode }) {
 
   return (
     <EmailCaptureContext.Provider value={{
-      showPopup,
+      showPopup: showPopup && !isSharedDesignPath(pathname),
       closePopup,
       submitEmail,
       isDismissed,
