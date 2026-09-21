@@ -21,6 +21,7 @@ export interface ShelfParams {
   columnOffset: number; // Distance from left/right sides before column slicing begins
   roundLeft: boolean;   // When true, left edge curve starts at y=0 (wall) for rounded corner
   roundRight: boolean;  // When true, right edge curve starts at y=0 (wall) for rounded corner
+  consoleTop?: boolean; // Console: the top shelf sits flush on the columns as a surface (see lib/warped/shelfLayout)
 }
 
 export interface ShelfGeometry {

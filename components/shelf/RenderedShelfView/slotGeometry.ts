@@ -10,6 +10,7 @@ import type { Point3D } from '@/components/shelf/ShelfVisualizer/types';
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import type { ShelfPiece, ColumnPiece } from '@/components/shelf/ShelfVisualizer/geometry';
 import { getFrontSurfaceY } from '@/components/shelf/ShelfVisualizer/geometry';
+import { shelfLayout, slottedColumnXs, slottedShelfZs } from '@/lib/warped/shelfLayout';
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 import type { CornerShelfPiece, CornerColumnPiece } from '@/components/shelf/CornerShelfVisualizer/geometry';
 import {
@@ -25,18 +26,7 @@ const HALF_SLOT = THICKNESS / 2;
 // Position helpers (replicate logic from geometry generators)
 // ---------------------------------------------------------------------------
 
-function getColumnXPositions(params: ShelfParams): number[] {
-  const { width, columnCount, columnOffset = 0 } = params;
-  const positions: number[] = [];
-  const startX = columnOffset;
-  const endX = width - columnOffset;
-  for (let i = 0; i < columnCount; i++) {
-    const t = columnCount > 1 ? i / (columnCount - 1) : 0.5;
-    positions.push(startX + t * (endX - startX));
-  }
-  return positions;
-}
-
+// The flat shelf's positions come from `shelfLayout`; the corner shelf keeps its own
 function getShelfZPositions(p: { height: number; shelfCount: number; shelfOffset?: number }): number[] {
   const { height, shelfCount, shelfOffset = 0 } = p;
   const positions: number[] = [];
@@ -102,11 +92,13 @@ function dist2d(a: { x: number; y: number }, b: { x: number; y: number }): numbe
 // ---------------------------------------------------------------------------
 
 export function addFlatShelfSlots(piece: ShelfPiece, params: ShelfParams): ShelfPiece {
-  const colPositions = getColumnXPositions(params);
-  if (colPositions.length === 0) return piece;
-
   const { width, height, depth, amplitude, roundLeft = false, roundRight = false } = params;
   const z = piece.frontEdge[0].z;
+
+  // The console's top only slots into the first and last columns; it sits on the ones in between
+  const layout = shelfLayout(params);
+  const colPositions = slottedColumnXs(layout, layout.shelfZ.findIndex((shelfZ) => Math.abs(shelfZ - z) < 1e-9));
+  if (colPositions.length === 0) return piece;
 
   const newFront: Point3D[] = [];
   const newBack: Point3D[] = [];
@@ -166,10 +158,14 @@ export function addFlatShelfSlots(piece: ShelfPiece, params: ShelfParams): Shelf
 // ---------------------------------------------------------------------------
 
 export function addFlatColumnSlots(piece: ColumnPiece, params: ShelfParams): ColumnPiece {
-  const shelfPositions = getShelfZPositions(params);
-  if (shelfPositions.length === 0) return piece;
-
   const { width, height, depth, amplitude, roundLeft = false, roundRight = false } = params;
+
+  // A console column that stops under the top takes no slot for it
+  const layout = shelfLayout(params);
+  const columnIndex = layout.columns.findIndex((c) => Math.abs(c.x - piece.frontEdge[0].x) < 1e-9);
+  const shelfPositions = slottedShelfZs(layout, columnIndex);
+  if (shelfPositions.length === 0) return piece;
+  const columnTopZ = layout.columns[columnIndex]?.topZ ?? height;
   const colX = piece.frontEdge[0].x;
 
   const newFront: Point3D[] = [];
@@ -182,7 +178,7 @@ export function addFlatColumnSlots(piece: ColumnPiece, params: ShelfParams): Col
   for (const shelfZ of sortedShelves) {
     const slotBot = shelfZ - HALF_SLOT;
     const slotTop = shelfZ + HALF_SLOT;
-    if (slotBot < 0 || slotTop > height) continue;
+    if (slotBot < 0 || slotTop > columnTopZ) continue;
 
     const intersectionDepth = getFrontSurfaceY(colX, shelfZ, width, height, depth, amplitude, roundLeft, roundRight);
     const slotDepth = intersectionDepth / 2;

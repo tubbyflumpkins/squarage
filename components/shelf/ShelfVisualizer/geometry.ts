@@ -1,4 +1,5 @@
 import { Point3D, Point2D, ShelfParams } from './types';
+import { shelfLayout } from '@/lib/warped/shelfLayout';
 
 /**
  * FLAT WALL SHELF GENERATOR
@@ -56,6 +57,8 @@ export function rotateAndProject(p: Point3D, angle: number, centerX: number, cen
 
 // =====================================================================
 // SECTION 2: CENTRIPETAL CATMULL-ROM (BARRY-GOLDMAN ALGORITHM)
+// Ported from CornerShelfVisualizer for consistent, high-quality lofting.
+// Centripetal (alpha=0.5) guarantees no cusps or self-intersections.
 // =====================================================================
 
 interface XY { x: number; y: number }
@@ -139,6 +142,79 @@ function centripetalInterpolate5Flat(points: XY[], u: number): XY {
   }
 }
 
+/**
+ * Centripetal Catmull-Rom through any number of points — the K-point form of
+ * centripetalInterpolate5Flat with the same quadratic ghost extrapolation at
+ * both ends. `u` in [0, 1] runs from the first point to the last; two points
+ * degrade to a straight line.
+ */
+export function centripetalInterpolate(points: Point2D[], u: number): Point2D {
+  const n = points.length;
+  if (n === 0) throw new Error('centripetalInterpolate needs at least one point');
+  if (n === 1) return points[0];
+  const t = Math.max(0, Math.min(1, u));
+  if (n === 2) {
+    return { x: points[0].x + (points[1].x - points[0].x) * t, y: points[0].y + (points[1].y - points[0].y) * t };
+  }
+  const raw = [0];
+  for (let i = 1; i < n; i++) {
+    raw.push(raw[i - 1] + Math.pow(dist(points[i], points[i - 1]), ALPHA));
+  }
+  const total = raw[n - 1];
+  if (total < 1e-10) return points[0];
+  const k = raw.map(r => r / total);
+
+  const ghostBefore: XY = {
+    x: 2 * points[0].x - points[1].x,
+    y: (8 * points[0].y - 6 * points[1].y + points[2].y) / 3,
+  };
+  const kBefore = k[0] - Math.pow(dist(ghostBefore, points[0]), ALPHA) / total;
+  const ghostAfter: XY = {
+    x: 2 * points[n - 1].x - points[n - 2].x,
+    y: (8 * points[n - 1].y - 6 * points[n - 2].y + points[n - 3].y) / 3,
+  };
+  const kAfter = k[n - 1] + Math.pow(dist(points[n - 1], ghostAfter), ALPHA) / total;
+
+  // Segment i spans k[i]..k[i+1]; a t exactly on a knot belongs to the earlier segment
+  let i = 0;
+  while (i < n - 2 && t > k[i + 1]) i++;
+  const p0 = i === 0 ? ghostBefore : points[i - 1];
+  const t0 = i === 0 ? kBefore : k[i - 1];
+  const p3 = i === n - 2 ? ghostAfter : points[i + 2];
+  const t3 = i === n - 2 ? kAfter : k[i + 2];
+  return barryGoldman(p0, points[i], points[i + 1], p3, t0, k[i], k[i + 1], t3, t);
+}
+
+/**
+ * Centripetal Catmull-Rom through `points` with caller-supplied ghost points,
+ * for curves whose end tangents must be pinned: a ghost mirrored across the
+ * axis gives a horizontal arrival, one mirrored across a horizontal line a
+ * vertical arrival (the Saturn planet profile uses both). Same Barry-Goldman
+ * evaluation as centripetalInterpolate; `u` in [0, 1] runs first point to last.
+ */
+export function centripetalInterpolateWithGhosts(points: Point2D[], ghostBefore: Point2D, ghostAfter: Point2D, u: number): Point2D {
+  const n = points.length;
+  if (n < 2) throw new Error('centripetalInterpolateWithGhosts needs at least two points');
+  const t = Math.max(0, Math.min(1, u));
+  const raw = [0];
+  for (let i = 1; i < n; i++) {
+    raw.push(raw[i - 1] + Math.pow(dist(points[i], points[i - 1]), ALPHA));
+  }
+  const total = raw[n - 1];
+  if (total < 1e-10) return points[0];
+  const k = raw.map(r => r / total);
+  const kBefore = k[0] - Math.pow(dist(ghostBefore, points[0]), ALPHA) / total;
+  const kAfter = k[n - 1] + Math.pow(dist(points[n - 1], ghostAfter), ALPHA) / total;
+
+  let i = 0;
+  while (i < n - 2 && t > k[i + 1]) i++;
+  const p0 = i === 0 ? ghostBefore : points[i - 1];
+  const t0 = i === 0 ? kBefore : k[i - 1];
+  const p3 = i === n - 2 ? ghostAfter : points[i + 2];
+  const t3 = i === n - 2 ? kAfter : k[i + 2];
+  return barryGoldman(p0, points[i], points[i + 1], p3, t0, k[i], k[i + 1], t3, t);
+}
+
 
 // =====================================================================
 // SECTION 3: SURFACE EVALUATOR
@@ -207,6 +283,7 @@ export function getFlatFrontSurface(u: number, z: number, params: ShelfParams): 
  * Get the front surface Y position at any (x, z) point.
  * Uses binary search to find the parameter u where the surface X ≈ target x,
  * then returns the Y value at that point.
+ * Backward-compatible signature for production/CNC code.
  */
 export function getFrontSurfaceY(
   x: number,
@@ -234,35 +311,39 @@ export function getFrontSurfaceY(
 }
 
 export interface ShelfPiece {
-  frontEdge: Point3D[];
-  backEdge: Point3D[];
-  leftSide: [Point3D, Point3D];
-  rightSide: [Point3D, Point3D];
+  // Horizontal slice with depth
+  frontEdge: Point3D[];     // Wavy front edge
+  backEdge: Point3D[];      // Straight back edge at y=0
+  leftSide: [Point3D, Point3D];   // Left side: front-left to back-left
+  rightSide: [Point3D, Point3D];  // Right side: front-right to back-right
 }
 
 export interface ColumnPiece {
-  frontEdge: Point3D[];
-  backEdge: Point3D[];
-  topSide: [Point3D, Point3D];
-  bottomSide: [Point3D, Point3D];
+  // Vertical slice with depth
+  frontEdge: Point3D[];     // Wavy front edge
+  backEdge: Point3D[];      // Straight back edge at y=0
+  topSide: [Point3D, Point3D];    // Top: front-top to back-top
+  bottomSide: [Point3D, Point3D]; // Bottom: front-bottom to back-bottom
 }
 
-export interface ShelfGeometryResult {
+export interface ShelfGeometry {
   shelves: ShelfPiece[];
   columns: ColumnPiece[];
-  curve0: Point3D[];
-  curve1: Point3D[];
-  curve2: Point3D[];
-  curve3: Point3D[];
-  curve4: Point3D[];
+  // The five control curves for reference
+  curve0: Point3D[];  // x=0: straight line
+  curve1: Point3D[];  // x=1/6: first sine
+  curve2: Point3D[];  // x=1/2: center (inverted)
+  curve3: Point3D[];  // x=5/6: second sine
+  curve4: Point3D[];  // x=1: straight line
+  // Keep old names for compatibility
   leftCurve: Point3D[];
   centerCurve: Point3D[];
   rightCurve: Point3D[];
 }
 
-export function generateShelfGeometry(params: ShelfParams): ShelfGeometryResult {
+export function generateShelfGeometry(params: ShelfParams): ShelfGeometry {
   const MIN = 0.0001;
-  const { width: _w, height: _h, depth: _d, amplitude, shelfCount, columnCount, shelfOffset = 0, columnOffset = 0, roundLeft = false, roundRight = false } = params;
+  const { width: _w, height: _h, depth: _d, amplitude, shelfOffset = 0, columnOffset = 0, roundLeft = false, roundRight = false } = params;
   const width = Math.max(MIN, _w);
   const height = Math.max(MIN, _h);
   const depth = Math.max(MIN, _d);
@@ -286,12 +367,9 @@ export function generateShelfGeometry(params: ShelfParams): ShelfGeometryResult 
   const columns: ColumnPiece[] = [];
 
   // Generate horizontal shelf pieces (u-based sampling through CR surface)
-  const shelfStartZ = shelfOffset;
-  const shelfEndZ = height - shelfOffset;
-  for (let i = 0; i < shelfCount; i++) {
-    const t = shelfCount > 1 ? i / (shelfCount - 1) : 0.5;
-    const z = shelfStartZ + t * (shelfEndZ - shelfStartZ);
-
+  // On the console the columns between the first and the last stop under the top shelf (see shelfLayout)
+  const layout = shelfLayout({ ...clamped, shelfOffset, columnOffset });
+  for (const z of layout.shelfZ) {
     const frontEdge: Point3D[] = [];
     const backEdge: Point3D[] = [];
     const edgeSegments = 60;
@@ -316,18 +394,13 @@ export function generateShelfGeometry(params: ShelfParams): ShelfGeometryResult 
   }
 
   // Generate vertical column pieces (binary search for u at target X)
-  const colStartX = columnOffset;
-  const colEndX = width - columnOffset;
-  for (let i = 0; i < columnCount; i++) {
-    const t = columnCount > 1 ? i / (columnCount - 1) : 0.5;
-    const x = colStartX + t * (colEndX - colStartX);
-
+  for (const { x, topZ } of layout.columns) {
     const frontEdge: Point3D[] = [];
     const backEdge: Point3D[] = [];
     const segments = 40;
 
     for (let j = 0; j <= segments; j++) {
-      const z = (j / segments) * height;
+      const z = (j / segments) * topZ;
 
       // Binary search for parameter u where surface X ≈ target x
       let uLow = 0, uHigh = 1;
@@ -352,7 +425,7 @@ export function generateShelfGeometry(params: ShelfParams): ShelfGeometryResult 
     ];
     const topSide: [Point3D, Point3D] = [
       frontEdge[frontEdge.length - 1],
-      { x, y: 0, z: height },
+      { x, y: 0, z: topZ },
     ];
 
     columns.push({ frontEdge, backEdge, topSide, bottomSide });
@@ -375,6 +448,7 @@ export interface ProjectedShelfGeometry {
     topSide: [Point2D, Point2D];
     bottomSide: [Point2D, Point2D];
   }[];
+  // All 5 control curves
   curve0: Point2D[];
   curve1: Point2D[];
   curve2: Point2D[];
@@ -385,7 +459,7 @@ export interface ProjectedShelfGeometry {
   rightCurve: Point2D[];
 }
 
-export function projectGeometry(geo: ShelfGeometryResult, tiltDeg: number = DEFAULT_TILT): ProjectedShelfGeometry {
+export function projectGeometry(geo: ShelfGeometry, tiltDeg: number = DEFAULT_TILT): ProjectedShelfGeometry {
   const project = (p: Point3D) => isometricProject(p, tiltDeg);
   return {
     shelves: geo.shelves.map(s => ({
@@ -412,12 +486,13 @@ export function projectGeometry(geo: ShelfGeometryResult, tiltDeg: number = DEFA
 }
 
 export function projectGeometryWithRotation(
-  geo: ShelfGeometryResult,
+  geo: ShelfGeometry,
   angle: number,
   width: number,
   depth: number,
   tiltDeg: number = DEFAULT_TILT
 ): ProjectedShelfGeometry {
+  // Center of rotation (true center of the object)
   const centerX = width / 2;
   const centerY = depth / 2;
 
