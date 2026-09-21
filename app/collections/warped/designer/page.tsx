@@ -2,12 +2,14 @@
 
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { useSavedDesigns, type SavedDesign } from '@/stores/useSavedDesigns';
+import { useSavedDesigns, type SavedDesign, type ShelfVariant } from '@/stores/useSavedDesigns';
 import { PRESET_DESIGNS, type PresetDesign } from '@/data/presetDesigns';
 import { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 import { preloadAllTextures } from '@/components/shelf/RenderedShelfView/useWoodMaterial';
 import { preloadAllEdgeTextures } from '@/components/shelf/RenderedShelfView/useEdgeMaterial';
+import { consoleSurfaceHeight } from '@/lib/warped/shelfLayout';
+import { flatSvgPreview } from '@/lib/warped/flatSvgPreview';
 import {
   useShelfWasm,
   computeDerivedParams,
@@ -378,6 +380,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 interface DesignParams {
   isCorner: boolean;
+  /** Media console: the standard shelf with its top turned into a surface. Never set with isCorner. */
+  isConsole: boolean;
   width: number;
   height: number;
   depth: number;
@@ -390,6 +394,7 @@ interface DesignParams {
 
 const DEFAULTS: DesignParams = {
   isCorner: true,
+  isConsole: false,
   width: 45,
   height: 24,
   depth: 10,
@@ -399,6 +404,35 @@ const DEFAULTS: DesignParams = {
   roundLeft: false,
   roundRight: false,
 };
+
+/** The console has its own proportions and slider ranges, so the toggle swaps whole defaults (as in labs). */
+const CONSOLE_DEFAULTS: DesignParams = { ...DEFAULTS, isCorner: false, isConsole: true, width: 48, height: 26, depth: 14 };
+
+/** Height and depth limits: the console runs lower and deeper than the wall shelves (labs' warpedShelfRanges). */
+const rangesFor = (p: DesignParams) => ({
+  heightMin: p.isConsole ? 16 : 24,
+  heightMax: p.isCorner ? 96 : 76,
+  depthMin: 8,
+  depthMax: p.isConsole ? 20 : 14,
+});
+
+const variantOf = (p: DesignParams): ShelfVariant => (p.isCorner ? 'corner' : p.isConsole ? 'console' : 'standard');
+
+/** A saved design or preset → params. Designs saved before the console existed carry no variant. */
+function paramsFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVariant | undefined, lp: Record<string, number | boolean>): DesignParams {
+  return {
+    isCorner: shelfType === 'corner',
+    isConsole: shelfType === 'flat' && variant === 'console',
+    width: (lp.width as number) ?? DEFAULTS.width,
+    height: (lp.height as number) ?? DEFAULTS.height,
+    depth: (lp.depth as number) ?? DEFAULTS.depth,
+    length: (lp.length as number) ?? DEFAULTS.length,
+    shelfCount: (lp.shelfCount as number) ?? DEFAULTS.shelfCount,
+    columnCount: (lp.columnCount as number) ?? DEFAULTS.columnCount,
+    roundLeft: (lp.roundLeft as boolean) ?? false,
+    roundRight: (lp.roundRight as boolean) ?? false,
+  };
+}
 
 export default function DesignerPage() {
   const [p, setP] = useState<DesignParams>(DEFAULTS);
@@ -471,6 +505,7 @@ export default function DesignerPage() {
     amplitude, shelfCount: p.shelfCount, columnCount: p.columnCount,
     shelfOffset, columnOffset,
     roundLeft: p.roundLeft, roundRight: p.roundRight,
+    consoleTop: p.isConsole,
   }), [p, amplitude, shelfOffset, columnOffset]);
 
   const cornerParams: CornerShelfParams = useMemo(() => ({
@@ -650,6 +685,8 @@ export default function DesignerPage() {
   // SVG preview string for saving
   const getSvgPreview = useCallback((): string => {
     if (!wasmReady) return '';
+    // The WASM projection does not know the console: draw it from the TypeScript geometry
+    if (p.isConsole) return flatSvgPreview(flatParams, rotation, tilt);
     const sw = '0.4';
     const stroke = '#2C2C2C';
     const line = (pts: number[], offset: number) =>
@@ -690,17 +727,19 @@ export default function DesignerPage() {
       });
     }
     return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">${paths}</svg>`;
-  }, [wasmReady, svgInput, rotation]);
+  }, [wasmReady, svgInput, rotation, p.isConsole, flatParams, tilt]);
 
   // Save / Load
   const handleSave = () => {
     if (!saveName.trim()) return;
     const shelfType = p.isCorner ? 'corner' : 'flat';
+    const { isConsole: _isConsole, ...saved } = p;
     const params: Record<string, number | boolean> = {
-      ...p, amplitude, shelfOffset, columnOffset,
+      ...saved, amplitude, shelfOffset, columnOffset,
       ...(p.isCorner ? { columnAngle, wallAlign: 1 } : {}),
+      ...(p.isConsole ? { consoleTop: true } : {}),
     };
-    saveDesign(saveName.trim(), shelfType as 'flat' | 'corner', params, getSvgPreview());
+    saveDesign(saveName.trim(), shelfType as 'flat' | 'corner', params, getSvgPreview(), variantOf(p));
     setSaveName('');
     setShowSaveInput(false);
     setDesignTab('custom');
@@ -709,38 +748,21 @@ export default function DesignerPage() {
   const handleLoad = (design: SavedDesign) => {
     const loaded = loadDesign(design.id);
     if (!loaded) return;
-    const lp = loaded.params;
-    setP({
-      isCorner: design.shelfType === 'corner',
-      width: (lp.width as number) ?? DEFAULTS.width,
-      height: (lp.height as number) ?? DEFAULTS.height,
-      depth: (lp.depth as number) ?? DEFAULTS.depth,
-      length: (lp.length as number) ?? DEFAULTS.length,
-      shelfCount: (lp.shelfCount as number) ?? DEFAULTS.shelfCount,
-      columnCount: (lp.columnCount as number) ?? DEFAULTS.columnCount,
-      roundLeft: (lp.roundLeft as boolean) ?? false,
-      roundRight: (lp.roundRight as boolean) ?? false,
-    });
+    setP(paramsFromSaved(design.shelfType, loaded.variant, loaded.params));
   };
 
   const handleLoadPreset = (preset: PresetDesign) => {
-    const lp = preset.params;
-    setP({
-      isCorner: preset.shelfType === 'corner',
-      width: (lp.width as number) ?? DEFAULTS.width,
-      height: (lp.height as number) ?? DEFAULTS.height,
-      depth: (lp.depth as number) ?? DEFAULTS.depth,
-      length: (lp.length as number) ?? DEFAULTS.length,
-      shelfCount: (lp.shelfCount as number) ?? DEFAULTS.shelfCount,
-      columnCount: (lp.columnCount as number) ?? DEFAULTS.columnCount,
-      roundLeft: (lp.roundLeft as boolean) ?? false,
-      roundRight: (lp.roundRight as boolean) ?? false,
-    });
+    setP(paramsFromSaved(preset.shelfType, preset.variant, preset.params));
     resetToNew();
   };
 
   // Price
   const price = derived.price;
+
+  const variant = variantOf(p);
+  const ranges = rangesFor(p);
+  // The console's end columns rise past its top, so the usable surface sits below the overall height
+  const surfaceHeight = p.isConsole ? consoleSurfaceHeight(flatParams) : null;
 
   // Dimensions display
   const dimStr = p.isCorner
@@ -955,20 +977,23 @@ export default function DesignerPage() {
               <SectionLabel>Design</SectionLabel>
 
               <div className="flex">
-                {(['standard', 'corner'] as const).map((type) => (
+                {(['standard', 'corner', 'console'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => {
-                      set('isCorner', type === 'corner');
+                      if (type === variant) return;
+                      if (type === 'console') setP(CONSOLE_DEFAULTS);
+                      else if (p.isConsole) setP({ ...DEFAULTS, isCorner: type === 'corner' });
+                      else set('isCorner', type === 'corner');
                       setRotation(type === 'corner' ? 15 * Math.PI / 180 : 350 * Math.PI / 180);
-                      targetSpeedRef.current = type === 'corner' ? -0.0012 : -0.0012;
+                      targetSpeedRef.current = -0.0012;
                       velocityRef.current = 0.0008;
                     }}
-                    className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
-                      (type === 'corner') === p.isCorner
+                    className={`px-3 md:px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
+                      type === variant
                         ? 'bg-squarage-green text-white border-squarage-green'
                         : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
-                    } ${type === 'standard' ? 'border-r-0' : ''}`}
+                    } ${type !== 'console' ? 'border-r-0' : ''}`}
                   >
                     {type}
                   </button>
@@ -1016,8 +1041,8 @@ export default function DesignerPage() {
                   {p.isCorner && (
                     <CompactSlider label="Length" value={p.length} min={10} max={76} unit={'"'} onChange={(v) => set('length', v)} />
                   )}
-                  <CompactSlider label="Height" value={p.height} min={24} max={p.isCorner ? 96 : 76} unit={'"'} onChange={(v) => set('height', v)} />
-                  <CompactSlider label="Depth" value={p.depth} min={8} max={14} unit={'"'} onChange={(v) => set('depth', v)} />
+                  <CompactSlider label="Height" value={p.height} min={ranges.heightMin} max={ranges.heightMax} unit={'"'} onChange={(v) => set('height', v)} />
+                  <CompactSlider label="Depth" value={p.depth} min={ranges.depthMin} max={ranges.depthMax} unit={'"'} onChange={(v) => set('depth', v)} />
                 </>
               ) : (
                 <>
@@ -1025,8 +1050,8 @@ export default function DesignerPage() {
                   {p.isCorner && (
                     <CompactSlider label="Length" value={Math.round(p.length * 2.54)} min={Math.round(10 * 2.54)} max={Math.round(76 * 2.54)} unit="" onChange={(v) => set('length', Math.round(v / 2.54))} />
                   )}
-                  <CompactSlider label="Height" value={Math.round(p.height * 2.54)} min={Math.round(24 * 2.54)} max={Math.round((p.isCorner ? 96 : 76) * 2.54)} unit="" onChange={(v) => set('height', Math.round(v / 2.54))} />
-                  <CompactSlider label="Depth" value={Math.round(p.depth * 2.54)} min={Math.round(8 * 2.54)} max={Math.round(14 * 2.54)} unit="" onChange={(v) => set('depth', Math.round(v / 2.54))} />
+                  <CompactSlider label="Height" value={Math.round(p.height * 2.54)} min={Math.round(ranges.heightMin * 2.54)} max={Math.round(ranges.heightMax * 2.54)} unit="" onChange={(v) => set('height', Math.round(v / 2.54))} />
+                  <CompactSlider label="Depth" value={Math.round(p.depth * 2.54)} min={Math.round(ranges.depthMin * 2.54)} max={Math.round(ranges.depthMax * 2.54)} unit="" onChange={(v) => set('depth', Math.round(v / 2.54))} />
                 </>
               )}
             </div>
@@ -1087,10 +1112,16 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         <div className={"hidden md:flex md:order-4 border-l border-t border-squarage-black px-7 py-6 flex-col justify-between"}>
           <div className="flex flex-col gap-2 text-[16px] font-medium tracking-[0.01em] text-squarage-black">
-            {p.isCorner && (
+            {variant !== 'standard' && (
               <div className="flex justify-between">
                 <span>Type</span>
-                <span>Corner Unit</span>
+                <span>{p.isCorner ? 'Corner Unit' : 'Console'}</span>
+              </div>
+            )}
+            {surfaceHeight !== null && (
+              <div className="flex justify-between">
+                <span>Surface Height</span>
+                <span className="tabular-nums">{surfaceHeight.toFixed(1)}&quot;</span>
               </div>
             )}
             <div className="flex justify-between">
@@ -1183,6 +1214,7 @@ export default function DesignerPage() {
       >
         <QuoteFlow
           isCorner={p.isCorner}
+          isConsole={p.isConsole}
           flatParams={flatParams}
           cornerParams={cornerParams}
           rotation={rotation}
