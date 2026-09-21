@@ -1,9 +1,16 @@
 import { create } from 'zustand';
 
+export type ShelfVariant = 'standard' | 'corner' | 'console';
+
 export interface SavedDesign {
   id: string;
   name: string;
+  /** The console is a flat shelf: it saves as 'flat' with `variant: 'console'`, as labs does. */
   shelfType: 'flat' | 'corner';
+  /** Absent on designs saved before the console existed: those are standard or corner by shelfType. */
+  variant?: ShelfVariant;
+  /** Written with every save so labs' importer keeps the variant. */
+  collection?: 'warped';
   params: Record<string, number | boolean>;
   svgPreview?: string;
   createdAt: number;
@@ -17,7 +24,7 @@ interface SavedDesignsStore {
   isDirty: boolean;
 
   loadDesigns: () => void;
-  saveDesign: (name: string, shelfType: 'flat' | 'corner', params: Record<string, number | boolean>, svgPreview?: string) => void;
+  saveDesign: (name: string, shelfType: 'flat' | 'corner', params: Record<string, number | boolean>, svgPreview?: string, variant?: ShelfVariant) => void;
   replaceDesign: (id: string, params: Record<string, number | boolean>, svgPreview?: string) => void;
   loadDesign: (id: string) => SavedDesign | undefined;
   deleteDesign: (id: string) => void;
@@ -46,11 +53,13 @@ export const useSavedDesigns = create<SavedDesignsStore>((set, get) => ({
     }
   },
 
-  saveDesign: (name, shelfType, params, svgPreview) => {
+  saveDesign: (name, shelfType, params, svgPreview, variant) => {
     const design: SavedDesign = {
       id: `design-${Date.now()}`,
       name,
       shelfType,
+      variant: variant ?? (shelfType === 'corner' ? 'corner' : 'standard'),
+      collection: 'warped',
       params: { ...params },
       svgPreview,
       createdAt: Date.now(),
