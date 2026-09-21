@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'
 import { z } from 'zod'
 import { sendStudioMail, escapeHtml, isSmtpConfigured, rateLimit, clientIp } from '@/lib/email'
 import { hasMarketingConsentCookie, sendMetaCapiEvent } from '@/lib/metaCapi'
+import { consoleSurfaceHeight } from '@/lib/warped/shelfLayout'
 
 // Use z.coerce for numeric/boolean fields to handle production builds
 // where values may arrive as strings instead of their original types
@@ -18,6 +19,8 @@ const quoteSchema = z.object({
   message: z.string().max(5000).optional().default(''),
   specs: z.object({
     shelfType: z.enum(['flat', 'corner']),
+    // The console is a flat shelf; older clients send no variant
+    variant: z.enum(['standard', 'corner', 'console']).optional(),
     width: z.coerce.number().min(0).max(1000),
     height: z.coerce.number().min(0).max(1000),
     depth: z.coerce.number().min(0).max(1000),
@@ -76,10 +79,16 @@ export async function POST(request: NextRequest) {
       savedDesignJson: escapeHtml(savedDesignJson),
     }
 
+    const isConsole = specs.shelfType === 'flat' && specs.variant === 'console'
+    const typeLabel = specs.shelfType === 'corner' ? 'Corner Unit' : isConsole ? 'Console' : 'Standard'
+    // The console's end columns rise past its top: the usable surface sits below the overall height
+    const surfaceHeight = isConsole ? consoleSurfaceHeight({ ...specs, consoleTop: true }) : null
+
     const specRows = [
-      ['Type', specs.shelfType === 'corner' ? 'Corner Unit' : 'Standard (Flat)'],
+      ['Type', specs.shelfType === 'corner' ? 'Corner Unit' : isConsole ? 'Console' : 'Standard (Flat)'],
       ['Width', `${specs.width}"`],
       ['Height', `${specs.height}"`],
+      ...(surfaceHeight !== null ? [['Surface Height', `${surfaceHeight.toFixed(1)}"`]] : []),
       ['Depth', `${specs.depth}"`],
       ...(specs.shelfType === 'corner' ? [['Length', `${specs.length}"`]] : []),
       ['Shelves', String(specs.shelfCount)],
@@ -141,7 +150,7 @@ ${new Date().toLocaleString()}
 
       <!-- Design Name -->
       <h2 style="margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #333333;">${safe.designName}</h2>
-      <p style="margin: 0 0 20px; font-size: 13px; color: #333333; opacity: 0.5;">${specs.shelfType === 'corner' ? 'Corner Unit' : 'Standard'} &middot; ${specs.width}&quot; &times; ${specs.height}&quot; &times; ${specs.depth}&quot;</p>
+      <p style="margin: 0 0 20px; font-size: 13px; color: #333333; opacity: 0.5;">${typeLabel} &middot; ${specs.width}&quot; &times; ${specs.height}&quot; &times; ${specs.depth}&quot;</p>
 
       <!-- Specs -->
       <table style="width: 100%; border-collapse: collapse;">

@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import { generateMetaEventId, trackMetaBrowserEvent } from '@/lib/metaPixel';
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
+import { consoleSurfaceHeight } from '@/lib/warped/shelfLayout';
+import type { ShelfVariant } from '@/stores/useSavedDesigns';
 
 const RenderedShelfView = dynamic(
   () => import('@/components/shelf/RenderedShelfView'),
@@ -15,6 +17,8 @@ type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 
 interface QuoteFlowProps {
   isCorner: boolean;
+  /** The media console: a flat shelf whose top is a surface (flatParams.consoleTop draws it). */
+  isConsole?: boolean;
   flatParams: ShelfParams;
   cornerParams: CornerShelfParams;
   rotation: number;
@@ -34,7 +38,7 @@ interface QuoteFlowProps {
   columnOffset: number;
   columnAngle: number;
   onClose: () => void;
-  saveDesign: (name: string, shelfType: 'flat' | 'corner', params: Record<string, number | boolean>, svgPreview?: string) => void;
+  saveDesign: (name: string, shelfType: 'flat' | 'corner', params: Record<string, number | boolean>, svgPreview?: string, variant?: ShelfVariant) => void;
   getSvgPreview: () => string;
   active: boolean;
 }
@@ -101,6 +105,7 @@ function ShadowInput({
 
 export default function QuoteFlow({
   isCorner,
+  isConsole = false,
   flatParams,
   cornerParams,
   rotation,
@@ -127,6 +132,7 @@ export default function QuoteFlow({
   const [step, setStep] = useState(1);
   const [animating, setAnimating] = useState(false);
 
+  const variant: ShelfVariant = isCorner ? 'corner' : isConsole ? 'console' : 'standard';
   const [designName, setDesignName] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [email, setEmail] = useState('');
@@ -217,12 +223,13 @@ export default function QuoteFlow({
         shelfCount, columnCount, roundLeft, roundRight,
         amplitude, shelfOffset, columnOffset,
         ...(isCorner ? { columnAngle, wallAlign: 1 } : {}),
+        ...(isConsole ? { consoleTop: true } : {}),
       };
-      saveDesign(designName.trim(), shelfType, params, preview);
+      saveDesign(designName.trim(), shelfType, params, preview, variant);
       savedRef.current = true;
     }
     goForward(2);
-  }, [designName, isCorner, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, amplitude, shelfOffset, columnOffset, columnAngle, saveDesign, getSvgPreview, goForward]);
+  }, [designName, isCorner, isConsole, variant, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, amplitude, shelfOffset, columnOffset, columnAngle, saveDesign, getSvgPreview, goForward]);
 
   const handleStep2 = useCallback(() => {
     const newErrors: Record<string, string> = {};
@@ -246,15 +253,19 @@ export default function QuoteFlow({
     setSubmitStatus('idle');
     setSubmitError('');
     const shelfType = isCorner ? 'corner' : 'flat';
+    // collection + variant ride along so labs loads a console as a console
     const savedDesignObj = {
       id: `design-${Date.now()}`,
       name: designName.trim(),
       shelfType,
+      collection: 'warped',
+      variant,
       params: {
         isCorner, width, height, depth, length,
         shelfCount, columnCount, roundLeft, roundRight,
         amplitude, shelfOffset, columnOffset,
         ...(isCorner ? { columnAngle, wallAlign: 1 } : {}),
+        ...(isConsole ? { consoleTop: true } : {}),
       },
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -273,7 +284,7 @@ export default function QuoteFlow({
           email: email.trim().toLowerCase(),
           message: message.trim(),
           specs: {
-            shelfType, width, height, depth, length,
+            shelfType, variant, width, height, depth, length,
             shelfCount, columnCount, roundLeft, roundRight,
             finish, amplitude, shelfOffset, columnOffset,
             columnAngle, estimatedPrice,
@@ -306,16 +317,19 @@ export default function QuoteFlow({
     } finally {
       setSubmitting(false);
     }
-  }, [designName, customerName, email, message, isCorner, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, finish, amplitude, shelfOffset, columnOffset, columnAngle, price, onClose]);
+  }, [designName, customerName, email, message, isCorner, isConsole, variant, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, finish, amplitude, shelfOffset, columnOffset, columnAngle, price, onClose]);
 
   const animClass = animating
     ? 'animate-[fadeSlideOut_250ms_ease-out_forwards]'
     : 'animate-[fadeSlideIn_250ms_ease-out_forwards]';
 
+  // The console's end columns rise past its top, so the usable surface sits below the overall height
+  const surfaceHeight = isConsole ? consoleSurfaceHeight(flatParams) : null;
   const specRows: [string, string][] = [
-    ['Type', isCorner ? 'Corner Unit' : 'Standard'],
+    ['Type', isCorner ? 'Corner Unit' : isConsole ? 'Console' : 'Standard'],
     ['Width', `${width}"`],
     ['Height', `${height}"`],
+    ...(surfaceHeight !== null ? [['Surface Height', `${surfaceHeight.toFixed(1)}"`] as [string, string]] : []),
     ['Depth', `${depth}"`],
     ...(isCorner ? [['Length', `${length}"`] as [string, string]] : []),
     ['Shelves', String(shelfCount)],
