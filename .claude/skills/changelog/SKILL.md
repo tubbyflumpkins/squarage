@@ -5,6 +5,18 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-09-21 — Shared design links carry several options
+
+Dylan can now put more than one design on a customer's link (labs' Share dialog has an "Add to" picker; its changelog has that half). On `/custom/[token]`:
+
+- **Option buttons** over the viewer's top left, labs' wireframe on each. Picking one swaps the shelf (the viewer is keyed by option, so a corner and a flat shelf each open at their own angle), the numbers, the title ("Warped Console prepared for …" follows the option's variant) and the price. The notes, the name and the email belong to the link and do not change. The pay box is headed **"Option 2 selected"** and the mobile bar reads `Pay Now · Option 2 · $2,400`; Pay Now opens that option's own Shopify checkout. With one option none of this appears and the page is as it was.
+- **`?option=2`** opens on that option (labs links its draft orders this way) and the URL follows the pick through `history.replaceState`, so a refresh or a forwarded link keeps it.
+- **Option numbers are permanent** on labs' side: if Option 1 is removed the other stays "Option 2". Once one option is paid, labs closes the rest and sends only what was bought, so the paid page has no option UI.
+- **Wireframes are never injected as markup**: they render through `<img src="data:image/svg+xml…">`, where an SVG cannot run script. That is why `svgPreview` was kept out of the first contract and is fine in this one.
+- **Contract v2** (`lib/sharedDesign.ts`: a link with `options[]`). `lib/sharedDesignServer.ts` still accepts v1 and normalises it to a one-option link, so nothing broke while the two sites deployed at different moments (this site shipped first). The v1 branch can go once no one remembers it.
+- **Dimensions box** (Dylan): Width, (Length,) Depth first, then the heights — a console shows **Surface Height** and **Column Height** instead of one Height — then a gap and **Shelf Height / Shelf Width**, moved up from Layout because they read as dimensions.
+- Checked in Playwright against local labs and real Shopify drafts: both options render and swap both ways, the URL persists across reload, a one-option link shows no option UI, mobile, and marking one option paid closed the other (its draft deleted in Shopify) and turned the page to "Paid. Thank you."
+
 ## 2026-09-20 — Console in the Shelf Builder, and customer links for custom designs
 
 Two pieces of work, built together with labs (its changelog has the other half).
