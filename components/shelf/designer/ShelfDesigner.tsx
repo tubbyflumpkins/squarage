@@ -166,7 +166,7 @@ export default function ShelfDesigner() {
         {/* Viewer: pinned while the controls scroll */}
         <div className="sticky top-[60px] z-20 h-[42dvh] border-y-2 border-squarage-black bg-cream md:top-[90px] lg:top-[98px] lg:h-[calc(100dvh-98px)] lg:border-b-0 lg:border-r-2">
           <div className="relative h-full w-full" style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}>
-            <div className="absolute inset-0 cursor-grab touch-none active:cursor-grabbing" {...handlers}>
+            <div className="absolute inset-x-0 bottom-0 top-12 cursor-grab touch-none active:cursor-grabbing md:top-20" {...handlers}>
               <RenderedShelfView
                 isCorner={isCorner}
                 flatParams={flatParams}
@@ -179,7 +179,7 @@ export default function ShelfDesigner() {
                 depth={design.depth}
                 length={design.length}
                 dimensionUnit={showDimensions ? unit : undefined}
-                cameraPadding={showDimensions ? 0.5 : undefined}
+                cameraPadding={showDimensions ? (isCorner ? 0.56 : 0.5) : undefined}
               />
             </div>
 
@@ -239,7 +239,7 @@ export default function ShelfDesigner() {
               )}
             </div>
 
-            <span className="pointer-events-none absolute bottom-3 left-3 select-none font-neue-haas text-[12px] font-medium text-squarage-black/50 md:bottom-4 md:left-1/2 md:-translate-x-1/2 md:text-sm">
+            <span className="pointer-events-none absolute bottom-3 left-3 select-none font-neue-haas text-[12px] font-medium text-squarage-black/50 md:bottom-5 md:left-6 md:text-sm">
               <span className="hidden md:inline">Drag to rotate</span>
               <span className="md:hidden">Swipe to rotate</span>
             </span>
