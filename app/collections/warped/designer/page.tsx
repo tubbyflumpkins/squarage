@@ -88,6 +88,7 @@ function CompactSlider({
   max,
   step = 1,
   unit = '',
+  scale = 1,
   onChange,
 }: {
   label: string;
@@ -96,6 +97,12 @@ function CompactSlider({
   max: number;
   step?: number;
   unit?: string;
+  /**
+   * Read-out multiplier (2.54 shows inches as cm). The slider keeps working in `value`'s own
+   * unit, so an arrow press always lands on a new value: stepping the converted number
+   * instead rounds straight back to where it started.
+   */
+  scale?: number;
   onChange: (v: number) => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -175,9 +182,12 @@ function CompactSlider({
   }, []);
 
   const displayValue = dragValue ?? value;
+  const shown = scale !== 1
+    ? String(Math.round(displayValue * scale))
+    : step < 1 ? displayValue.toFixed(1) : String(displayValue);
 
   const handleDoubleClick = () => {
-    setEditValue(step < 1 ? displayValue.toFixed(1) : String(displayValue));
+    setEditValue(shown);
     setEditing(true);
   };
 
@@ -188,7 +198,7 @@ function CompactSlider({
   const commit = () => {
     const n = Number(editValue);
     if (!isNaN(n)) {
-      const clamped = Math.max(min, Math.min(max, n));
+      const clamped = Math.max(min, Math.min(max, n / scale));
       onChange(step < 1 ? Math.round(clamped * 10) / 10 : Math.round(clamped));
     }
     setEditing(false);
@@ -285,7 +295,7 @@ function CompactSlider({
           onClick={handleDoubleClick}
           className="text-[16px] font-medium font-neue-haas text-squarage-black w-[32px] shrink-0 text-left select-none tabular-nums cursor-default"
         >
-          {step < 1 ? displayValue.toFixed(1) : displayValue}{unit}
+          {shown}{unit}
         </span>
       )}
     </div>
@@ -767,10 +777,17 @@ export default function DesignerPage() {
   // The console's end columns rise past its top, so the usable surface sits below the overall height
   const surfaceHeight = p.isConsole ? consoleSurfaceHeight(flatParams) : null;
 
+  // Sizes are held in whole inches; cm is a read-out of them (see CompactSlider's `scale`)
+  const inCm = dimUnit === 'cm';
+  const dimScale = inCm ? 2.54 : 1;
+  const dimSuffix = inCm ? '' : '"';
+  const fmtLen = (inches: number) => (inCm ? `${Math.round(inches * 2.54)} cm` : `${inches.toFixed(1)}"`);
+
   // Dimensions display
-  const dimStr = p.isCorner
-    ? `${p.width}" × ${p.length}" × ${p.height}"`
-    : `${p.width}" × ${p.height}" × ${p.depth}"`;
+  const sizes = p.isCorner ? [p.width, p.length, p.height] : [p.width, p.height, p.depth];
+  const dimStr = inCm
+    ? `${sizes.map((v) => Math.round(v * 2.54)).join(' × ')} cm`
+    : sizes.map((v) => `${v}"`).join(' × ');
 
   // Scale padding in left column when viewport is short.
   const IDEAL_HEIGHT = 1033;
@@ -1038,25 +1055,12 @@ export default function DesignerPage() {
               </div>
             </div>
             <div className="flex flex-col" style={{ marginTop: vs(12), gap: vs(3) }}>
-              {dimUnit === 'in' ? (
-                <>
-                  <CompactSlider label="Width" value={p.width} min={p.isCorner ? 10 : 24} max={76} unit={'"'} onChange={(v) => set('width', v)} />
-                  {p.isCorner && (
-                    <CompactSlider label="Length" value={p.length} min={10} max={76} unit={'"'} onChange={(v) => set('length', v)} />
-                  )}
-                  <CompactSlider label="Height" value={p.height} min={ranges.heightMin} max={ranges.heightMax} unit={'"'} onChange={(v) => set('height', v)} />
-                  <CompactSlider label="Depth" value={p.depth} min={ranges.depthMin} max={ranges.depthMax} unit={'"'} onChange={(v) => set('depth', v)} />
-                </>
-              ) : (
-                <>
-                  <CompactSlider label="Width" value={Math.round(p.width * 2.54)} min={Math.round((p.isCorner ? 10 : 24) * 2.54)} max={Math.round(76 * 2.54)} unit="" onChange={(v) => set('width', Math.round(v / 2.54))} />
-                  {p.isCorner && (
-                    <CompactSlider label="Length" value={Math.round(p.length * 2.54)} min={Math.round(10 * 2.54)} max={Math.round(76 * 2.54)} unit="" onChange={(v) => set('length', Math.round(v / 2.54))} />
-                  )}
-                  <CompactSlider label="Height" value={Math.round(p.height * 2.54)} min={Math.round(ranges.heightMin * 2.54)} max={Math.round(ranges.heightMax * 2.54)} unit="" onChange={(v) => set('height', Math.round(v / 2.54))} />
-                  <CompactSlider label="Depth" value={Math.round(p.depth * 2.54)} min={Math.round(ranges.depthMin * 2.54)} max={Math.round(ranges.depthMax * 2.54)} unit="" onChange={(v) => set('depth', Math.round(v / 2.54))} />
-                </>
+              <CompactSlider label="Width" value={p.width} min={p.isCorner ? 10 : 24} max={76} unit={dimSuffix} scale={dimScale} onChange={(v) => set('width', v)} />
+              {p.isCorner && (
+                <CompactSlider label="Length" value={p.length} min={10} max={76} unit={dimSuffix} scale={dimScale} onChange={(v) => set('length', v)} />
               )}
+              <CompactSlider label="Height" value={p.height} min={ranges.heightMin} max={ranges.heightMax} unit={dimSuffix} scale={dimScale} onChange={(v) => set('height', v)} />
+              <CompactSlider label="Depth" value={p.depth} min={ranges.depthMin} max={ranges.depthMax} unit={dimSuffix} scale={dimScale} onChange={(v) => set('depth', v)} />
             </div>
           </div>
 
@@ -1124,7 +1128,7 @@ export default function DesignerPage() {
             {surfaceHeight !== null && (
               <div className="flex justify-between">
                 <span>Surface Height</span>
-                <span className="tabular-nums">{surfaceHeight.toFixed(1)}&quot;</span>
+                <span className="tabular-nums">{fmtLen(surfaceHeight)}</span>
               </div>
             )}
             <div className="flex justify-between">
