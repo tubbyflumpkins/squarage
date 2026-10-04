@@ -171,7 +171,7 @@ export default function ShelfDesigner() {
             </div>
 
             {/* Title: sits on the render, as on the /custom page */}
-            <h1 className="pointer-events-none absolute left-4 top-3 z-10 flex select-none flex-wrap items-center gap-x-2 font-neue-haas text-xl font-bold leading-tight text-squarage-black md:left-6 md:top-5 md:gap-x-3 md:text-3xl lg:text-4xl">
+            <h1 className="pointer-events-none absolute inset-x-4 top-3 z-10 flex select-none flex-wrap items-center justify-center gap-x-2 font-neue-haas text-xl font-bold leading-tight text-squarage-black md:inset-x-6 md:top-5 md:gap-x-3 md:text-3xl lg:text-4xl">
               <span
                 className="inline-block text-white"
                 style={{ backgroundColor: '#4A9B4E', borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%', padding: '0.35em 0.5em 0.4em' }}
