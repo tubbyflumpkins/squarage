@@ -1,14 +1,15 @@
 import HeroStatic from '@/components/HeroStatic'
-import CollectionsSection from '@/components/CollectionsSection'
-import CustomProjectSection from '@/components/CustomProjectSection'
 import AboutSection from '@/components/AboutSection'
+import CollectionsSectionB from './CollectionsSectionB'
+import GetInTouchSection from './GetInTouchSection'
 
 export default function HomeB() {
   return (
     <>
       <HeroStatic />
-      <CollectionsSection />
-      <CustomProjectSection />
+      {/* Marquee, Posé, the shelf designer band, Warped, Tiled */}
+      <CollectionsSectionB />
+      <GetInTouchSection />
       <AboutSection />
     </>
   )
