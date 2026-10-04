@@ -5,7 +5,7 @@ import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 import type { ShelfVariant } from '@/stores/useSavedDesigns';
 import { computeAmplitude, computeColumnAngle, computeColumnOffset, computeShelfOffset } from '@/lib/warped/derivedParams';
-import { consoleSurfaceHeight, shelfSpacing, NOMINAL_PLY } from '@/lib/warped/shelfLayout';
+import { consoleSurfaceHeight } from '@/lib/warped/shelfLayout';
 import { SHELF_STYLES, SHELF_STYLE_IDS, autoShelfCount, evenOpening, isShelfStyle, minHeightForStyle, type ShelfStyle } from '@/lib/warped/shelfStyles';
 import { autoColumnCount } from '@/lib/warped/autoColumns';
 
@@ -71,28 +71,24 @@ function applyColumns(d: Design): Design {
   return columnCount === d.columnCount ? d : { ...d, columnCount };
 }
 
-/** What a style had to change to fit, for the customer to be told. Sizes in inches. */
-export interface StyleNote { height?: number; depth?: number }
-
 /**
  * Hold a styled design to its style: tall enough for one opening of it, and the shelf count
  * the style gives that height. `picked` is the moment the style was chosen, the one time it
  * also deepens the shelf for what it holds; after that the depth is the customer's again.
  */
-function applyStyle(d: Design, picked: boolean): { design: Design; note: StyleNote | null } {
-  if (!d.style) return { design: d, note: null };
+function applyStyle(d: Design, picked: boolean): Design {
+  if (!d.style) return d;
   const r = rangesFor(d.shape);
   const offsetAt = (height: number) => computeShelfOffset(d.shape, height);
-  const note: StyleNote = {};
   let { height, depth } = d;
 
   const least = minHeightForStyle(d.style, offsetAt, r.height.min, r.height.max);
-  if (least !== null && height < least) { height = least; note.height = least; }
+  if (least !== null && height < least) height = least;
   const wanted = SHELF_STYLES[d.style].depth;
-  if (picked && wanted && depth < wanted && wanted <= r.depth.max) { depth = wanted; note.depth = wanted; }
+  if (picked && wanted && depth < wanted && wanted <= r.depth.max) depth = wanted;
 
   const shelfCount = autoShelfCount(d.style, height, offsetAt(height));
-  return { design: { ...d, height, depth, shelfCount }, note: note.height || note.depth ? note : null };
+  return { ...d, height, depth, shelfCount };
 }
 
 export interface Range { min: number; max: number }
@@ -143,7 +139,7 @@ export function designFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVari
   // its height and shelves exactly as they are, so it then resizes like any other: the style
   // its openings are in range for, or failing that the first that keeps them.
   const keeps = SHELF_STYLE_IDS.filter((id) => {
-    const held = applyStyle({ ...design, style: id }, false).design;
+    const held = applyStyle({ ...design, style: id }, false);
     return held.height === design.height && held.shelfCount === design.shelfCount;
   });
   const opening = evenOpening(design.height, computeShelfOffset(design.shape, design.height), design.shelfCount);
@@ -164,8 +160,7 @@ export const cameraFor = (shape: ShelfVariant) =>
 
 export function useDesign() {
   // Through the style, so the opening count is the style's even if its range is retuned in labs
-  const [design, setDesign] = useState<Design>(() => applyStyle(applyColumns(fitToRanges(DEFAULT_DESIGN)), false).design);
-  const [styleNote, setStyleNote] = useState<StyleNote | null>(null);
+  const [design, setDesign] = useState<Design>(() => applyStyle(applyColumns(fitToRanges(DEFAULT_DESIGN)), false));
   const [finish, setFinish] = useState<WoodFinish>('Oak');
   const [unit, setUnit] = useState<DimUnit>('in');
 
@@ -175,10 +170,9 @@ export function useDesign() {
   // length together) build on each other.
   const current = useRef(design);
   const commit = useCallback((next: Design, picked = false) => {
-    const { design: resolved, note } = applyStyle(applyColumns(fitToRanges(next)), picked);
+    const resolved = applyStyle(applyColumns(fitToRanges(next)), picked);
     current.current = resolved;
     setDesign(resolved);
-    setStyleNote(note);
   }, []);
 
   const set = useCallback(<K extends keyof Design>(key: K, value: Design[K]) => {
@@ -217,12 +211,10 @@ export function useDesign() {
       shelfOffset, columnOffset, columnAngle, wallAlign: 1,
     };
 
-    // The clear gap between two shelves: what decides whether a book or a record stands up in it
-    const opening = Math.max(0, shelfSpacing(isCorner ? cornerParams : flatParams) - NOMINAL_PLY);
     // The console's end columns rise past its top, so the usable surface sits below the overall height
     const surfaceHeight = isConsole ? consoleSurfaceHeight(flatParams) : null;
 
-    return { isCorner, isConsole, amplitude, shelfOffset, columnOffset, columnAngle, flatParams, cornerParams, opening, surfaceHeight };
+    return { isCorner, isConsole, amplitude, shelfOffset, columnOffset, columnAngle, flatParams, cornerParams, surfaceHeight };
   }, [design]);
 
   const inCm = unit === 'cm';
@@ -232,5 +224,5 @@ export function useDesign() {
     [inCm],
   );
 
-  return { design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen, ...derived };
+  return { design, set, setShape, setStyle, load, finish, setFinish, unit, setUnit, inCm, fmtLen, ...derived };
 }

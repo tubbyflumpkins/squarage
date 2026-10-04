@@ -53,9 +53,9 @@ const viewerPill = `rounded-full border px-4 py-1.5 font-neue-haas text-[13px] f
 
 export default function ShelfDesigner() {
   const {
-    design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen,
+    design, set, setShape, setStyle, load, finish, setFinish, unit, setUnit, inCm, fmtLen,
     isCorner, isConsole, amplitude, shelfOffset, columnOffset, columnAngle,
-    flatParams, cornerParams, opening, surfaceHeight,
+    flatParams, cornerParams, surfaceHeight,
   } = useDesign();
   const ranges = rangesFor(design.shape);
 
@@ -143,9 +143,6 @@ export default function ShelfDesigner() {
     .map((v) => (inCm ? Math.round(v * 2.54) : +v.toFixed(2)));
   const sizeSummary = `${shownSizes.join(' × ')} ${unit}`;
   const style = design.style ? SHELF_STYLES[design.style] : null;
-  // A length range in the customer's unit: "13 to 14.5 in", "33 to 37 cm"
-  const fmtRange = (min: number, max: number) =>
-    inCm ? `${Math.round(min * 2.54)} to ${Math.round(max * 2.54)} cm` : `${min} to ${max} in`;
 
   return (
     <div className="bg-cream md:pt-[90px] lg:pt-[98px]">
@@ -259,9 +256,8 @@ export default function ShelfDesigner() {
               )}
             </Panel>
 
-            {/* What the shelf is for. It sets the shelf count from the height; the width sets the columns. Neither count has a control. */}
+            {/* What the shelf is for, and nothing else: it sets the shelf count from the height, and the width sets the columns */}
             <Panel title="Layout" value={style ? style.label : 'Not set'} open={openPanel === 'layout'} onToggle={() => toggle('layout')}>
-              <p className="mb-3 font-neue-haas text-sm text-gray-500">Pick what goes on it. The shelves space themselves to suit.</p>
               <div className="flex flex-wrap gap-2">
                 {SHELF_STYLE_IDS.map((id) => (
                   <TogglePill key={id} pressed={design.style === id} onChange={() => setStyle(id)}>
@@ -269,19 +265,6 @@ export default function ShelfDesigner() {
                   </TogglePill>
                 ))}
               </div>
-              {style && (
-                <p className="mt-4 font-neue-haas text-sm text-gray-500">
-                  {style.label} want openings of {fmtRange(style.min, style.max)}. At this height that is{' '}
-                  <span className="font-medium text-squarage-black">{design.shelfCount} shelves</span> with{' '}
-                  <span className="font-medium tabular-nums text-squarage-black">{fmtLen(opening)}</span> openings.
-                </p>
-              )}
-              {styleNote && (
-                <p className="mt-2 font-neue-haas text-sm text-squarage-green">
-                  {styleNote.height !== undefined && <>Height set to {fmtLen(styleNote.height)}, the least this style needs. </>}
-                  {styleNote.depth !== undefined && <>Depth set to {fmtLen(styleNote.depth)} so they sit fully on the shelf.</>}
-                </p>
-              )}
             </Panel>
 
             <Panel title="Size" value={sizeSummary} open={openPanel === 'size'} onToggle={() => toggle('size')}>
