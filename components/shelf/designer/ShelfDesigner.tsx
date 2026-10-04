@@ -158,10 +158,15 @@ export default function ShelfDesigner() {
           their band so the page scrolls away beneath it and never shows above the pinned model. */}
       <div className="sticky top-0 z-20 h-[60px] bg-cream md:hidden" aria-hidden="true" />
 
-      <div className="lg:relative lg:h-[calc(100dvh-98px)] lg:min-h-[640px]">
+      <div className="relative lg:h-[calc(100dvh-98px)] lg:min-h-[640px]">
 
-        {/* The model: pinned above the cards on a phone, filling the screen beside them on desktop */}
-        <div className="sticky top-[60px] z-20 h-[calc(44dvh+2rem)] bg-cream md:top-[90px] md:h-[44dvh] lg:absolute lg:inset-y-0 lg:left-0 lg:right-[420px] lg:h-auto">
+        {/* On a phone the model is pinned while the cards scroll under it, and lets go as the last
+            of them (Get Quote) comes to rest, so the whole page then scrolls on to the footer.
+            This track is the stretch it stays pinned for: the designer's height less the part of
+            the screen under the model. Desktop has no track (lg:contents): the model fills the
+            space beside the cards. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 bottom-[calc(56dvh-60px-2rem)] md:bottom-[calc(56dvh-90px)] lg:contents">
+        <div className="pointer-events-auto sticky top-[60px] z-20 h-[calc(44dvh+2rem)] bg-cream md:top-[90px] md:h-[44dvh] lg:absolute lg:inset-y-0 lg:left-0 lg:right-[420px] lg:h-auto">
           <div className="relative h-full w-full" style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}>
             <div className="absolute inset-x-0 bottom-8 top-12 cursor-grab touch-none active:cursor-grabbing md:bottom-0 md:top-20" {...handlers}>
               <RenderedShelfView
@@ -200,6 +205,9 @@ export default function ShelfDesigner() {
             </span>
           </div>
         </div>
+        </div>
+        {/* The room the model takes in the page on a phone, since it sits in the track above */}
+        <div className="h-[calc(44dvh+2rem)] md:h-[44dvh] lg:hidden" aria-hidden="true" />
 
         {/* The cards: beneath the model on a phone, floating at the right on desktop */}
         <div className="lg:absolute lg:bottom-5 lg:right-6 lg:top-5 lg:flex lg:w-[380px] lg:flex-col">
@@ -274,9 +282,11 @@ export default function ShelfDesigner() {
             </Panel>
           </div>
 
-          {/* The action. A bar fixed to the screen on a phone, the foot of the cards on desktop. */}
+          {/* The action: the foot of the cards. On a phone it sticks to the bottom of the screen while
+              the cards scroll, then comes to rest under the last one, so the page carries on to the
+              site's footer with nothing left hanging over it. */}
           <div
-            className={`fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-cream/95 px-4 pt-3 backdrop-blur-sm transition-opacity duration-300 lg:static lg:shrink-0 lg:border-0 lg:bg-transparent lg:px-0 lg:pt-3 lg:backdrop-blur-none ${
+            className={`sticky bottom-0 z-40 border-t border-gray-200 bg-cream/95 px-4 pt-3 backdrop-blur-sm transition-opacity duration-300 lg:static lg:shrink-0 lg:border-0 lg:bg-transparent lg:px-0 lg:pt-3 lg:backdrop-blur-none ${
               showQuoteFlow ? 'pointer-events-none opacity-0' : 'opacity-100'
             }`}
             style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
@@ -300,8 +310,6 @@ export default function ShelfDesigner() {
               Made to order in Los Angeles. Quotes are free.
             </p>
           </div>
-          {/* Room for the fixed bar on a phone, so the last card can scroll clear of it */}
-          <div className="h-36 lg:hidden" aria-hidden="true" />
         </div>
       </div>
 
