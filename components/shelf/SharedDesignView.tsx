@@ -48,7 +48,7 @@ const Divider = () => <div className="h-[1.5px] bg-squarage-black shrink-0" />
  * option starts that design from its own opening angle (a corner and a flat shelf face
  * different ways) instead of inheriting the last one's rotation.
  */
-function ShelfViewer({ option }: { option: SharedOption }) {
+function ShelfViewer({ option, unit }: { option: SharedOption; unit: 'in' | 'cm' }) {
   const { design, camera } = option
   const { rotation, handlers } = useBoomerangRotation(camera)
 
@@ -88,6 +88,9 @@ function ShelfViewer({ option }: { option: SharedOption }) {
         height={design.params.height}
         depth={design.params.depth}
         length={design.params.length}
+        // The measurements, drawn on the shelf in the unit the Dimensions box is set to
+        dimensionUnit={unit}
+        cameraPadding={0.5}
       />
     </div>
   )
@@ -244,7 +247,7 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
               </div>
             )}
 
-            <ShelfViewer key={option.optionNumber} option={option} />
+            <ShelfViewer key={option.optionNumber} option={option} unit={dimUnit} />
 
             <span className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 text-[12px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black/50 select-none pointer-events-none">
               <span className="hidden md:inline">Drag to rotate</span>
