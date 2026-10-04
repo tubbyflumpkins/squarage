@@ -8,7 +8,8 @@ import { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 import { preloadAllTextures } from '@/components/shelf/RenderedShelfView/useWoodMaterial';
 import { preloadAllEdgeTextures } from '@/components/shelf/RenderedShelfView/useEdgeMaterial';
-import { consoleSurfaceHeight } from '@/lib/warped/shelfLayout';
+import { consoleSurfaceHeight, shelfSpacing, NOMINAL_PLY } from '@/lib/warped/shelfLayout';
+import { shelfFitLine } from '@/lib/warped/shelfFit';
 import { flatSvgPreview } from '@/lib/warped/flatSvgPreview';
 import {
   useShelfWasm,
@@ -783,6 +784,10 @@ export default function DesignerPage() {
   const dimSuffix = inCm ? '' : '"';
   const fmtLen = (inches: number) => (inCm ? `${Math.round(inches * 2.54)} cm` : `${inches.toFixed(1)}"`);
 
+  // The clear gap between two shelves: what decides whether a book or a record stands up in it
+  const opening = Math.max(0, shelfSpacing(p.isCorner ? cornerParams : flatParams) - NOMINAL_PLY);
+  const fitLine = shelfFitLine(opening, p.depth, inCm);
+
   // Dimensions display
   const sizes = p.isCorner ? [p.width, p.length, p.height] : [p.width, p.height, p.depth];
   const dimStr = inCm
@@ -989,7 +994,7 @@ export default function DesignerPage() {
         {/* ============================================================= */}
         {/* LEFT COLUMN — controls (scrollable on mobile) */}
         {/* ============================================================= */}
-        <div className={"order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-squarage-black flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-20 md:pb-0 touch-pan-y md:touch-auto"}>
+        <div className={"order-2 md:order-1 md:row-span-2 border-t md:border-t-0 md:border-r border-squarage-black flex flex-col flex-1 md:flex-none overflow-y-auto md:overflow-hidden pb-32 md:pb-0 touch-pan-y md:touch-auto"}>
 
           {/* Design Section */}
           <div className="px-5 md:px-7 flex flex-col" style={{ paddingTop: vs(24), paddingBottom: vs(20), gap: vs(20) }}>
@@ -1147,6 +1152,11 @@ export default function DesignerPage() {
               <span>Size</span>
               <span className="tabular-nums">{dimStr}</span>
             </div>
+            <div className="flex justify-between">
+              <span>Shelf Opening</span>
+              <span className="tabular-nums">{fmtLen(opening)}</span>
+            </div>
+            <p className="-mt-1 text-right text-[14px] text-squarage-black/60">{fitLine}</p>
           </div>
 
           <button onClick={() => setShowQuoteFlow(true)} className="mt-5 w-full py-4 bg-squarage-orange text-white text-2xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300">
@@ -1158,9 +1168,12 @@ export default function DesignerPage() {
       {/* ============================================================= */}
       {/* MOBILE: Sticky bottom price bar */}
       {/* ============================================================= */}
-      <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-3 flex items-center justify-center transition-opacity duration-300 ${showQuoteFlow ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-2 flex flex-col items-center gap-2 transition-opacity duration-300 ${showQuoteFlow ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
         style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
+        <p className="text-center text-[13px] font-medium tracking-[0.01em] text-squarage-black/70">
+          {fmtLen(opening)} shelf opening. {fitLine}
+        </p>
         <button onClick={() => setShowQuoteFlow(true)} className="w-full py-3 bg-squarage-orange text-white text-xl font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300">
           Get Quote
         </button>
