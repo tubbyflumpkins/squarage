@@ -24,7 +24,7 @@ const RenderedShelfView = dynamic(() => import('@/components/shelf/RenderedShelf
   ),
 });
 
-const QuoteFlow = dynamic(() => import('@/components/shelf/QuoteFlow'), { ssr: false });
+const QuoteSheet = dynamic(() => import('./QuoteSheet'), { ssr: false });
 
 /** Camera tilt, in degrees. The same view the classic designer and the shared links use. */
 const TILT = 25;
@@ -353,8 +353,9 @@ export default function ShelfDesigner() {
         </Dialog>
       )}
 
-      {/* Quote flow: always mounted, slides in over the page */}
+      {/* Get Quote: one page, always mounted so it can slide in over the designer; out of reach while off screen */}
       <div
+        inert={!showQuoteFlow}
         className="fixed inset-0 z-50"
         style={{
           transform: showQuoteFlow ? 'translateX(0)' : 'translateX(100%)',
@@ -363,7 +364,7 @@ export default function ShelfDesigner() {
           pointerEvents: showQuoteFlow ? 'auto' : 'none',
         }}
       >
-        <QuoteFlow
+        <QuoteSheet
           isCorner={isCorner}
           isConsole={isConsole}
           flatParams={flatParams}
