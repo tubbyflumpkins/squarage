@@ -25,6 +25,11 @@ export interface SharedFlatParams {
   consoleTop: boolean
   /** Inches the middle of three shelves sits above centre, already held inside labs' limit. 0 = centred. */
   middleShelfShift: number
+  /**
+   * The centre-to-centre height of every row, bottom to top, as labs resolved it. Only on a shelf
+   * whose rows carry their own heights; then it wins and `middleShelfShift` is 0.
+   */
+  rowHeights?: number[]
 }
 
 export interface SharedCornerParams {

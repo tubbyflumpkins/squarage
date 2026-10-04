@@ -23,7 +23,10 @@ const flatParams = z.object({
   roundLeft: z.boolean(), roundRight: z.boolean(), consoleTop: z.boolean(),
   // Absent on links shared before the middle shelf could move
   middleShelfShift: z.number().min(-100).max(100).optional().default(0),
-})
+  // One resolved height per row, when labs sends them. A list of the wrong length is a broken
+  // link, not an evenly spaced shelf: shelfLayout would ignore it and draw the wrong thing.
+  rowHeights: z.array(z.number().min(0).max(200)).max(11).optional(),
+}).refine((p) => !p.rowHeights || p.rowHeights.length === p.shelfCount - 1, { message: 'rowHeights must hold one height per row' })
 
 const cornerParams = z.object({
   width: inches, length: inches, depth: inches, height: inches,

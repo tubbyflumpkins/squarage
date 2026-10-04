@@ -64,6 +64,8 @@ function ShelfViewer({ option, unit }: { option: SharedOption; unit: 'in' | 'cm'
       consoleTop: design.variant === 'console',
       // The middle of three shelves, moved off centre in labs. The public builder never sets this.
       ...(design.variant !== 'corner' && design.params.middleShelfShift ? { middleShelfShift: design.params.middleShelfShift } : {}),
+      // A height per row, resolved in labs
+      ...(design.variant !== 'corner' && design.params.rowHeights ? { rowHeights: design.params.rowHeights } : {}),
     }
     const corner: CornerShelfParams = {
       width: p.width, length: p.length, depth: p.depth, height: p.height,
@@ -312,12 +314,16 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
             {(shelfHeight !== null || shelfWidth !== null) && (
               <div className="flex flex-col gap-2 pt-3">
                 {shelfHeight !== null && evenGaps && <SpecRow label="Shelf Height" value={dim(shelfHeight)} />}
-                {!evenGaps && (
+                {!evenGaps && gaps.length === 2 && (
                   <>
                     <SpecRow label="Top Shelf Height" value={dim(gaps[gaps.length - 1])} />
                     <SpecRow label="Bottom Shelf Height" value={dim(gaps[0])} />
                   </>
                 )}
+                {/* More than two rows that differ: every one, top first, as the shelf stands */}
+                {!evenGaps && gaps.length > 2 && gaps.map((gap, i) => ({ gap, i })).reverse().map(({ gap, i }) => (
+                  <SpecRow key={i} label={`Row ${i + 1} Height${i === gaps.length - 1 ? ' (top)' : i === 0 ? ' (bottom)' : ''}`} value={dim(gap)} />
+                ))}
                 {shelfWidth !== null && <SpecRow label="Shelf Width" value={dim(shelfWidth)} />}
               </div>
             )}
