@@ -49,8 +49,6 @@ const WOOD_FINISHES: { name: WoodFinish; texture: string }[] = [
 
 type PanelId = 'shape' | 'layout' | 'size' | 'finish' | 'saved';
 
-const viewerPill = `rounded-full border px-4 py-1.5 font-neue-haas text-[13px] font-medium backdrop-blur-sm transition-colors duration-200 md:text-sm ${focusRing}`;
-
 export default function ShelfDesigner() {
   const {
     design, set, setShape, setStyle, load, finish, setFinish, unit, setUnit, inCm, fmtLen,
@@ -63,9 +61,7 @@ export default function ShelfDesigner() {
   const [openPanel, setOpenPanel] = useState<PanelId | null>('layout');
   const toggle = (id: PanelId) => setOpenPanel((current) => (current === id ? null : id));
 
-  const [showDimensions, setShowDimensions] = useState(true);
   const [showQuoteFlow, setShowQuoteFlow] = useState(false);
-  const [showSaveInput, setShowSaveInput] = useState(false);
   const [saveName, setSaveName] = useState('');
 
   // The idle sweep, drag to turn. Each shape opens at its own angle, and the sweep holds still
@@ -129,7 +125,6 @@ export default function ShelfDesigner() {
     };
     saveDesign(name, isCorner ? 'corner' : 'flat', params, getSvgPreview(), design.shape);
     setSaveName('');
-    setShowSaveInput(false);
     setOpenPanel('saved');
   };
 
@@ -153,9 +148,9 @@ export default function ShelfDesigner() {
       <div className="lg:relative lg:h-[calc(100dvh-98px)] lg:min-h-[640px]">
 
         {/* The model: pinned above the cards on a phone, filling the screen beside them on desktop */}
-        <div className="sticky top-[60px] z-20 h-[calc(44dvh+3.5rem)] bg-cream md:top-[90px] md:h-[44dvh] lg:absolute lg:inset-y-0 lg:left-0 lg:right-[420px] lg:h-auto">
+        <div className="sticky top-[60px] z-20 h-[calc(44dvh+2rem)] bg-cream md:top-[90px] md:h-[44dvh] lg:absolute lg:inset-y-0 lg:left-0 lg:right-[420px] lg:h-auto">
           <div className="relative h-full w-full" style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}>
-            <div className="absolute inset-x-0 bottom-14 top-12 cursor-grab touch-none active:cursor-grabbing md:bottom-0 md:top-20" {...handlers}>
+            <div className="absolute inset-x-0 bottom-8 top-12 cursor-grab touch-none active:cursor-grabbing md:bottom-0 md:top-20" {...handlers}>
               <RenderedShelfView
                 isCorner={isCorner}
                 flatParams={flatParams}
@@ -167,10 +162,10 @@ export default function ShelfDesigner() {
                 height={design.height}
                 depth={design.depth}
                 length={design.length}
-                dimensionUnit={showDimensions ? unit : undefined}
+                dimensionUnit={unit}
                 onDimensionResize={resize}
                 onDimensionResizeActive={setResizing}
-                cameraPadding={showDimensions ? (isCorner ? 0.58 : 0.54) : undefined}
+                cameraPadding={isCorner ? 0.58 : 0.54}
                 floor
               />
             </div>
@@ -186,54 +181,9 @@ export default function ShelfDesigner() {
               <span>Shelf Designer</span>
             </h1>
 
-            <div className="absolute bottom-3 right-4 z-10 flex gap-2 md:bottom-auto md:right-6 md:top-6">
-              <button
-                type="button"
-                aria-pressed={showDimensions}
-                onClick={() => setShowDimensions((v) => !v)}
-                className={`${viewerPill} ${
-                  showDimensions
-                    ? 'border-squarage-green bg-squarage-green text-white'
-                    : 'border-gray-300 bg-white/80 text-squarage-black hover:border-gray-400'
-                }`}
-              >
-                Dimensions
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowSaveInput((v) => !v)}
-                className={`${viewerPill} border-gray-300 bg-white/80 text-squarage-black hover:border-gray-400`}
-              >
-                {showSaveInput ? 'Cancel' : 'Save'}
-              </button>
-              {showSaveInput && (
-                <form
-                  onSubmit={(e) => { e.preventDefault(); handleSave(); }}
-                  className="absolute bottom-full right-0 mb-2 flex w-[calc(100vw-32px)] max-w-[340px] gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-[0_10px_30px_rgba(51,51,51,0.12)] md:bottom-auto md:top-full md:mb-0 md:mt-2"
-                >
-                  <input
-                    type="text"
-                    value={saveName}
-                    onChange={(e) => setSaveName(e.target.value)}
-                    placeholder="Name this design"
-                    aria-label="Design name"
-                    autoFocus
-                    className="min-w-0 flex-1 rounded-full border border-gray-300 bg-white px-4 py-2 font-neue-haas text-base text-squarage-black outline-none placeholder:text-neutral-400 focus:border-squarage-green focus:ring-2 focus:ring-squarage-green/20"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!saveName.trim()}
-                    className={`shrink-0 rounded-full bg-squarage-green px-4 py-2 font-neue-haas text-sm font-bold text-white transition-colors duration-200 hover:bg-squarage-yellow disabled:bg-gray-300 ${focusRing}`}
-                  >
-                    Save design
-                  </button>
-                </form>
-              )}
-            </div>
-
-            <span className="pointer-events-none absolute bottom-4 left-4 select-none font-neue-haas text-[12px] text-squarage-black/45 md:bottom-5 md:left-6 md:text-sm">
-              <span className="hidden md:inline">{showDimensions ? 'Drag to rotate. Drag a dot to resize.' : 'Drag to rotate.'}</span>
-              <span className="md:hidden">{showDimensions ? 'Swipe to rotate. Drag a dot to resize.' : 'Swipe to rotate.'}</span>
+            <span className="pointer-events-none absolute bottom-2 left-4 select-none font-neue-haas text-[12px] text-squarage-black/45 md:bottom-5 md:left-6 md:text-sm">
+              <span className="hidden md:inline">Drag to rotate. Drag a dot to resize.</span>
+              <span className="md:hidden">Swipe to rotate. Drag a dot to resize.</span>
             </span>
           </div>
         </div>
@@ -310,9 +260,31 @@ export default function ShelfDesigner() {
               </div>
             </Panel>
 
-            {designs.length > 0 && (
-              <Panel title="Saved" value={designs.length === 1 ? '1 design' : `${designs.length} designs`} open={openPanel === 'saved'} onToggle={() => toggle('saved')}>
-                <div className="grid grid-cols-3 gap-2">
+            <Panel
+              title="Saved"
+              value={designs.length === 0 ? 'None yet' : designs.length === 1 ? '1 design' : `${designs.length} designs`}
+              open={openPanel === 'saved'}
+              onToggle={() => toggle('saved')}
+            >
+              <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="flex gap-2">
+                <input
+                  type="text"
+                  value={saveName}
+                  onChange={(e) => setSaveName(e.target.value)}
+                  placeholder="Name this design"
+                  aria-label="Design name"
+                  className="min-w-0 flex-1 rounded-full border border-gray-300 bg-white px-4 py-2 font-neue-haas text-base text-squarage-black outline-none placeholder:text-neutral-400 focus:border-squarage-green focus:ring-2 focus:ring-squarage-green/20"
+                />
+                <button
+                  type="submit"
+                  disabled={!saveName.trim()}
+                  className={`shrink-0 rounded-full bg-squarage-green px-5 py-2 font-neue-haas text-sm font-bold text-white transition-colors duration-200 hover:bg-squarage-yellow disabled:bg-gray-300 ${focusRing}`}
+                >
+                  Save
+                </button>
+              </form>
+              {designs.length > 0 && (
+                <div className="mt-3 grid grid-cols-3 gap-2">
                   {designs.map((saved) => (
                     <div key={saved.id} className="relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors duration-200 hover:border-gray-400">
                       {saved.svgPreview && <div className="h-full w-full p-2 pb-6" dangerouslySetInnerHTML={{ __html: saved.svgPreview }} />}
@@ -329,8 +301,8 @@ export default function ShelfDesigner() {
                     </div>
                   ))}
                 </div>
-              </Panel>
-            )}
+              )}
+            </Panel>
           </div>
 
           {/* The action. A bar fixed to the screen on a phone, the foot of the cards on desktop. */}
