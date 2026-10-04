@@ -7,6 +7,7 @@ import type { ShelfVariant } from '@/stores/useSavedDesigns';
 import { computeAmplitude, computeColumnAngle, computeColumnOffset, computeShelfOffset } from '@/lib/warped/derivedParams';
 import { consoleSurfaceHeight, shelfSpacing, NOMINAL_PLY } from '@/lib/warped/shelfLayout';
 import { SHELF_STYLES, autoShelfCount, isShelfStyle, minHeightForStyle, type ShelfStyle } from '@/lib/warped/shelfStyles';
+import { autoColumnCount } from '@/lib/warped/autoColumns';
 
 export type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 export type DimUnit = 'in' | 'cm';
@@ -28,29 +29,45 @@ export interface Design {
    * it is worked out from the height (labs' shelfStyles), so the openings suit the contents.
    */
   style: ShelfStyle | null;
+  /**
+   * The column count follows the shelf's size (labs' autoColumns). Off once the customer sets
+   * a count the size would not give; back on when they hand it back.
+   */
+  autoColumns: boolean;
 }
 
 /**
  * Where each shape starts, with what it is for: a tall standard shelf of large books, a record
- * console, a low corner shelf of small books. The shelf counts are the ones their styles give.
+ * console, a low corner shelf of small books. The shelf counts are the ones their styles give,
+ * the column counts the ones their sizes give.
  */
 const SHAPE_DEFAULTS: Record<ShelfVariant, Design> = {
   standard: {
     shape: 'standard', width: 74, height: 75, depth: 12, length: 36,
-    shelfCount: 6, columnCount: 6, roundLeft: false, roundRight: false, style: 'largeBooks',
+    shelfCount: 6, columnCount: 6, roundLeft: false, roundRight: false, style: 'largeBooks', autoColumns: true,
   },
   console: {
     shape: 'console', width: 48, height: 32, depth: 14, length: 36,
-    shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: 'vinyl',
+    shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: 'vinyl', autoColumns: true,
   },
   corner: {
     shape: 'corner', width: 45, height: 24, depth: 10, length: 36,
-    shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: 'smallBooks',
+    shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: 'smallBooks', autoColumns: true,
   },
 };
 
 /** The page opens on this. */
 export const DEFAULT_DESIGN: Design = SHAPE_DEFAULTS.standard;
+
+/** The column count a design's size gives it (labs' rule: the same file, so both agree). */
+const columnsFor = (d: Design) => autoColumnCount(d.shape === 'corner', d.width, d.length);
+
+/** Hold a design on automatic columns to the count its size gives. */
+function applyColumns(d: Design): Design {
+  if (!d.autoColumns) return d;
+  const columnCount = columnsFor(d);
+  return columnCount === d.columnCount ? d : { ...d, columnCount };
+}
 
 /** What a style had to change to fit, for the customer to be told. Sizes in inches. */
 export interface StyleNote { height?: number; depth?: number }
@@ -112,13 +129,17 @@ export function fitToRanges(d: Design): Design {
 /** A saved design or preset → a design. Designs saved before the console existed carry no variant. */
 export function designFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVariant | undefined, lp: Record<string, number | boolean | string>): Design {
   const num = (key: keyof Design) => (typeof lp[key] === 'number' ? (lp[key] as number) : (DEFAULT_DESIGN[key] as number));
-  return fitToRanges({
+  const design = fitToRanges({
     shape: shelfType === 'corner' ? 'corner' : variant === 'console' ? 'console' : 'standard',
     width: num('width'), height: num('height'), depth: num('depth'), length: num('length'),
     shelfCount: num('shelfCount'), columnCount: num('columnCount'),
     roundLeft: lp.roundLeft === true, roundRight: lp.roundRight === true,
     style: isShelfStyle(lp.shelfStyle) ? lp.shelfStyle : null,
+    autoColumns: false,
   });
+  // Its columns are never moved by opening it. It is on automatic columns if they already
+  // are the count its size gives; any other count was chosen, and stays.
+  return { ...design, autoColumns: design.columnCount === columnsFor(design) };
 }
 
 /** Camera sweep per shape: where it opens and the two angles it turns between, so the back never shows. */
@@ -129,17 +150,18 @@ export const cameraFor = (shape: ShelfVariant) =>
 
 export function useDesign() {
   // Through the style, so the opening count is the style's even if its range is retuned in labs
-  const [design, setDesign] = useState<Design>(() => applyStyle(fitToRanges(DEFAULT_DESIGN), false).design);
+  const [design, setDesign] = useState<Design>(() => applyStyle(applyColumns(fitToRanges(DEFAULT_DESIGN)), false).design);
   const [styleNote, setStyleNote] = useState<StyleNote | null>(null);
   const [finish, setFinish] = useState<WoodFinish>('Oak');
   const [unit, setUnit] = useState<DimUnit>('in');
 
-  // Every change goes through here: inside its limits, then held to its style. The ref is the
+  // Every change goes through here: inside its limits, then held to its size's columns and its
+  // style's shelves. The ref is the
   // design as of the last change, so two changes in one event (a corner's dot sizes width and
   // length together) build on each other.
   const current = useRef(design);
   const commit = useCallback((next: Design, picked = false) => {
-    const { design: resolved, note } = applyStyle(fitToRanges(next), picked);
+    const { design: resolved, note } = applyStyle(applyColumns(fitToRanges(next)), picked);
     current.current = resolved;
     setDesign(resolved);
     setStyleNote(note);
@@ -152,6 +174,15 @@ export function useDesign() {
   const setStyle = useCallback((style: ShelfStyle | null) => {
     commit({ ...current.current, style }, true);
   }, [commit]);
+
+  // A count set by hand holds while the shelf is resized. Stepping back to the count the size
+  // gives is the same as handing it back.
+  const setColumnCount = useCallback((columnCount: number) => {
+    const next = fitToRanges({ ...current.current, columnCount, autoColumns: false });
+    commit({ ...next, autoColumns: next.columnCount === columnsFor(next) });
+  }, [commit]);
+
+  const resetColumns = useCallback(() => commit({ ...current.current, autoColumns: true }), [commit]);
 
   const setShape = useCallback((shape: ShelfVariant) => {
     // Each shape has its own proportions and its own use, so picking one loads its start
@@ -194,5 +225,5 @@ export function useDesign() {
     [inCm],
   );
 
-  return { design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen, ...derived };
+  return { design, set, setShape, setStyle, setColumnCount, resetColumns, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen, ...derived };
 }

@@ -53,7 +53,7 @@ const viewerPill = `rounded-full border px-4 py-1.5 font-neue-haas text-[13px] f
 
 export default function ShelfDesigner() {
   const {
-    design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen,
+    design, set, setShape, setStyle, setColumnCount, resetColumns, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen,
     isCorner, isConsole, amplitude, shelfOffset, columnOffset, columnAngle,
     flatParams, cornerParams, opening, surfaceHeight,
   } = useDesign();
@@ -123,8 +123,9 @@ export default function ShelfDesigner() {
       amplitude, shelfOffset, columnOffset,
       ...(isCorner ? { columnAngle, wallAlign: 1 } : {}),
       ...(isConsole ? { consoleTop: true } : {}),
-      // labs opens the design in the same mode, with the count the style worked out
+      // labs opens the design in the same modes, with the counts they worked out
       ...(design.style ? { shelfStyle: design.style } : {}),
+      ...(design.autoColumns ? { autoColumns: true } : {}),
     };
     saveDesign(name, isCorner ? 'corner' : 'flat', params, getSvgPreview(), design.shape);
     setSaveName('');
@@ -309,7 +310,21 @@ export default function ShelfDesigner() {
                 ) : (
                   <CountField label="Shelves" value={design.shelfCount} range={ranges.shelfCount} onChange={(v) => set('shelfCount', v)} />
                 )}
-                <CountField label="Columns" value={design.columnCount} range={ranges.columnCount} onChange={(v) => set('columnCount', v)} />
+                {/* The count follows the size until it is set here; then this is the way back */}
+                <div>
+                  <CountField label="Columns" value={design.columnCount} range={ranges.columnCount} onChange={setColumnCount} />
+                  {!design.autoColumns && (
+                    <div className="mt-1 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={resetColumns}
+                        className={`rounded-full px-2 py-1 font-neue-haas text-sm text-squarage-green underline-offset-2 hover:underline ${focusRing}`}
+                      >
+                        Set automatically
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               {surfaceHeight !== null && (
                 <p className="mt-4 font-neue-haas text-sm text-gray-500">
@@ -420,6 +435,7 @@ export default function ShelfDesigner() {
           columnOffset={columnOffset}
           columnAngle={columnAngle}
           shelfStyle={design.style}
+          autoColumns={design.autoColumns}
           onClose={() => setShowQuoteFlow(false)}
           saveDesign={saveDesign}
           getSvgPreview={getSvgPreview}

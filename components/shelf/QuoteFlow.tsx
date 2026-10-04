@@ -40,6 +40,8 @@ interface QuoteFlowProps {
   columnAngle: number;
   /** What the shelf is for, when the designer set its shelf count from a style. labs opens the design in the same mode. */
   shelfStyle?: ShelfStyle | null;
+  /** The designer worked the column count out from the size. labs opens the design in the same mode. */
+  autoColumns?: boolean;
   onClose: () => void;
   saveDesign: (name: string, shelfType: 'flat' | 'corner', params: Record<string, number | boolean | string>, svgPreview?: string, variant?: ShelfVariant) => void;
   getSvgPreview: () => string;
@@ -128,6 +130,7 @@ export default function QuoteFlow({
   columnOffset,
   columnAngle,
   shelfStyle = null,
+  autoColumns = false,
   onClose,
   saveDesign,
   getSvgPreview,
@@ -229,12 +232,13 @@ export default function QuoteFlow({
         ...(isCorner ? { columnAngle, wallAlign: 1 } : {}),
         ...(isConsole ? { consoleTop: true } : {}),
         ...(shelfStyle ? { shelfStyle } : {}),
+        ...(autoColumns ? { autoColumns: true } : {}),
       };
       saveDesign(designName.trim(), shelfType, params, preview, variant);
       savedRef.current = true;
     }
     goForward(2);
-  }, [designName, isCorner, isConsole, variant, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, amplitude, shelfOffset, columnOffset, columnAngle, shelfStyle, saveDesign, getSvgPreview, goForward]);
+  }, [designName, isCorner, isConsole, variant, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, amplitude, shelfOffset, columnOffset, columnAngle, shelfStyle, autoColumns, saveDesign, getSvgPreview, goForward]);
 
   const handleStep2 = useCallback(() => {
     const newErrors: Record<string, string> = {};
@@ -272,6 +276,7 @@ export default function QuoteFlow({
         ...(isCorner ? { columnAngle, wallAlign: 1 } : {}),
         ...(isConsole ? { consoleTop: true } : {}),
         ...(shelfStyle ? { shelfStyle } : {}),
+        ...(autoColumns ? { autoColumns: true } : {}),
       },
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -324,7 +329,7 @@ export default function QuoteFlow({
     } finally {
       setSubmitting(false);
     }
-  }, [designName, customerName, email, message, isCorner, isConsole, variant, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, finish, amplitude, shelfOffset, columnOffset, columnAngle, shelfStyle, price, onClose]);
+  }, [designName, customerName, email, message, isCorner, isConsole, variant, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight, finish, amplitude, shelfOffset, columnOffset, columnAngle, shelfStyle, autoColumns, price, onClose]);
 
   const animClass = animating
     ? 'animate-[fadeSlideOut_250ms_ease-out_forwards]'
