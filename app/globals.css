@@ -222,6 +222,49 @@ body {
   .compact-slider-track::-moz-range-thumb { width: 28px !important; height: 28px !important; }
 }
 
+/* Shelf Designer — the size sliders: a 2px rule and a square green thumb, in the site's
+   square-cornered language. Used by components/shelf/designer (the classic designer keeps
+   .compact-slider-track above). pan-y lets a vertical swipe still scroll the page. */
+input[type="range"].designer-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 28px;
+  background: linear-gradient(to bottom, transparent 13px, #333333 13px, #333333 15px, transparent 15px);
+  cursor: pointer;
+  touch-action: pan-y;
+  outline: none;
+}
+input[type="range"].designer-range::-webkit-slider-runnable-track { background: transparent; height: 28px; }
+input[type="range"].designer-range::-moz-range-track { background: transparent; height: 28px; }
+input[type="range"].designer-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 5px;
+  border: 0;
+  border-radius: 0;
+  background: #4A9B4E;
+  box-shadow: 0 0 0 3px #fffaf4;
+}
+input[type="range"].designer-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 0;
+  background: #4A9B4E;
+  box-shadow: 0 0 0 3px #fffaf4;
+}
+input[type="range"].designer-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px #fffaf4, 0 0 0 5px #333333; }
+input[type="range"].designer-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px #fffaf4, 0 0 0 5px #333333; }
+@media (pointer: coarse) {
+  input[type="range"].designer-range { height: 36px; background: linear-gradient(to bottom, transparent 17px, #333333 17px, #333333 19px, transparent 19px); }
+  input[type="range"].designer-range::-webkit-slider-runnable-track { height: 36px; }
+  input[type="range"].designer-range::-moz-range-track { height: 36px; }
+  input[type="range"].designer-range::-webkit-slider-thumb { width: 28px; height: 28px; margin-top: 4px; }
+  input[type="range"].designer-range::-moz-range-thumb { width: 28px; height: 28px; }
+}
+
 /* View Transitions — smooth page navigation for shelf designer */
 ::view-transition-old(shelf-viewer),
 ::view-transition-new(shelf-viewer) {

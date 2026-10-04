@@ -27,7 +27,7 @@ const isSharedDesignPath = (pathname: string | null) => /^\/custom\/[^/]+/.test(
 
 // The shelf designer is a working tool: the popup landing mid-design covers the model and the
 // controls. It waits until the customer has left the designer.
-const isDesignerPath = (pathname: string | null) => pathname === '/collections/warped/designer'
+const isDesignerPath = (pathname: string | null) => (pathname ?? '').startsWith('/collections/warped/designer')
 
 export function EmailCaptureProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
