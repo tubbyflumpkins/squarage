@@ -30,7 +30,8 @@
 - **Cart mutation failures throw** from lib/shopify.ts and surface via `state.error` in CartDrawer — don't reintroduce return-null-on-error
 - **Meta events fire on BOTH channels** (browser `fbq` + CAPI) with a shared `eventID`; Purchase is tracked in Shopify admin, not here
 - **Shelf geometry is synced from labs by file copy** (`~/code/labs`, which cuts the parts): `components/shelf/ShelfVisualizer/geometry.ts` + `types.ts` verbatim, `RenderedShelfView/slotGeometry.ts` with import paths rewritten, `lib/warped/shelfLayout.ts` minus labs' production helpers, and `lib/warped/shelfStyles.ts` + `lib/warped/autoColumns.ts` verbatim (the rules that set shelf and column counts, so both sites agree). Never edit those by hand; never overwrite the meshes, materials, `BoomerangCamera` or `buildExtrudedGeometry` from labs. Around a sync run `npx tsx scripts/verifyShelfGeometry.ts write|check <baseline>` and `npx tsx scripts/verifyConsoleGeometry.ts`
-- **`/custom/[token]` is private by obscurity**: noindex, its own canonical, and deliberately NOT in `app/sitemap.ts` (the one exception to the rule above). Its data comes from labs; never recompute a shared design's amplitude or offsets here
+- **`/custom/[token]` is private by obscurity**: noindex, its own canonical, and deliberately NOT in `app/sitemap.ts` (an exception to the rule above, with `/collections/warped/designer/classic`, the old designer kept to compare). Its data comes from labs; never recompute a shared design's amplitude or offsets here
+- **The shelf designer has no shelf or column counter**: the Layout (small books, large books, vinyl) sets the shelf count from the height and the width sets the columns, by labs' rules. Do not give customers count controls; labs has the overrides
 - **Copy style** (per Dylan): short sentences, no em dashes in customer-facing copy
 
 ## Design System

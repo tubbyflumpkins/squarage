@@ -5,6 +5,23 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-10-04 — Shelf designer redesigned
+
+The larger redesign from the review, built with Dylan giving notes live over one day. The old page is kept at `/collections/warped/designer/classic` (noindex, unlinked; tag `designer-v1`).
+
+- **Look**: his first reaction to the rebuild was "too boxy... I hate the black lines dividing everything". It became rounded floating cards that open one at a time, thin gray lines, pills, the title centred over the render.
+- **Measurements in the render**, always on: dashed lines with plain labels, and a dot at each line's end that drags to resize.
+- **Layout (Small books / Large books / Vinyl) sets the shelf count** from the height; **the width sets the column count**. Both rules live in labs and are copied here (`lib/warped/shelfStyles.ts`, `autoColumns.ts`). They started as optional modes with counters beside them; by the end of the day Dylan removed the counters from this site altogether ("I don't want to confuse potential customers"). labs keeps auto / reset overrides.
+- **Defaults per shape**, Dylan's: Standard 74 × 75 × 12 large books, Console 48 × 32 × 14 vinyl, Corner 45 × 36 × 24 small books.
+- **labs' formulas** for wave and overhangs replace the WASM ones in the designer (`lib/warped/derivedParams.ts`): the two had drifted, so one imported quote was two slightly different shelves inside labs.
+- **A slight shadow floor** under the shelf (labs' effect, made small, never clipped), also on `/custom` and the Warped collection's custom card.
+- **Save and Load** moved out of the cards to two buttons above Get Quote; each opens a small pop-up.
+- **Get Quote is one page**: name, email, optional design name and notes, Submit, then Thank You and the receipt. The four-step flow was "too many clicks".
+- **Shared links** (`/custom/[token]`) draw their measurements too, and accept an optional height per row from labs (`rowHeights`; nothing sends it yet).
+- Removed along the way: the Start From panel and prices in the designer, the fit sentence, the Dimensions toggle, the text around the layout options.
+- Not built from the approved plan: a different layout per row / clicking a row (labs has the `rowHeights` plumbing), and a shareable design link.
+- Checked: `tsc` and lint throughout; `scripts/verifyShelfGeometry.ts` IDENTICAL across the labs sync, `verifyConsoleGeometry.ts` 109; in a browser at 1440 and 390 wide: counts across sizes for all three shapes, save / load / delete, the quote form with the request stubbed (nothing sent), the floor on all three pages.
+
 ## 2026-10-04 — Shelf designer: six small fixes from the review
 
 From the designer review (a Claude Doc: "Warped Shelf Designer: Review and Redesign Proposal"). These are its step 1, the changes worth making whatever happens with the larger redesign. No geometry, WASM or labs change.

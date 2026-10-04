@@ -15,7 +15,8 @@ description: Full project structure for the Squarage site — routes, components
 | `/products/[handle]` | Product page (ProductPage default, WarpedProductPage by `warped` collection, MateoProductPage for the virtual `mateo-chair` handle — backed by 3 Shopify products; the real handles `mateo-pose`/`mateo-tabouret`/`mateo-diner` 308-redirect to `/products/mateo-chair?style=…`) |
 | `/collections/tiled` | Tiled collection (CarroHeroSection hero) |
 | `/collections/warped` | Warped collection |
-| `/collections/warped/designer` | 3D shelf designer: Standard / Corner / Console. Opens on Standard; `?design=<preset>` opens on a preset |
+| `/collections/warped/designer` | 3D shelf designer (2026-10 redesign): Standard / Corner / Console, measurements drawn on the render, a Layout that sets the shelf count. `?design=<preset>` opens on a preset |
+| `/collections/warped/designer/classic` | The designer as it was before the redesign, kept to compare. noindex, NOT in the sitemap, not linked from anywhere |
 | `/collections/pose` | Posé collection (static poolside hero + blob title, 3 auto-rotating variant chairs) |
 | `/custom` | Custom project request flow |
 | `/custom/[token]` | A custom design Dylan shared with one customer: the designer's grid, read-only, with Place Order (Shopify draft-order checkout). Data from labs. noindex, NOT in the sitemap |
@@ -76,7 +77,12 @@ components/
     RenderedShelfView/        #   R3F Canvas; slotGeometry.ts = labs' with import paths rewritten.
                               #   Meshes, materials, BoomerangCamera and buildExtrudedGeometry are
                               #   this site's own (ahead of labs in places): never overwrite them
-    QuoteFlow.tsx             #   Get Quote overlay (takes isConsole)
+                              #   DimensionOverlay.tsx = the measurements and their drag dots;
+                              #   ShelfFloor.tsx = the slight shadow floor (the `floor` prop)
+    designer/                 #   The designer page's parts: ShelfDesigner.tsx (shell), useDesign.ts
+                              #   (state + the rules), controls.tsx (Panel, Segmented, DimensionField,
+                              #   Dialog), QuoteSheet.tsx (one-page Get Quote), svgPreview.ts
+    QuoteFlow.tsx             #   The four-step Get Quote overlay: the classic designer only
     SharedDesignView.tsx      #   /custom/[token]: the designer's grid with nothing to edit
   chair/                      # Posé chair geometry + rendering (parallel to shelf/)
     ChairVisualizer/          # Pure TS: types + generateChairGeometry()
@@ -101,6 +107,14 @@ lib/
   warped/shelfFit.ts          # The designer's fit line: what stands in a shelf opening (site-own)
   warped/catalogDesigns.ts    # Which designer preset is which Shopify product, and the product
                               #   page's link into the designer (site-own, no thumbnails)
+  warped/derivedParams.ts     # labs' amplitude / offset / column angle formulas (from its designParams.ts).
+                              #   The designer uses these, not the WASM ones (WASM stays for the
+                              #   price estimate and corner thumbnails)
+  warped/shelfStyles.ts       # labs' file verbatim: Small books / Large books / Vinyl as opening
+                              #   ranges, and autoShelfCount(style, height, offset)
+  warped/autoColumns.ts       # labs' file verbatim: autoColumnCount(isCorner, width, length)
+  warped/shelfFit.ts          # The fit sentence ("Fits books up to 9 in tall."): classic designer only now
+  warped/catalogDesigns.ts    # Preset ↔ Shopify product mapping, designerLinkForProduct
   sharedDesign.ts             # Shared-design contract v1 (mirrors labs' src/lib/shares/types.ts)
                               #   + formatMoney (keeps cents). Client-safe
   sharedDesignServer.ts       # Server only: zod schema + fetchSharedDesign(token) from LABS_API_URL
@@ -121,8 +135,8 @@ wasm-shelf-geometry/          # Rust crate → WASM (rebuild: npm run wasm:build
                               #   compute_derived_params
   src/{types,catmull_rom,flat,corner,mesh_builder,projection,derived_params}.rs
 
-hooks/useBoomerangRotation.ts # The designer's idle sweep + drag rotation, parameterised
-                              #   (the designer keeps its own inline copy)
+hooks/useBoomerangRotation.ts # The idle sweep + drag rotation, parameterised; `paused` holds it while a
+                              #   measurement dot is dragged (the classic designer keeps an inline copy)
 scripts/verifyShelfGeometry.ts   # npx tsx … write|check <baseline.json>: fingerprints flat + corner
                                  #   render pieces so a labs sync can prove what moved
 scripts/verifyConsoleGeometry.ts # npx tsx …: the console's render structure
@@ -161,17 +175,26 @@ public/images/
 - **Mateo = 3 Shopify products, 1 page**: `mateo-pose`/`mateo-tabouret`/`mateo-diner` (Color-only variants, all in the `pose` collection) feed the unified `/products/mateo-chair` page — that handle is virtual (the old master product was deleted from Shopify 2026-07-23; never fetch it). Style/handle mapping lives in `lib/mateoProducts.ts`; catalog cards link to `/products/mateo-chair?style=…`; the real handles 308-redirect there (redirect must stay OUTSIDE the route's try/catch — it works by throwing)
 
 ### Shelf designer (`/collections/warped/designer`)
-- **Opens on Standard** (`DEFAULTS.isCorner: false`, 45 × 24 × 10, which is the Short Standard). `?design=<preset id without "preset-">` opens on that preset instead; it is read from `window.location` in an effect, so the page stays static with no Suspense boundary.
-- **Sizes are whole inches; cm is a read-out.** `CompactSlider`'s `scale` prop converts only what is shown and typed, the slider itself always steps in inches. Stepping the converted number rounds straight back and leaves the arrows dead (the bug fixed 2026-10-04). The Size, Surface Height and Shelf Opening lines follow the unit; the quote email stays in inches.
-- **Shelf Opening + fit line**: the clear gap between two shelves is `shelfSpacing(...) - NOMINAL_PLY` (labs' production default ply is also 0.5"). `lib/warped/shelfFit.ts` turns it into one plain sentence: books up to a height, "Tall enough for 12 in records" from 13", or "Too tight for most books" under 7.5". It speaks to height only. Depth is mentioned just as the record's own 12.4", because the wavy front edge makes depth more than one number. Shown in the desktop summary and above Get Quote on a phone.
-- **Start From panel**: Our Designs (the presets in `data/presetDesigns.ts`) and Saved (the customer's, localStorage). A preset shows a catalog price only if `PRESET_PRODUCT_HANDLES` (`lib/warped/catalogDesigns.ts`) maps it to a Shopify product, and it earns a mapping only while its size and counts match the listing. Today that is the Short Standard alone: the Tall Standard preset is 76 × 76 against a 75 × 75 listing, the Short Corner 47 × 31 against 48 × 32, the Tall Corner 75" with 6 shelves against 70" with 7. Dylan chose to leave those presets as they are (2026-10-04). Prices come from `shopifyApi.getProductPrices` (one aliased GraphQL request, client-side, silent on failure).
-- **Product pages link in**: `designerLinkForProduct(handle)` gives "Customize this design" + `?design=` for a mapped product and "Design your own" + the bare designer otherwise. `WarpedProductPage` shows it under Add to Cart and passes it to `ProductDetailsAccordion` (`customSizeLink`), which keeps the contact wording for Tiled and Posé.
-- **No newsletter popup on the designer** (`EmailCaptureContext`, as on `/custom/[token]`): it is held until the customer leaves the page.
+Rebuilt 2026-10-04 (`components/shelf/designer/`). The page before it is frozen at `/designer/classic` (`app/collections/warped/designer/classic/page.tsx`, tag `designer-v1`): do not maintain it, and delete it when Dylan says.
+
+- **Layout of the page**: the render fills the space left of a 380px stack of floating cards (Shape, Layout, Size, Finish), one open at a time; on a phone the render is pinned on top and the cards scroll under it. Below the cards: Save, Load, Get Quote (a bar fixed to the bottom on a phone). Soft style throughout: rounded cards and pills, thin gray lines, no black rules.
+- **The customer sets a shape, a layout, a size and a finish. Nothing else.** There is deliberately **no shelf or column counter** (Dylan: "it's auto-calculated and I don't want to confuse potential customers"); labs has the overrides.
+  - **Layout** = Small books / Large books / Vinyl (`lib/warped/shelfStyles.ts`). It sets the shelf count from the height: the count whose even openings land in the layout's range, or between two counts the most shelves that keep its minimum. One is always picked. Picking Vinyl deepens the shelf to 13″; a shelf too short for a layout grows to the least height it needs.
+  - **Columns** follow the size (`lib/warped/autoColumns.ts`): a bay for about every 15″ of width on a flat shelf; a corner counts both walls (4 on 81″, +1 per 12″, 3 at 69″ or less).
+  - Both rules are labs' files, copied verbatim, so labs resolves a quote to the same counts. Quotes and saves carry `shelfStyle` and `autoColumns`.
+- **Each shape opens on its own default** (`SHAPE_DEFAULTS` in `useDesign.ts`): Standard 74 × 75 × 12 large books (the page's opening design), Console 48 × 32 × 14 vinyl, Corner 45 × 36 × 24 small books. Switching shape loads that default.
+- **Every change goes through `commit`** in `useDesign.ts`: inside the shape's limits (`fitToRanges`), then columns for the size, then shelves for the layout. Derived values (wave, overhangs, column angle) come from `lib/warped/derivedParams.ts`, labs' formulas.
+- **A saved design or preset opens exactly as saved** (`designFromSaved`). One from before layouts takes the layout that leaves its height and shelves as they are; its columns re-fit when its width next changes. `?design=<preset id without "preset-">` still opens on a preset.
+- **Measurements are always on** (`RenderedShelfView`'s `dimensionUnit` + `DimensionOverlay`): dashed lines for width, height, depth (width and length on a corner) and the clear height of each opening, plain text labels, in or cm. The round dot at a line's end drags to resize (whole inches, arrow keys too); the sweep pauses while dragging. Size fields also take typed values ("34.5", "34 1/2").
+- **The floor** (`ShelfFloor`, the viewer's opt-in `floor` prop): labs' shadow floor made small, a soft oval a little past the footprint in the page's colour. Its two fades are in the shader: out from the centre, and towards every canvas edge so nothing can cut it off. On in the designer, on `/custom` and on the Warped collection's custom card.
+- **Save / Load** are two buttons above Get Quote, each opening a `Dialog` (name the design; pick or delete a saved one). They are kept out of the cards on purpose: they are not a design step.
+- **Get Quote is one page** (`QuoteSheet`): the green sheet slides in with Name, Email, Design name (optional), Notes (optional), Submit, then Thank You and the receipt. Same `/api/quote` request and Meta Lead event as before; an unnamed design is sent as e.g. "Standard 74 x 75 x 12". A phone gets the form alone (no second WebGL canvas).
+- **Sizes are whole inches; cm is a read-out.** Product pages link in through `designerLinkForProduct(handle)`. No newsletter popup on the designer or `/classic` (`EmailCaptureContext`).
 
 ### Warped console + shared custom designs
 - **Console** = the flat shelf with `ShelfParams.consoleTop` (first and last columns full height with the top slotted in, inner columns stopping under it; with two columns or fewer it is the standard shelf). In the designer it is `DesignParams.isConsole`: the toggle swaps whole defaults entering or leaving it (48 × 26 × 14), height runs from 16" and depth to 20" (`rangesFor`, labs' `warpedShelfRanges`), and the spec cell shows Surface Height (`consoleSurfaceHeight`). Derived values still come from WASM `computeDerivedParams({ isCorner: false })` — it has no input clamps, so no Rust rebuild. It saves as `shelfType: 'flat'` + `variant: 'console'` + `collection: 'warped'` (what labs' importer needs); saved designs without a `variant` predate it and load by `shelfType`. `/api/quote` takes an optional `specs.variant`.
 - **Moved middle shelf**: `ShelfParams.middleShelfShift` (three shelves only, held `MIN_SHELF_GAP` from either neighbour by `lib/warped/shelfLayout.ts`) moves the middle shelf off centre. Only shared designs set it, from labs; the designer has no control for it and never passes it. `/custom/[token]` reads the two openings with `shelfSpacings` and shows Top / Bottom Shelf Height when they differ.
-- **Geometry sync rule**: labs cuts the parts, so labs' flat geometry is the truth. To re-sync: write a baseline with `scripts/verifyShelfGeometry.ts`, copy the three files listed under `components/shelf/` and `lib/warped/` above, `check` the baseline (it prints what moved), then run `scripts/verifyConsoleGeometry.ts`. The 2026-09-20 sync moved front edges by up to 0.12" (0.39" near a rounded end: labs' quadratic end ghost points) and nothing else. The WASM thumbnails still use the old ghost points (sub-pixel at tile size).
+- **Geometry sync rule**: labs cuts the parts, so labs' flat geometry is the truth. To re-sync: write a baseline with `scripts/verifyShelfGeometry.ts`, copy the three geometry files listed under `components/shelf/` and `lib/warped/` above (and `lib/warped/shelfStyles.ts` / `autoColumns.ts` verbatim when labs changed them), `check` the baseline (it prints what moved), then run `scripts/verifyConsoleGeometry.ts`. The 2026-09-20 sync moved front edges by up to 0.12" (0.39" near a rounded end: labs' quadratic end ghost points) and nothing else. The WASM thumbnails still use the old ghost points (sub-pixel at tile size).
 - **`/custom/[token]`**: labs (labs.squarage.com) owns the data — Dylan shares a design from its /design page with a customer name, price, optional shipping and notes, and labs creates a Shopify **draft order** (custom line item, discounts off). This site has no database and no Admin token: the server page calls `fetchSharedDesign` (labs' `GET /api/public/shares/[token]`, `cache: 'no-store'`, 8 s timeout, zod-bounded) and renders `SharedDesignView`; `not_found` → `notFound()` (outside any try/catch), `unavailable` → a try-again message. The payload carries **resolved** render params (never recompute amplitude or offsets here: the WASM ranges differ from labs'). A link carries one or more **options** (contract v2: `SharedDesign.options[]`, each with its own design, price, shipping, `checkoutUrl` and labs' `svgPreview`; name, email and notes belong to the link; `fetchSharedDesign` also accepts the old single-design v1 and normalises it). With more than one: option buttons over the viewer's top left (wireframes through `<img>` data URIs, never injected as markup), `ShelfViewer` keyed by option so each opens at its own angle, the numbers / title / price follow the pick, the pay box is headed "Option N selected", and `?option=N` (server `searchParams` → `initialOption`, then `history.replaceState`) keeps the pick. Option numbers are permanent; a paid link arrives with only the bought option. Layout: the viewer alone in the centre; the right column is a title bar (`SHARED_PRODUCT_NAMES[variant]` + "prepared for" + the name, the page's one `<h1>`, the customer's email under it; a `<p>` copy leads the mobile column) over the notes; the left column's Dimensions box runs Width, (Length,) Depth, then Height — or Surface Height + Column Height on a console — then, after a gap, Shelf Height / Shelf Width, labs' centre-to-centre Measurements (no width on a corner). Place Order fires `InitiateCheckout` then goes to the draft order's `invoiceUrl`; a paid share shows "Paid. Thank you." and one without a checkout points to /contact. The page sets its own canonical (the `/custom` layout's would be wrong), is noindex, is deliberately absent from `app/sitemap.ts`, and the email popup is suppressed on it (`EmailCaptureContext`: the welcome code is a discount against a quote).
 
 ### Meta Pixel + Conversions API
