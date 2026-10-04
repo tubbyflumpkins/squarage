@@ -25,6 +25,10 @@ const STORAGE_KEY_DISCOUNT = 'email_popup_discount_code'
 // newsletter popup over it, and no welcome discount offered against a quote.
 const isSharedDesignPath = (pathname: string | null) => /^\/custom\/[^/]+/.test(pathname ?? '')
 
+// The shelf designer is a working tool: the popup landing mid-design covers the model and the
+// controls. It waits until the customer has left the designer.
+const isDesignerPath = (pathname: string | null) => pathname === '/collections/warped/designer'
+
 export function EmailCaptureProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const [showPopup, setShowPopup] = useState(false)
@@ -130,7 +134,7 @@ export function EmailCaptureProvider({ children }: { children: ReactNode }) {
 
   return (
     <EmailCaptureContext.Provider value={{
-      showPopup: showPopup && !isSharedDesignPath(pathname),
+      showPopup: showPopup && !isSharedDesignPath(pathname) && !isDesignerPath(pathname),
       closePopup,
       submitEmail,
       isDismissed,
