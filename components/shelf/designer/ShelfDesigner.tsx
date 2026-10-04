@@ -53,7 +53,7 @@ const viewerPill = `rounded-full border px-4 py-1.5 font-neue-haas text-[13px] f
 
 export default function ShelfDesigner() {
   const {
-    design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fitLine, fmtLen,
+    design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen,
     isCorner, isConsole, amplitude, shelfOffset, columnOffset, columnAngle,
     flatParams, cornerParams, opening, surfaceHeight,
   } = useDesign();
@@ -371,9 +371,6 @@ export default function ShelfDesigner() {
             }`}
             style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
           >
-            <p className="mb-2 text-center font-neue-haas text-[13px] text-squarage-black/60 lg:mb-3 lg:text-sm">
-              <span className="tabular-nums">{fmtLen(opening)}</span> openings. {fitLine}
-            </p>
             <button
               type="button"
               onClick={() => setShowQuoteFlow(true)}
@@ -386,7 +383,7 @@ export default function ShelfDesigner() {
             </p>
           </div>
           {/* Room for the fixed bar on a phone, so the last card can scroll clear of it */}
-          <div className="h-32 lg:hidden" aria-hidden="true" />
+          <div className="h-24 lg:hidden" aria-hidden="true" />
         </div>
       </div>
 
