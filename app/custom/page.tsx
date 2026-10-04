@@ -203,6 +203,7 @@ export default function CustomPage() {
                 height={DEFAULTS.height}
                 depth={DEFAULTS.depth}
                 length={DEFAULTS.length}
+                floor
               />
             </div>
 

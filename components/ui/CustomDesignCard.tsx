@@ -120,6 +120,7 @@ export default function CustomDesignCard({ finish = 'Oak' }: CustomDesignCardPro
             height={animHeight}
             depth={10}
             length={36}
+            floor
           />
         </div>
 
