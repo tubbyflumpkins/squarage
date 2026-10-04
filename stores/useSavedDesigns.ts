@@ -11,7 +11,7 @@ export interface SavedDesign {
   variant?: ShelfVariant;
   /** Written with every save so labs' importer keeps the variant. */
   collection?: 'warped';
-  params: Record<string, number | boolean>;
+  params: Record<string, number | boolean | string>;
   svgPreview?: string;
   createdAt: number;
   updatedAt: number;
@@ -24,8 +24,8 @@ interface SavedDesignsStore {
   isDirty: boolean;
 
   loadDesigns: () => void;
-  saveDesign: (name: string, shelfType: 'flat' | 'corner', params: Record<string, number | boolean>, svgPreview?: string, variant?: ShelfVariant) => void;
-  replaceDesign: (id: string, params: Record<string, number | boolean>, svgPreview?: string) => void;
+  saveDesign: (name: string, shelfType: 'flat' | 'corner', params: Record<string, number | boolean | string>, svgPreview?: string, variant?: ShelfVariant) => void;
+  replaceDesign: (id: string, params: Record<string, number | boolean | string>, svgPreview?: string) => void;
   loadDesign: (id: string) => SavedDesign | undefined;
   deleteDesign: (id: string) => void;
   renameDesign: (id: string, name: string) => void;

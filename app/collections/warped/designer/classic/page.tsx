@@ -436,7 +436,7 @@ const variantOf = (p: DesignParams): ShelfVariant => (p.isCorner ? 'corner' : p.
 const startRotation = (isCorner: boolean) => (isCorner ? 15 : 350) * Math.PI / 180;
 
 /** A saved design or preset → params. Designs saved before the console existed carry no variant. */
-function paramsFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVariant | undefined, lp: Record<string, number | boolean>): DesignParams {
+function paramsFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVariant | undefined, lp: Record<string, number | boolean | string>): DesignParams {
   return {
     isCorner: shelfType === 'corner',
     isConsole: shelfType === 'flat' && variant === 'console',

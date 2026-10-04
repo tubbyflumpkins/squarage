@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types';
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types';
 import type { ShelfVariant } from '@/stores/useSavedDesigns';
 import { computeAmplitude, computeColumnAngle, computeColumnOffset, computeShelfOffset } from '@/lib/warped/derivedParams';
 import { consoleSurfaceHeight, shelfSpacing, NOMINAL_PLY } from '@/lib/warped/shelfLayout';
 import { shelfFitLine } from '@/lib/warped/shelfFit';
+import { SHELF_STYLES, autoShelfCount, isShelfStyle, minHeightForStyle, type ShelfStyle } from '@/lib/warped/shelfStyles';
 
 export type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
 export type DimUnit = 'in' | 'cm';
@@ -23,13 +24,42 @@ export interface Design {
   columnCount: number;
   roundLeft: boolean;
   roundRight: boolean;
+  /**
+   * What the shelf is for. While one is set the shelf count is not the customer's to choose:
+   * it is worked out from the height (labs' shelfStyles), so the openings suit the contents.
+   */
+  style: ShelfStyle | null;
 }
 
 /** The page opens on this: the Short Standard. */
 export const DEFAULT_DESIGN: Design = {
   shape: 'standard', width: 45, height: 24, depth: 10, length: 36,
-  shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false,
+  shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: null,
 };
+
+/** What a style had to change to fit, for the customer to be told. Sizes in inches. */
+export interface StyleNote { height?: number; depth?: number }
+
+/**
+ * Hold a styled design to its style: tall enough for one opening of it, and the shelf count
+ * the style gives that height. `picked` is the moment the style was chosen, the one time it
+ * also deepens the shelf for what it holds; after that the depth is the customer's again.
+ */
+function applyStyle(d: Design, picked: boolean): { design: Design; note: StyleNote | null } {
+  if (!d.style) return { design: d, note: null };
+  const r = rangesFor(d.shape);
+  const offsetAt = (height: number) => computeShelfOffset(d.shape, height);
+  const note: StyleNote = {};
+  let { height, depth } = d;
+
+  const least = minHeightForStyle(d.style, offsetAt, r.height.min, r.height.max);
+  if (least !== null && height < least) { height = least; note.height = least; }
+  const wanted = SHELF_STYLES[d.style].depth;
+  if (picked && wanted && depth < wanted && wanted <= r.depth.max) { depth = wanted; note.depth = wanted; }
+
+  const shelfCount = autoShelfCount(d.style, height, offsetAt(height));
+  return { design: { ...d, height, depth, shelfCount }, note: note.height || note.depth ? note : null };
+}
 
 /** The console has its own proportions, so picking it swaps whole defaults (as in labs). */
 const CONSOLE_DESIGN: Design = { ...DEFAULT_DESIGN, shape: 'console', width: 48, height: 26, depth: 14 };
@@ -68,13 +98,14 @@ export function fitToRanges(d: Design): Design {
 }
 
 /** A saved design or preset → a design. Designs saved before the console existed carry no variant. */
-export function designFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVariant | undefined, lp: Record<string, number | boolean>): Design {
+export function designFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVariant | undefined, lp: Record<string, number | boolean | string>): Design {
   const num = (key: keyof Design) => (typeof lp[key] === 'number' ? (lp[key] as number) : (DEFAULT_DESIGN[key] as number));
   return fitToRanges({
     shape: shelfType === 'corner' ? 'corner' : variant === 'console' ? 'console' : 'standard',
     width: num('width'), height: num('height'), depth: num('depth'), length: num('length'),
     shelfCount: num('shelfCount'), columnCount: num('columnCount'),
     roundLeft: lp.roundLeft === true, roundRight: lp.roundRight === true,
+    style: isShelfStyle(lp.shelfStyle) ? lp.shelfStyle : null,
   });
 }
 
@@ -86,23 +117,39 @@ export const cameraFor = (shape: ShelfVariant) =>
 
 export function useDesign() {
   const [design, setDesign] = useState<Design>(DEFAULT_DESIGN);
+  const [styleNote, setStyleNote] = useState<StyleNote | null>(null);
   const [finish, setFinish] = useState<WoodFinish>('Oak');
   const [unit, setUnit] = useState<DimUnit>('in');
 
-  const set = useCallback(<K extends keyof Design>(key: K, value: Design[K]) => {
-    setDesign((prev) => fitToRanges({ ...prev, [key]: value }));
+  // Every change goes through here: inside its limits, then held to its style. The ref is the
+  // design as of the last change, so two changes in one event (a corner's dot sizes width and
+  // length together) build on each other.
+  const current = useRef(design);
+  const commit = useCallback((next: Design, picked = false) => {
+    const { design: resolved, note } = applyStyle(fitToRanges(next), picked);
+    current.current = resolved;
+    setDesign(resolved);
+    setStyleNote(note);
   }, []);
+
+  const set = useCallback(<K extends keyof Design>(key: K, value: Design[K]) => {
+    commit({ ...current.current, [key]: value });
+  }, [commit]);
+
+  const setStyle = useCallback((style: ShelfStyle | null) => {
+    commit({ ...current.current, style }, true);
+  }, [commit]);
 
   const setShape = useCallback((shape: ShelfVariant) => {
-    setDesign((prev) => {
-      if (shape === prev.shape) return prev;
-      if (shape === 'console') return CONSOLE_DESIGN;
-      if (prev.shape === 'console') return { ...DEFAULT_DESIGN, shape };
-      return fitToRanges({ ...prev, shape });
-    });
-  }, []);
+    const prev = current.current;
+    if (shape === prev.shape) return;
+    // The console has its own proportions; the style carries across every switch
+    if (shape === 'console') commit({ ...CONSOLE_DESIGN, style: prev.style }, true);
+    else if (prev.shape === 'console') commit({ ...DEFAULT_DESIGN, shape, style: prev.style }, true);
+    else commit({ ...prev, shape });
+  }, [commit]);
 
-  const load = useCallback((next: Design) => setDesign(fitToRanges(next)), []);
+  const load = useCallback((next: Design) => commit(next), [commit]);
 
   const derived = useMemo(() => {
     const { shape, width, height, depth, length, shelfCount, columnCount, roundLeft, roundRight } = design;
@@ -139,5 +186,5 @@ export function useDesign() {
     [inCm],
   );
 
-  return { design, set, setShape, load, finish, setFinish, unit, setUnit, inCm, fitLine, fmtLen, ...derived };
+  return { design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fitLine, fmtLen, ...derived };
 }

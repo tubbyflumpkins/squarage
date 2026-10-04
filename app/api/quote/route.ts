@@ -35,6 +35,8 @@ const quoteSchema = z.object({
     columnOffset: z.coerce.number(),
     columnAngle: z.coerce.number().optional(),
     estimatedPrice: z.coerce.number().min(0).max(1_000_000),
+    // What the shelf is for, when the designer set its shelf count from a style (its label, for the email)
+    shelfStyle: z.string().max(40).optional(),
   }),
   savedDesignJson: z.string().max(100_000),
   // Browser-generated id for Meta Pixel / Conversions API deduplication
@@ -91,6 +93,7 @@ export async function POST(request: NextRequest) {
       ...(surfaceHeight !== null ? [['Surface Height', `${surfaceHeight.toFixed(1)}"`]] : []),
       ['Depth', `${specs.depth}"`],
       ...(specs.shelfType === 'corner' ? [['Length', `${specs.length}"`]] : []),
+      ...(specs.shelfStyle ? [['Style', specs.shelfStyle]] : []),
       ['Shelves', String(specs.shelfCount)],
       ['Columns', String(specs.columnCount)],
       ['Finish', specs.finish],

@@ -10,6 +10,7 @@ import type { ResizableDimension } from '@/components/shelf/RenderedShelfView/Di
 import { useShelfWasm, computeDerivedParams } from '@/lib/shelfGeometryWasm';
 import { useBoomerangRotation } from '@/hooks/useBoomerangRotation';
 import { designKey } from '@/lib/warped/catalogDesigns';
+import { SHELF_STYLES, SHELF_STYLE_IDS } from '@/lib/warped/shelfStyles';
 import { cameraFor, designFromSaved, rangesFor, useDesign, type DimUnit, type WoodFinish } from './useDesign';
 import { CountField, DimensionField, Panel, Segmented, TogglePill, focusRing } from './controls';
 import { designSvgPreview } from './svgPreview';
@@ -46,20 +47,20 @@ const WOOD_FINISHES: { name: WoodFinish; texture: string }[] = [
   { name: 'Birch', texture: '/textures/birch.webp' },
 ];
 
-type PanelId = 'shape' | 'size' | 'layout' | 'finish' | 'saved';
+type PanelId = 'shape' | 'style' | 'size' | 'layout' | 'finish' | 'saved';
 
 const viewerPill = `rounded-full border px-4 py-1.5 font-neue-haas text-[13px] font-medium backdrop-blur-sm transition-colors duration-200 md:text-sm ${focusRing}`;
 
 export default function ShelfDesigner() {
   const {
-    design, set, setShape, load, finish, setFinish, unit, setUnit, inCm, fitLine, fmtLen,
+    design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fitLine, fmtLen,
     isCorner, isConsole, amplitude, shelfOffset, columnOffset, columnAngle,
     flatParams, cornerParams, opening, surfaceHeight,
   } = useDesign();
   const ranges = rangesFor(design.shape);
 
   // The cards on the right open one at a time
-  const [openPanel, setOpenPanel] = useState<PanelId | null>('size');
+  const [openPanel, setOpenPanel] = useState<PanelId | null>('style');
   const toggle = (id: PanelId) => setOpenPanel((current) => (current === id ? null : id));
 
   const [showDimensions, setShowDimensions] = useState(true);
@@ -115,13 +116,15 @@ export default function ShelfDesigner() {
     const name = saveName.trim();
     if (!name) return;
     // The shape labs' importer reads: collection + variant ride along in the store
-    const params: Record<string, number | boolean> = {
+    const params: Record<string, number | boolean | string> = {
       isCorner, width: design.width, height: design.height, depth: design.depth, length: design.length,
       shelfCount: design.shelfCount, columnCount: design.columnCount,
       roundLeft: design.roundLeft, roundRight: design.roundRight,
       amplitude, shelfOffset, columnOffset,
       ...(isCorner ? { columnAngle, wallAlign: 1 } : {}),
       ...(isConsole ? { consoleTop: true } : {}),
+      // labs opens the design in the same mode, with the count the style worked out
+      ...(design.style ? { shelfStyle: design.style } : {}),
     };
     saveDesign(name, isCorner ? 'corner' : 'flat', params, getSvgPreview(), design.shape);
     setSaveName('');
@@ -139,6 +142,10 @@ export default function ShelfDesigner() {
     .map((v) => (inCm ? Math.round(v * 2.54) : +v.toFixed(2)));
   const sizeSummary = `${shownSizes.join(' × ')} ${unit}`;
   const layoutSummary = `${design.shelfCount} shelves, ${design.columnCount} columns`;
+  const style = design.style ? SHELF_STYLES[design.style] : null;
+  // A length range in the customer's unit: "13 to 14.5 in", "33 to 37 cm"
+  const fmtRange = (min: number, max: number) =>
+    inCm ? `${Math.round(min * 2.54)} to ${Math.round(max * 2.54)} cm` : `${min} to ${max} in`;
 
   return (
     <div className="bg-cream md:pt-[90px] lg:pt-[98px]">
@@ -251,6 +258,30 @@ export default function ShelfDesigner() {
               )}
             </Panel>
 
+            <Panel title="Style" value={style ? style.label : 'None'} open={openPanel === 'style'} onToggle={() => toggle('style')}>
+              <p className="mb-3 font-neue-haas text-sm text-gray-500">Pick what goes on it. The shelves space themselves to suit.</p>
+              <div className="flex flex-wrap gap-2">
+                {SHELF_STYLE_IDS.map((id) => (
+                  <TogglePill key={id} pressed={design.style === id} onChange={(on) => setStyle(on ? id : null)}>
+                    {SHELF_STYLES[id].label}
+                  </TogglePill>
+                ))}
+              </div>
+              {style && (
+                <p className="mt-4 font-neue-haas text-sm text-gray-500">
+                  {style.label} want openings of {fmtRange(style.min, style.max)}. At this height that is{' '}
+                  <span className="font-medium text-squarage-black">{design.shelfCount} shelves</span> with{' '}
+                  <span className="font-medium tabular-nums text-squarage-black">{fmtLen(opening)}</span> openings.
+                </p>
+              )}
+              {styleNote && (
+                <p className="mt-2 font-neue-haas text-sm text-squarage-green">
+                  {styleNote.height !== undefined && <>Height set to {fmtLen(styleNote.height)}, the least this style needs. </>}
+                  {styleNote.depth !== undefined && <>Depth set to {fmtLen(styleNote.depth)} so they sit fully on the shelf.</>}
+                </p>
+              )}
+            </Panel>
+
             <Panel title="Size" value={sizeSummary} open={openPanel === 'size'} onToggle={() => toggle('size')}>
               <div className="mb-3 flex justify-end">
                 <Segmented compact label="Units" options={UNITS} value={unit} onChange={setUnit} />
@@ -267,7 +298,16 @@ export default function ShelfDesigner() {
 
             <Panel title="Layout" value={layoutSummary} open={openPanel === 'layout'} onToggle={() => toggle('layout')}>
               <div className="space-y-3">
-                <CountField label="Shelves" value={design.shelfCount} range={ranges.shelfCount} onChange={(v) => set('shelfCount', v)} />
+                {style ? (
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-neue-haas text-base font-medium text-squarage-black">Shelves</span>
+                    <span className="font-neue-haas text-base text-gray-500">
+                      <span className="font-medium tabular-nums text-squarage-black">{design.shelfCount}</span>, set by the style
+                    </span>
+                  </div>
+                ) : (
+                  <CountField label="Shelves" value={design.shelfCount} range={ranges.shelfCount} onChange={(v) => set('shelfCount', v)} />
+                )}
                 <CountField label="Columns" value={design.columnCount} range={ranges.columnCount} onChange={(v) => set('columnCount', v)} />
               </div>
               {surfaceHeight !== null && (
@@ -381,6 +421,7 @@ export default function ShelfDesigner() {
           shelfOffset={shelfOffset}
           columnOffset={columnOffset}
           columnAngle={columnAngle}
+          shelfStyle={design.style}
           onClose={() => setShowQuoteFlow(false)}
           saveDesign={saveDesign}
           getSvgPreview={getSvgPreview}
