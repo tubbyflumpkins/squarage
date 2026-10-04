@@ -9,7 +9,7 @@ import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer
 import BoomerangCamera from './BoomerangCamera';
 import FlatShelfMeshes from './FlatShelfMeshes';
 import CornerShelfMeshes from './CornerShelfMeshes';
-import DimensionOverlay, { type DimensionUnit } from './DimensionOverlay';
+import DimensionOverlay, { type DimensionUnit, type ResizableDimension } from './DimensionOverlay';
 
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -28,6 +28,10 @@ interface RenderedShelfViewProps {
   length: number;
   /** Draw the shelf's measurements in the scene, in this unit. Left out, the view is bare. */
   dimensionUnit?: DimensionUnit;
+  /** Makes the measurements' dots draggable: called with a size's new value in whole inches. */
+  onDimensionResize?: (dimension: ResizableDimension, inches: number) => void;
+  /** A dot is being dragged (true) or was let go (false). */
+  onDimensionResizeActive?: (active: boolean) => void;
   /** Camera distance multiplier (BoomerangCamera's): a little more leaves room for the measurements. */
   cameraPadding?: number;
 }
@@ -44,6 +48,8 @@ export default function RenderedShelfView({
   depth,
   length,
   dimensionUnit,
+  onDimensionResize,
+  onDimensionResizeActive,
   cameraPadding,
 }: RenderedShelfViewProps) {
   // Stop the render loop while the canvas is fully offscreen or the tab is
@@ -109,7 +115,14 @@ export default function RenderedShelfView({
       </Suspense>
 
       {dimensionUnit && (
-        <DimensionOverlay isCorner={isCorner} flatParams={flatParams} cornerParams={cornerParams} unit={dimensionUnit} />
+        <DimensionOverlay
+          isCorner={isCorner}
+          flatParams={flatParams}
+          cornerParams={cornerParams}
+          unit={dimensionUnit}
+          onResize={onDimensionResize}
+          onResizeActive={onDimensionResizeActive}
+        />
       )}
 
       {/* Key light — upper-left-front, casts shadows */}
