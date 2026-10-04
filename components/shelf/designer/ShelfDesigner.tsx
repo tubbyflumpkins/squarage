@@ -156,9 +156,9 @@ export default function ShelfDesigner() {
       <div className="lg:relative lg:h-[calc(100dvh-98px)] lg:min-h-[640px]">
 
         {/* The model: pinned above the cards on a phone, filling the screen beside them on desktop */}
-        <div className="sticky top-[60px] z-20 h-[44dvh] bg-cream md:top-[90px] lg:absolute lg:inset-y-0 lg:left-0 lg:right-[420px] lg:h-auto">
+        <div className="sticky top-[60px] z-20 h-[calc(44dvh+3.5rem)] bg-cream md:top-[90px] md:h-[44dvh] lg:absolute lg:inset-y-0 lg:left-0 lg:right-[420px] lg:h-auto">
           <div className="relative h-full w-full" style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}>
-            <div className="absolute inset-x-0 bottom-0 top-12 cursor-grab touch-none active:cursor-grabbing md:top-20" {...handlers}>
+            <div className="absolute inset-x-0 bottom-14 top-12 cursor-grab touch-none active:cursor-grabbing md:bottom-0 md:top-20" {...handlers}>
               <RenderedShelfView
                 isCorner={isCorner}
                 flatParams={flatParams}
