@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import type { DimUnit, Range } from './useDesign';
 
@@ -284,6 +284,74 @@ export function DimensionField({ label, value, range, unit, onChange }: Dimensio
         onChange={(e) => onChange(Number(e.target.value))}
         className="designer-range mt-1 block w-full"
       />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Dialog: a small pop-up over the page
+// ---------------------------------------------------------------------------
+
+interface DialogProps {
+  title: string;
+  onClose: () => void;
+  /** Room for a grid of saved designs; the default is sized for a single field. */
+  wide?: boolean;
+  children: ReactNode;
+}
+
+/**
+ * Mounted only while open. Opens with focus in its first field, closes on Escape, on its close
+ * button and on a click outside it, and hands focus back to whatever opened it. Sits above the site's navigation. On a phone it opens
+ * toward the top of the screen, clear of the keyboard.
+ */
+export function Dialog({ title, onClose, wide = false, children }: DialogProps) {
+  const box = useRef<HTMLDivElement>(null);
+  // Kept in a ref so a re-render of the page behind never re-runs the effect and steals focus from a field
+  const close = useRef(onClose);
+  close.current = onClose;
+  // Whatever had focus as the pop-up was first drawn: the button that opened it
+  const opener = useRef<HTMLElement | null>(null);
+  if (opener.current === null && typeof document !== 'undefined') opener.current = document.activeElement as HTMLElement | null;
+
+  useEffect(() => {
+    // Straight into its field when it has one, so a name can be typed at once
+    const field = box.current?.querySelector<HTMLElement>('input, textarea, select');
+    (field ?? box.current)?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close.current(); };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      opener.current?.focus?.();
+    };
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-[10010] flex items-start justify-center overflow-y-auto bg-squarage-black/30 px-4 pb-6 pt-[14vh] backdrop-blur-[2px] md:items-center md:pt-6"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        ref={box}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        tabIndex={-1}
+        className={`w-full rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_20px_60px_rgba(51,51,51,0.18)] outline-none ${wide ? 'max-w-[560px]' : 'max-w-[400px]'}`}
+      >
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="font-neue-haas text-lg font-bold text-squarage-black">{title}</h2>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className={`flex h-8 w-8 items-center justify-center rounded-full font-neue-haas text-2xl leading-none text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-squarage-black ${focusRing}`}
+          >
+            &times;
+          </button>
+        </div>
+        {children}
+      </div>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { useBoomerangRotation } from '@/hooks/useBoomerangRotation';
 import { designKey } from '@/lib/warped/catalogDesigns';
 import { SHELF_STYLES, SHELF_STYLE_IDS } from '@/lib/warped/shelfStyles';
 import { cameraFor, designFromSaved, rangesFor, useDesign, type DimUnit, type WoodFinish } from './useDesign';
-import { DimensionField, Panel, Segmented, TogglePill, focusRing } from './controls';
+import { Dialog, DimensionField, Panel, Segmented, TogglePill, focusRing } from './controls';
 import { designSvgPreview } from './svgPreview';
 
 const RenderedShelfView = dynamic(() => import('@/components/shelf/RenderedShelfView'), {
@@ -47,7 +47,10 @@ const WOOD_FINISHES: { name: WoodFinish; texture: string }[] = [
   { name: 'Birch', texture: '/textures/birch.webp' },
 ];
 
-type PanelId = 'shape' | 'layout' | 'size' | 'finish' | 'saved';
+type PanelId = 'shape' | 'layout' | 'size' | 'finish';
+
+/** Save and Load, under the cards: the two things that are not part of designing the shelf. */
+const secondaryPill = `rounded-full border border-gray-300 bg-white py-2 font-neue-haas text-sm font-medium text-squarage-black transition-colors duration-200 hover:border-gray-400 disabled:text-gray-400 disabled:hover:border-gray-300 ${focusRing}`;
 
 export default function ShelfDesigner() {
   const {
@@ -63,6 +66,14 @@ export default function ShelfDesigner() {
 
   const [showQuoteFlow, setShowQuoteFlow] = useState(false);
   const [saveName, setSaveName] = useState('');
+  // Saving and loading each open a pop-up; Save says so for a moment once it has
+  const [dialog, setDialog] = useState<'save' | 'load' | null>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  useEffect(() => {
+    if (!justSaved) return;
+    const timer = setTimeout(() => setJustSaved(false), 2000);
+    return () => clearTimeout(timer);
+  }, [justSaved]);
 
   // The idle sweep, drag to turn. Each shape opens at its own angle, and the sweep holds still
   // while a measurement's dot is being dragged so the dot stays under the pointer.
@@ -125,12 +136,14 @@ export default function ShelfDesigner() {
     };
     saveDesign(name, isCorner ? 'corner' : 'flat', params, getSvgPreview(), design.shape);
     setSaveName('');
-    setOpenPanel('saved');
+    setDialog(null);
+    setJustSaved(true);
   };
 
   const handleLoadSaved = (saved: SavedDesign) => {
     const loaded = loadDesign(saved.id);
     if (loaded) load(designFromSaved(saved.shelfType, loaded.variant, loaded.params));
+    setDialog(null);
   };
 
   // What each closed card says about its contents
@@ -259,50 +272,6 @@ export default function ShelfDesigner() {
                 })}
               </div>
             </Panel>
-
-            <Panel
-              title="Saved"
-              value={designs.length === 0 ? 'None yet' : designs.length === 1 ? '1 design' : `${designs.length} designs`}
-              open={openPanel === 'saved'}
-              onToggle={() => toggle('saved')}
-            >
-              <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="flex gap-2">
-                <input
-                  type="text"
-                  value={saveName}
-                  onChange={(e) => setSaveName(e.target.value)}
-                  placeholder="Name this design"
-                  aria-label="Design name"
-                  className="min-w-0 flex-1 rounded-full border border-gray-300 bg-white px-4 py-2 font-neue-haas text-base text-squarage-black outline-none placeholder:text-neutral-400 focus:border-squarage-green focus:ring-2 focus:ring-squarage-green/20"
-                />
-                <button
-                  type="submit"
-                  disabled={!saveName.trim()}
-                  className={`shrink-0 rounded-full bg-squarage-green px-5 py-2 font-neue-haas text-sm font-bold text-white transition-colors duration-200 hover:bg-squarage-yellow disabled:bg-gray-300 ${focusRing}`}
-                >
-                  Save
-                </button>
-              </form>
-              {designs.length > 0 && (
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {designs.map((saved) => (
-                    <div key={saved.id} className="relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors duration-200 hover:border-gray-400">
-                      {saved.svgPreview && <div className="h-full w-full p-2 pb-6" dangerouslySetInnerHTML={{ __html: saved.svgPreview }} />}
-                      <span className="absolute inset-x-0 bottom-0 truncate px-2 pb-1.5 font-neue-haas text-[12px] font-medium text-squarage-black">{saved.name}</span>
-                      <button type="button" aria-label={`Open ${saved.name}`} onClick={() => handleLoadSaved(saved)} className={`absolute inset-0 rounded-xl ${focusRing}`} />
-                      <button
-                        type="button"
-                        aria-label={`Delete ${saved.name}`}
-                        onClick={() => deleteDesign(saved.id)}
-                        className={`absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full font-neue-haas text-base leading-none text-gray-500 transition-colors duration-200 hover:bg-squarage-black hover:text-white ${focusRing}`}
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Panel>
           </div>
 
           {/* The action. A bar fixed to the screen on a phone, the foot of the cards on desktop. */}
@@ -312,6 +281,14 @@ export default function ShelfDesigner() {
             }`}
             style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
           >
+            <div className="mb-2 grid grid-cols-2 gap-2 lg:mb-3">
+              <button type="button" onClick={() => setDialog('save')} className={secondaryPill}>
+                <span aria-live="polite">{justSaved ? 'Saved' : 'Save'}</span>
+              </button>
+              <button type="button" onClick={() => setDialog('load')} disabled={designs.length === 0} className={secondaryPill}>
+                Load
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => setShowQuoteFlow(true)}
@@ -324,9 +301,57 @@ export default function ShelfDesigner() {
             </p>
           </div>
           {/* Room for the fixed bar on a phone, so the last card can scroll clear of it */}
-          <div className="h-24 lg:hidden" aria-hidden="true" />
+          <div className="h-36 lg:hidden" aria-hidden="true" />
         </div>
       </div>
+
+      {dialog === 'save' && (
+        <Dialog title="Save this design" onClose={() => setDialog(null)}>
+          <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="flex gap-2">
+            <input
+              type="text"
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              placeholder="Name this design"
+              aria-label="Design name"
+              className="min-w-0 flex-1 rounded-full border border-gray-300 bg-white px-4 py-2 font-neue-haas text-base text-squarage-black outline-none placeholder:text-neutral-400 focus:border-squarage-green focus:ring-2 focus:ring-squarage-green/20"
+            />
+            <button
+              type="submit"
+              disabled={!saveName.trim()}
+              className={`shrink-0 rounded-full bg-squarage-green px-5 py-2 font-neue-haas text-sm font-bold text-white transition-colors duration-200 hover:bg-squarage-yellow disabled:bg-gray-300 ${focusRing}`}
+            >
+              Save
+            </button>
+          </form>
+        </Dialog>
+      )}
+
+      {dialog === 'load' && (
+        <Dialog title="Saved designs" wide onClose={() => setDialog(null)}>
+          {designs.length === 0 ? (
+            <p className="font-neue-haas text-sm text-gray-500">Nothing saved yet.</p>
+          ) : (
+            <div className="grid max-h-[60vh] grid-cols-3 gap-2 overflow-y-auto md:grid-cols-4">
+              {designs.map((saved) => (
+                <div key={saved.id} className="relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors duration-200 hover:border-gray-400">
+                  {saved.svgPreview && <div className="h-full w-full p-2 pb-6" dangerouslySetInnerHTML={{ __html: saved.svgPreview }} />}
+                  <span className="absolute inset-x-0 bottom-0 truncate px-2 pb-1.5 font-neue-haas text-[12px] font-medium text-squarage-black">{saved.name}</span>
+                  <button type="button" aria-label={`Open ${saved.name}`} onClick={() => handleLoadSaved(saved)} className={`absolute inset-0 rounded-xl ${focusRing}`} />
+                  <button
+                    type="button"
+                    aria-label={`Delete ${saved.name}`}
+                    onClick={() => deleteDesign(saved.id)}
+                    className={`absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full font-neue-haas text-base leading-none text-gray-500 transition-colors duration-200 hover:bg-squarage-black hover:text-white ${focusRing}`}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </Dialog>
+      )}
 
       {/* Quote flow: always mounted, slides in over the page */}
       <div
