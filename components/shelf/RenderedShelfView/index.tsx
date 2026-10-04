@@ -9,6 +9,7 @@ import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer
 import BoomerangCamera from './BoomerangCamera';
 import FlatShelfMeshes from './FlatShelfMeshes';
 import CornerShelfMeshes from './CornerShelfMeshes';
+import DimensionOverlay, { type DimensionUnit } from './DimensionOverlay';
 
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -25,6 +26,10 @@ interface RenderedShelfViewProps {
   height: number;
   depth: number;
   length: number;
+  /** Draw the shelf's measurements in the scene, in this unit. Left out, the view is bare. */
+  dimensionUnit?: DimensionUnit;
+  /** Camera distance multiplier (BoomerangCamera's): a little more leaves room for the measurements. */
+  cameraPadding?: number;
 }
 
 export default function RenderedShelfView({
@@ -38,6 +43,8 @@ export default function RenderedShelfView({
   height,
   depth,
   length,
+  dimensionUnit,
+  cameraPadding,
 }: RenderedShelfViewProps) {
   // Stop the render loop while the canvas is fully offscreen or the tab is
   // hidden. This also covers QuoteFlow's always-mounted copies, which sit
@@ -81,7 +88,10 @@ export default function RenderedShelfView({
         if (process.env.NODE_ENV !== 'production') {
           // Dev-only leak diagnostics: read __shelfGL.info.memory in the
           // console — `geometries` must stay flat while scrubbing sliders.
+          // A page with several views (the designer plus QuoteFlow's copies) leaves the
+          // last one created on window, so each canvas also carries its own as `__gl`.
           (window as unknown as Record<string, unknown>).__shelfGL = gl;
+          (gl.domElement as unknown as Record<string, unknown>).__gl = gl;
         }
       }}
     >
@@ -97,6 +107,10 @@ export default function RenderedShelfView({
           <FlatShelfMeshes params={flatParams} finish={finish} />
         )}
       </Suspense>
+
+      {dimensionUnit && (
+        <DimensionOverlay isCorner={isCorner} flatParams={flatParams} cornerParams={cornerParams} unit={dimensionUnit} />
+      )}
 
       {/* Key light — upper-left-front, casts shadows */}
       <directionalLight
@@ -126,6 +140,7 @@ export default function RenderedShelfView({
         width={width}
         height={height}
         depthOrLength={isCorner ? Math.max(depth, length) : depth}
+        cameraPadding={cameraPadding}
       />
     </Canvas>
   );
