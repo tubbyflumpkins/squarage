@@ -10,6 +10,7 @@ import BoomerangCamera from './BoomerangCamera';
 import FlatShelfMeshes from './FlatShelfMeshes';
 import CornerShelfMeshes from './CornerShelfMeshes';
 import DimensionOverlay, { type DimensionUnit, type ResizableDimension } from './DimensionOverlay';
+import ShelfFloor from './ShelfFloor';
 
 const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -34,6 +35,8 @@ interface RenderedShelfViewProps {
   onDimensionResizeActive?: (active: boolean) => void;
   /** Camera distance multiplier (BoomerangCamera's): a little more leaves room for the measurements. */
   cameraPadding?: number;
+  /** Stand the shelf on a slight floor that catches its shadow. Left out, it floats on the page. */
+  floor?: boolean;
 }
 
 export default function RenderedShelfView({
@@ -51,6 +54,7 @@ export default function RenderedShelfView({
   onDimensionResize,
   onDimensionResizeActive,
   cameraPadding,
+  floor = false,
 }: RenderedShelfViewProps) {
   // Stop the render loop while the canvas is fully offscreen or the tab is
   // hidden. This also covers QuoteFlow's always-mounted copies, which sit
@@ -113,6 +117,8 @@ export default function RenderedShelfView({
           <FlatShelfMeshes params={flatParams} finish={finish} />
         )}
       </Suspense>
+
+      {floor && <ShelfFloor spanX={width} spanZ={isCorner ? length : depth} y={-height / 2} />}
 
       {dimensionUnit && (
         <DimensionOverlay

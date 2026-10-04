@@ -174,6 +174,7 @@ export default function ShelfDesigner() {
                 onDimensionResize={resize}
                 onDimensionResizeActive={setResizing}
                 cameraPadding={showDimensions ? (isCorner ? 0.58 : 0.54) : undefined}
+                floor
               />
             </div>
 
