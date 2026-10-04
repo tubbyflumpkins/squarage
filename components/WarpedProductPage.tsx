@@ -18,6 +18,7 @@ import { formatPrice } from '@/lib/formatPrice'
 import { useStickyCartVisibility } from '@/lib/useStickyCartVisibility'
 import { SerializedProduct } from '@/lib/productTypes'
 import { useMetaViewContent } from '@/lib/metaPixel'
+import { designerLinkForProduct } from '@/lib/warped/catalogDesigns'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -278,6 +279,9 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
   // Get collection info
   const collection = product.collections?.[0] || { handle: 'warped', title: 'Warped Collection' }
 
+  // Other sizes are made in the shelf designer
+  const designerLink = designerLinkForProduct(product.handle)
+
   return (
     <main className="min-h-screen bg-cream">
       {/* Sticky Add to Cart Bar */}
@@ -426,6 +430,15 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   <span>SSL encrypted</span>
                 </div>
               </div>
+
+              {/* Other sizes are made in the shelf designer */}
+              <p className="mt-4 text-center text-sm font-neue-haas text-gray-600">
+                Need a different size?{' '}
+                <Link href={designerLink.href} className="underline hover:text-squarage-orange transition-colors">
+                  {designerLink.label}
+                </Link>
+                .
+              </p>
             </div>
 
             {/* Product Details Accordion */}
@@ -435,6 +448,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                 metafields={product.metafields}
                 dimensions={getSize()}
                 dimensionsImage={dimensionsImage}
+                customSizeLink={designerLink}
               />
             </div>
 
@@ -627,6 +641,15 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                     <span>SSL encrypted</span>
                   </div>
                 </div>
+
+                {/* Other sizes are made in the shelf designer */}
+                <p className="mt-4 text-center text-sm font-neue-haas text-gray-600">
+                  Need a different size?{' '}
+                  <Link href={designerLink.href} className="underline hover:text-squarage-orange transition-colors">
+                    {designerLink.label}
+                  </Link>
+                  .
+                </p>
               </div>
 
               {/* Product Details Accordion */}
@@ -636,6 +659,7 @@ export default function WarpedProductPage({ product }: WarpedProductPageProps) {
                   metafields={product.metafields}
                   dimensions={getSize()}
                   dimensionsImage={dimensionsImage}
+                  customSizeLink={designerLink}
                 />
               </div>
             </div>

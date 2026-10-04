@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline'
 
 interface AccordionItem {
@@ -25,13 +26,16 @@ interface ProductDetailsAccordionProps {
     width: number
     height: number
   } | null
+  /** Warped: other sizes are made in the shelf designer, so the custom-size note links there. */
+  customSizeLink?: { href: string; label: string }
 }
 
 export default function ProductDetailsAccordion({
   productType,
   dimensions,
   metafields,
-  dimensionsImage
+  dimensionsImage,
+  customSizeLink
 }: ProductDetailsAccordionProps) {
   const [openItems, setOpenItems] = useState<string[]>([])
 
@@ -115,6 +119,20 @@ export default function ProductDetailsAccordion({
     })
   }
 
+  const customSizeNote = customSizeLink ? (
+    <p className="text-sm font-neue-haas text-gray-600">
+      Need a different size?{' '}
+      <Link href={customSizeLink.href} className="underline hover:text-squarage-orange transition-colors">
+        {customSizeLink.label}
+      </Link>
+      .
+    </p>
+  ) : (
+    <p className="text-sm font-neue-haas text-gray-600">
+      Custom sizes available upon request. Contact us for details.
+    </p>
+  )
+
   const accordionItems: AccordionItem[] = [
     {
       id: 'dimensions',
@@ -137,9 +155,7 @@ export default function ProductDetailsAccordion({
                 <div className="text-base font-neue-haas text-squarage-black">
                   {formatText(productDimensions)}
                 </div>
-                <p className="text-sm font-neue-haas text-gray-600">
-                  Custom sizes available upon request. Contact us for details.
-                </p>
+                {customSizeNote}
               </div>
             </div>
           ) : (
@@ -148,9 +164,7 @@ export default function ProductDetailsAccordion({
               <div className="text-base font-neue-haas text-squarage-black">
                 {formatText(productDimensions)}
               </div>
-              <p className="text-sm font-neue-haas text-gray-600">
-                Custom sizes available upon request. Contact us for details.
-              </p>
+              {customSizeNote}
             </>
           )}
         </div>
