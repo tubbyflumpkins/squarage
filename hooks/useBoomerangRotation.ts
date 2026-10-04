@@ -5,6 +5,8 @@ interface BoomerangOptions {
   /** The idle sweep bounces between these two angles, so the shelf's back is never shown. */
   minAngleDeg: number
   maxAngleDeg: number
+  /** Hold the idle sweep still (a drag still turns the shelf). */
+  paused?: boolean
 }
 
 const BASE_SPEED = 0.0012
@@ -26,7 +28,7 @@ function normalizeAngle(rad: number): number {
  * logic in app/collections/warped/designer/page.tsx, for read-only views of a shelf.
  * Spread `handlers` on the element wrapping RenderedShelfView, and pass `rotation + Math.PI / 4`.
  */
-export function useBoomerangRotation({ initialRotationDeg, minAngleDeg, maxAngleDeg }: BoomerangOptions) {
+export function useBoomerangRotation({ initialRotationDeg, minAngleDeg, maxAngleDeg, paused = false }: BoomerangOptions) {
   const [rotation, setRotation] = useState(initialRotationDeg * Math.PI / 180)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -39,6 +41,8 @@ export function useBoomerangRotation({ initialRotationDeg, minAngleDeg, maxAngle
   const maxAngleDegRef = useRef(maxAngleDeg)
   minAngleDegRef.current = minAngleDeg
   maxAngleDegRef.current = maxAngleDeg
+  const pausedRef = useRef(paused)
+  pausedRef.current = paused
 
   const lastX = useRef(0)
   const lastTime = useRef(0)
@@ -60,7 +64,7 @@ export function useBoomerangRotation({ initialRotationDeg, minAngleDeg, maxAngle
       const dt = lastFrameTime.current ? Math.min((time - lastFrameTime.current) / 16.667, 3) : 1
       lastFrameTime.current = time
 
-      if (!isDraggingRef.current) {
+      if (!isDraggingRef.current && !pausedRef.current) {
         for (let i = 0; i < dt; i++) {
           velocityRef.current = velocityRef.current * FRICTION + (targetSpeedRef.current - velocityRef.current) * BLEND_RATE
         }
@@ -107,6 +111,13 @@ export function useBoomerangRotation({ initialRotationDeg, minAngleDeg, maxAngle
     setIsDragging(false)
   }, [])
 
+  /** Jump to an angle and start the sweep afresh: a different shape opens at its own best angle. */
+  const reset = useCallback((rotationDeg: number) => {
+    velocityRef.current = 0.0008
+    targetSpeedRef.current = -BASE_SPEED
+    setRotation(rotationDeg * Math.PI / 180)
+  }, [])
+
   const handlers = {
     onMouseDown: (e: React.MouseEvent) => start(e.clientX),
     onMouseMove: (e: React.MouseEvent) => { if (isDraggingRef.current) move(e.clientX, 0.005, 0.002) },
@@ -118,5 +129,5 @@ export function useBoomerangRotation({ initialRotationDeg, minAngleDeg, maxAngle
     onTouchCancel: end,
   }
 
-  return { rotation, isDragging, handlers }
+  return { rotation, isDragging, handlers, reset }
 }
