@@ -5,6 +5,19 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-10-04 — Shelf designer: six small fixes from the review
+
+From the designer review (a Claude Doc: "Warped Shelf Designer: Review and Redesign Proposal"). These are its step 1, the changes worth making whatever happens with the larger redesign. No geometry, WASM or labs change.
+
+- **Opens on Standard**, not Corner.
+- **Shelf Opening and a fit line** in the summary, and above Get Quote on a phone: the clear gap between shelves and one plain sentence about it ("Fits books up to 9 in tall.", "Tall enough for 12 in records."). The gap used to be the unshown by-product of Height and Shelves. New `lib/warped/shelfFit.ts`.
+- **cm works**: the arrows did nothing in cm because each value was converted, stepped and rounded back to the same inch. Sliders now always step in inches and only the read-out converts. Size, Surface Height and the opening follow the unit.
+- **Presets are "Start From"**, with Our Designs and Saved tabs (was "Saved Designs" with Preset and Custom; on a phone the button reads Designs, was Load). The Short Standard preset shows its catalog price, $450, read from Shopify.
+- **Only the Short Standard is priced, by Dylan's choice.** The other three catalog-named presets do not match their listings (Tall Standard 76 × 76 vs 75 × 75; Short Corner 47 × 31 vs 48 × 32; Tall Corner 75" and 6 shelves vs 70" and 7). Offered the choice, he kept the presets as they are, so they stay unpriced. The mapping is `PRESET_PRODUCT_HANDLES` in the new `lib/warped/catalogDesigns.ts`.
+- **Warped product pages link to the designer** under Add to Cart and in the Dimensions note: "Customize this design" (opens the designer on that product through `?design=`) for the Short Standard, "Design your own" for the rest. They used to say custom sizes were on request and never mentioned the designer.
+- **No newsletter popup over the designer.** It waits until the customer leaves the page.
+- Checked: `tsc`, lint, production build. In Playwright against the dev server at 1440 and 390 wide: default shape, cm arrows up and down, the fit line across books, records and too-tight cases, the priced preset, `?design=short-corner`, the product links on three Warped pages and an unchanged Tiled page, and the popup held on the designer then shown on the next page (from a cleared dismissed flag).
+
 ## 2026-09-22 — Shared design page: the button reads Place Order
 
 Dylan's wording: "Pay Now" became **Place Order** on `/custom/[token]` (desktop button, and the mobile bar's `Place Order · Option 2 · $2,400`). Older entries below still say Pay Now; it is the same button.

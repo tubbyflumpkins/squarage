@@ -15,7 +15,7 @@ description: Full project structure for the Squarage site — routes, components
 | `/products/[handle]` | Product page (ProductPage default, WarpedProductPage by `warped` collection, MateoProductPage for the virtual `mateo-chair` handle — backed by 3 Shopify products; the real handles `mateo-pose`/`mateo-tabouret`/`mateo-diner` 308-redirect to `/products/mateo-chair?style=…`) |
 | `/collections/tiled` | Tiled collection (CarroHeroSection hero) |
 | `/collections/warped` | Warped collection |
-| `/collections/warped/designer` | 3D shelf designer: Standard / Corner / Console |
+| `/collections/warped/designer` | 3D shelf designer: Standard / Corner / Console. Opens on Standard; `?design=<preset>` opens on a preset |
 | `/collections/pose` | Posé collection (static poolside hero + blob title, 3 auto-rotating variant chairs) |
 | `/custom` | Custom project request flow |
 | `/custom/[token]` | A custom design Dylan shared with one customer: the designer's grid, read-only, with Place Order (Shopify draft-order checkout). Data from labs. noindex, NOT in the sitemap |
@@ -98,6 +98,9 @@ lib/
                               #   minus its production-only tenon helpers
   warped/flatSvgPreview.ts    # TS thumbnail for console designs (the WASM projection
                               #   does not know the console)
+  warped/shelfFit.ts          # The designer's fit line: what stands in a shelf opening (site-own)
+  warped/catalogDesigns.ts    # Which designer preset is which Shopify product, and the product
+                              #   page's link into the designer (site-own, no thumbnails)
   sharedDesign.ts             # Shared-design contract v1 (mirrors labs' src/lib/shares/types.ts)
                               #   + formatMoney (keeps cents). Client-safe
   sharedDesignServer.ts       # Server only: zod schema + fetchSharedDesign(token) from LABS_API_URL
@@ -156,6 +159,14 @@ public/images/
 - Cart mutation failures throw and surface via `state.error` in CartDrawer
 - Warped dimension drawings live in Shopify product media (filename contains "dimensions"); Mateo's live in the repo under `public/images/pose/dimensions/`
 - **Mateo = 3 Shopify products, 1 page**: `mateo-pose`/`mateo-tabouret`/`mateo-diner` (Color-only variants, all in the `pose` collection) feed the unified `/products/mateo-chair` page — that handle is virtual (the old master product was deleted from Shopify 2026-07-23; never fetch it). Style/handle mapping lives in `lib/mateoProducts.ts`; catalog cards link to `/products/mateo-chair?style=…`; the real handles 308-redirect there (redirect must stay OUTSIDE the route's try/catch — it works by throwing)
+
+### Shelf designer (`/collections/warped/designer`)
+- **Opens on Standard** (`DEFAULTS.isCorner: false`, 45 × 24 × 10, which is the Short Standard). `?design=<preset id without "preset-">` opens on that preset instead; it is read from `window.location` in an effect, so the page stays static with no Suspense boundary.
+- **Sizes are whole inches; cm is a read-out.** `CompactSlider`'s `scale` prop converts only what is shown and typed, the slider itself always steps in inches. Stepping the converted number rounds straight back and leaves the arrows dead (the bug fixed 2026-10-04). The Size, Surface Height and Shelf Opening lines follow the unit; the quote email stays in inches.
+- **Shelf Opening + fit line**: the clear gap between two shelves is `shelfSpacing(...) - NOMINAL_PLY` (labs' production default ply is also 0.5"). `lib/warped/shelfFit.ts` turns it into one plain sentence: books up to a height, "Tall enough for 12 in records" from 13", or "Too tight for most books" under 7.5". It speaks to height only. Depth is mentioned just as the record's own 12.4", because the wavy front edge makes depth more than one number. Shown in the desktop summary and above Get Quote on a phone.
+- **Start From panel**: Our Designs (the presets in `data/presetDesigns.ts`) and Saved (the customer's, localStorage). A preset shows a catalog price only if `PRESET_PRODUCT_HANDLES` (`lib/warped/catalogDesigns.ts`) maps it to a Shopify product, and it earns a mapping only while its size and counts match the listing. Today that is the Short Standard alone: the Tall Standard preset is 76 × 76 against a 75 × 75 listing, the Short Corner 47 × 31 against 48 × 32, the Tall Corner 75" with 6 shelves against 70" with 7. Dylan chose to leave those presets as they are (2026-10-04). Prices come from `shopifyApi.getProductPrices` (one aliased GraphQL request, client-side, silent on failure).
+- **Product pages link in**: `designerLinkForProduct(handle)` gives "Customize this design" + `?design=` for a mapped product and "Design your own" + the bare designer otherwise. `WarpedProductPage` shows it under Add to Cart and passes it to `ProductDetailsAccordion` (`customSizeLink`), which keeps the contact wording for Tiled and Posé.
+- **No newsletter popup on the designer** (`EmailCaptureContext`, as on `/custom/[token]`): it is held until the customer leaves the page.
 
 ### Warped console + shared custom designs
 - **Console** = the flat shelf with `ShelfParams.consoleTop` (first and last columns full height with the top slotted in, inner columns stopping under it; with two columns or fewer it is the standard shelf). In the designer it is `DesignParams.isConsole`: the toggle swaps whole defaults entering or leaving it (48 × 26 × 14), height runs from 16" and depth to 20" (`rangesFor`, labs' `warpedShelfRanges`), and the spec cell shows Surface Height (`consoleSurfaceHeight`). Derived values still come from WASM `computeDerivedParams({ isCorner: false })` — it has no input clamps, so no Rust rebuild. It saves as `shelfType: 'flat'` + `variant: 'console'` + `collection: 'warped'` (what labs' importer needs); saved designs without a `variant` predate it and load by `shelfType`. `/api/quote` takes an optional `specs.variant`.
