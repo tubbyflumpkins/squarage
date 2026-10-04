@@ -23,13 +23,24 @@
  * reads `shelfZ` from here: the shelf's wave is evaluated at its new height and
  * the columns' slots are cut there. Only shared design links (/custom/[token]) set it:
  * the public Shelf Builder has no control for it.
+ *
+ * `rowHeights` is the general form of that: a height for every row (the opening
+ * between two shelves), at any shelf count. A row is either set to a height or
+ * left at 0, "auto", to take what the set rows leave. The outer two shelves
+ * still never move, so the rows always fill the same span and the console's
+ * surface stays where it was. When a design carries `rowHeights` it wins over
+ * `middleShelfShift`. The public Shelf Builder writes it from a customer's row
+ * styles (vinyl, books); see `resolveRowGaps` for how the heights are resolved.
  */
 
 /** Ply thickness the 3D render draws every piece at. */
 export const NOMINAL_PLY = 0.5;
 
-/** Closest the moved middle shelf may come to either neighbour, centre to centre. */
+/** Closest two shelves may come, centre to centre. It is what keeps a column's slots from running into each other. */
 export const MIN_SHELF_GAP = 4;
+
+/** Largest row height accepted from outside: far past any shelf, it only keeps nonsense out. */
+export const MAX_ROW_HEIGHT = 200;
 
 export interface ShelfLayoutInput {
   width: number;
@@ -41,6 +52,11 @@ export interface ShelfLayoutInput {
   consoleTop?: boolean;
   /** Inches the middle of THREE shelves sits above centre (negative = below). Ignored at any other shelf count. */
   middleShelfShift?: number;
+  /**
+   * Centre-to-centre height of each row, bottom to top: `shelfCount - 1` entries, 0 = auto.
+   * Ignored unless it is exactly that long. Takes precedence over `middleShelfShift`.
+   */
+  rowHeights?: number[];
 }
 
 export interface ShelfLayoutColumn {
@@ -77,6 +93,46 @@ export function resolveMiddleShelfShift(p: ShelfLayoutInput): number {
   return Number.isFinite(shift) ? Math.max(-limit, Math.min(limit, shift)) : 0;
 }
 
+/**
+ * Row heights from an untrusted source (a saved design, a request body): a clean copy, or
+ * undefined when they are not `shelfCount - 1` heights with at least one of them set.
+ */
+export function normalizeRowHeights(raw: unknown, shelfCount: number): number[] | undefined {
+  if (!Array.isArray(raw) || raw.length < 2 || raw.length !== shelfCount - 1) return undefined;
+  if (!raw.every((g) => typeof g === 'number' && Number.isFinite(g) && g >= 0 && g <= MAX_ROW_HEIGHT)) return undefined;
+  if (raw.every((g) => g === 0)) return undefined;
+  return raw.slice() as number[];
+}
+
+/**
+ * The row heights actually used, bottom to top, or null when `rowHeights` does not apply
+ * (absent, the wrong length, every row auto, or a shelf too short to give each row
+ * `MIN_SHELF_GAP`): the caller then spaces the shelves as it always has.
+ *
+ * Every row is first given `MIN_SHELF_GAP`; only what is left of the span is handed out, so a
+ * row can never be squeezed under the minimum and the heights always sum to the span.
+ *  - Set rows that fit get exactly what they asked for, and the auto rows share the rest.
+ *  - Set rows that ask for more than there is share the room in proportion to their ask (auto
+ *    rows stay at the minimum). The same sharing applies when there is no auto row to take up
+ *    a difference, in either direction.
+ */
+export function resolveRowGaps(p: ShelfLayoutInput): number[] | null {
+  const rows = normalizeRowHeights(p.rowHeights, p.shelfCount);
+  if (!rows) return null;
+  const span = p.height - 2 * (p.shelfOffset ?? 0);
+  const room = span - rows.length * MIN_SHELF_GAP;
+  if (!(room >= 0)) return null;
+  const want = rows.map((g) => Math.max(0, g - MIN_SHELF_GAP));
+  const wanted = want.reduce((a, b) => a + b, 0);
+  const autos = rows.filter((g) => g === 0).length;
+  if (autos > 0 && wanted <= room) {
+    const each = (room - wanted) / autos;
+    return rows.map((g, i) => MIN_SHELF_GAP + (g === 0 ? each : want[i]));
+  }
+  if (wanted <= 0) return null;
+  return want.map((w) => MIN_SHELF_GAP + (w * room) / wanted);
+}
+
 export function shelfLayout(p: ShelfLayoutInput, thickness: number = NOMINAL_PLY): ShelfLayout {
   const { height, shelfCount, shelfOffset = 0, consoleTop = false } = p;
   const startZ = shelfOffset;
@@ -86,8 +142,14 @@ export function shelfLayout(p: ShelfLayoutInput, thickness: number = NOMINAL_PLY
     const t = shelfCount > 1 ? i / (shelfCount - 1) : 0.5;
     shelfZ.push(startZ + t * (endZ - startZ));
   }
-  const shift = resolveMiddleShelfShift(p);
-  if (shift !== 0) shelfZ[1] += shift;
+  // The outer two shelves keep the positions the even loop gave them; only the ones between move
+  const gaps = resolveRowGaps(p);
+  if (gaps) {
+    for (let i = 1; i < shelfCount - 1; i++) shelfZ[i] = shelfZ[i - 1] + gaps[i - 1];
+  } else {
+    const shift = resolveMiddleShelfShift(p);
+    if (shift !== 0) shelfZ[1] += shift;
+  }
   const topIndex = consoleTop && shelfCount > 0 ? shelfCount - 1 : null;
   const xs = columnXPositions(p);
   const columns = xs.map((x, i) => {
@@ -120,13 +182,13 @@ export function slottedShelfZs(layout: ShelfLayout, columnIndex: number): number
   return layout.shelfZ.filter((_, i) => !underTop || i !== layout.topIndex);
 }
 
-/** Centre-to-centre shelf spacing, the design page's "Shelf Height". With a moved middle shelf this is the bottom opening: see `shelfSpacings`. */
+/** Centre-to-centre shelf spacing, the design page's "Shelf Height". With a moved middle shelf or row heights this is the bottom opening: see `shelfSpacings`. */
 export function shelfSpacing(p: ShelfLayoutInput): number {
   const { shelfZ } = shelfLayout(p);
   return shelfZ.length > 1 ? shelfZ[1] - shelfZ[0] : 0;
 }
 
-/** Every opening, centre to centre, bottom to top. All equal unless the middle shelf has been moved. */
+/** Every opening, centre to centre, bottom to top. All equal unless the middle shelf has been moved or the rows carry their own heights. */
 export function shelfSpacings(p: ShelfLayoutInput): number[] {
   const { shelfZ } = shelfLayout(p);
   return shelfZ.slice(1).map((z, i) => z - shelfZ[i]);
