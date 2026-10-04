@@ -10,6 +10,9 @@ import { preloadAllTextures } from '@/components/shelf/RenderedShelfView/useWood
 import { preloadAllEdgeTextures } from '@/components/shelf/RenderedShelfView/useEdgeMaterial';
 import { consoleSurfaceHeight, shelfSpacing, NOMINAL_PLY } from '@/lib/warped/shelfLayout';
 import { shelfFitLine } from '@/lib/warped/shelfFit';
+import { PRESET_PRODUCT_HANDLES, designKey } from '@/lib/warped/catalogDesigns';
+import { shopifyApi } from '@/lib/shopify';
+import { formatPrice } from '@/lib/formatPrice';
 import { flatSvgPreview } from '@/lib/warped/flatSvgPreview';
 import {
   useShelfWasm,
@@ -478,6 +481,29 @@ export default function DesignerPage() {
 
   useEffect(() => { loadDesigns(); }, [loadDesigns]);
 
+  // A product page's "Customize this design" arrives as ?design=<preset>: open on that design
+  useEffect(() => {
+    const key = new URLSearchParams(window.location.search).get('design');
+    const preset = key ? PRESET_DESIGNS.find((d) => designKey(d.id) === key) : undefined;
+    if (!preset) return;
+    setP(paramsFromSaved(preset.shelfType, preset.variant, preset.params));
+    setRotation(startRotation(preset.shelfType === 'corner'));
+  }, []);
+
+  // Presets that are catalog products carry that product's price
+  const [catalogPrices, setCatalogPrices] = useState<Record<string, { amount: string; currencyCode: string }>>({});
+  useEffect(() => {
+    let cancelled = false;
+    shopifyApi.getProductPrices(Object.values(PRESET_PRODUCT_HANDLES)).then((prices) => {
+      if (!cancelled) setCatalogPrices(prices);
+    });
+    return () => { cancelled = true; };
+  }, []);
+  const presetPrice = (preset: PresetDesign): string | null => {
+    const price = catalogPrices[PRESET_PRODUCT_HANDLES[preset.id]];
+    return price ? formatPrice(price.amount, price.currencyCode) : null;
+  };
+
   // Textures load per finish on demand; warm the full set while idle so
   // the finish picker never flashes the untextured fallback.
   useEffect(() => {
@@ -821,13 +847,13 @@ export default function DesignerPage() {
             <button
               key={tab}
               onClick={() => setDesignTab(tab)}
-              className={`px-4 py-1 text-[14px] font-medium capitalize tracking-[0.01em] border transition-colors ${
+              className={`px-4 py-1 text-[14px] font-medium tracking-[0.01em] border transition-colors ${
                 designTab === tab
                   ? 'bg-squarage-green text-white border-squarage-green'
                   : 'bg-cream text-neutral-600 border-neutral-300 hover:border-squarage-green hover:text-squarage-green'
               } ${tab === 'preset' ? 'border-r-0' : ''}`}
             >
-              {tab}
+              {tab === 'preset' ? 'Our Designs' : 'Saved'}
             </button>
           ))}
         </div>
@@ -854,6 +880,10 @@ export default function DesignerPage() {
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white/90 to-transparent px-3 py-1.5">
                     <span className="text-[13px] font-medium text-squarage-black truncate block">{preset.name}</span>
                   </div>
+                  {/* Catalog price — top right, clear of the name and the drawing */}
+                  {presetPrice(preset) && (
+                    <span className="absolute top-1.5 right-2 text-[13px] font-medium text-squarage-black/60 tabular-nums">{presetPrice(preset)}</span>
+                  )}
                 </div>
               ))}
             </div>
@@ -928,12 +958,12 @@ export default function DesignerPage() {
               >
                 {showSaveInput ? 'Cancel' : 'Save'}
               </button>
-              {/* Load Design button — mobile only */}
+              {/* Designs button — mobile only: our designs and the saved ones */}
               <button
                 onClick={() => setShowDesignsPanel(true)}
                 className="md:hidden px-3 py-1 text-[13px] font-medium tracking-[0.01em] text-squarage-black border border-neutral-300 bg-cream hover:border-squarage-green hover:text-squarage-green transition-colors font-neue-haas"
               >
-                Load
+                Designs
               </button>
 
               {showSaveInput && (
@@ -1108,11 +1138,11 @@ export default function DesignerPage() {
         </div>
 
         {/* ============================================================= */}
-        {/* RIGHT COLUMN — SAVED DESIGNS (hidden on mobile) */}
+        {/* RIGHT COLUMN — DESIGNS TO START FROM: ours and the customer's saved ones (hidden on mobile) */}
         {/* ============================================================= */}
         <div className={"hidden md:flex md:order-3 border-l border-squarage-black flex-col min-h-0"}>
           <div className="px-7 pt-6 pb-4 shrink-0">
-            <SectionLabel>Saved Designs</SectionLabel>
+            <SectionLabel>Start From</SectionLabel>
           </div>
           <div className="px-7 flex flex-col flex-1 min-h-0 gap-4">
             {renderDesignsGrid()}
@@ -1201,7 +1231,7 @@ export default function DesignerPage() {
             }}
           >
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
-              <SectionLabel>Saved Designs</SectionLabel>
+              <SectionLabel>Start From</SectionLabel>
               <button
                 onClick={closeDesignsPanel}
                 className="w-8 h-8 flex items-center justify-center text-neutral-600 hover:text-squarage-black text-[20px]"

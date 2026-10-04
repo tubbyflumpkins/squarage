@@ -362,6 +362,61 @@ export const shopifyApi = {
     }
   },
 
+  // Lowest variant price per product handle, in one small request (the shelf designer
+  // prices its catalog presets with it). A handle Shopify does not know is left out.
+  async getProductPrices(handles: string[]): Promise<Record<string, { amount: string; currencyCode: string }>> {
+    try {
+      if (!isShopifyConfigured() || handles.length === 0) {
+        return {}
+      }
+
+      const domain = process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN
+      const token = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN as string
+
+      // One aliased lookup per handle: p0: productByHandle(handle: $h0) { … }
+      const query = `
+        query getProductPrices(${handles.map((_, i) => `$h${i}: String!`).join(', ')}) {
+          ${handles.map((_, i) => `p${i}: productByHandle(handle: $h${i}) {
+            handle
+            priceRange { minVariantPrice { amount currencyCode } }
+          }`).join('\n')}
+        }
+      `
+      const variables = Object.fromEntries(handles.map((handle, i) => [`h${i}`, handle]))
+
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10_000)
+      const response = await fetch(`https://${domain}/api/${SHOPIFY_API_VERSION}/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': token,
+        },
+        body: JSON.stringify({ query, variables }),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId))
+
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
+      }
+
+      const { data, errors } = await response.json()
+      if (errors) {
+        console.error('GraphQL errors:', JSON.stringify(errors, null, 2))
+        throw new Error('GraphQL query failed')
+      }
+
+      const prices: Record<string, { amount: string; currencyCode: string }> = {}
+      for (const product of Object.values(data ?? {}) as any[]) {
+        if (product?.handle) prices[product.handle] = product.priceRange.minVariantPrice
+      }
+      return prices
+    } catch (error) {
+      console.error('Error fetching product prices:', error)
+      return {}
+    }
+  },
+
   // Create checkout
   async createCheckout() {
     try {
