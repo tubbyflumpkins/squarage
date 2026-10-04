@@ -6,7 +6,6 @@ import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer
 import type { ShelfVariant } from '@/stores/useSavedDesigns';
 import { computeAmplitude, computeColumnAngle, computeColumnOffset, computeShelfOffset } from '@/lib/warped/derivedParams';
 import { consoleSurfaceHeight, shelfSpacing, NOMINAL_PLY } from '@/lib/warped/shelfLayout';
-import { shelfFitLine } from '@/lib/warped/shelfFit';
 import { SHELF_STYLES, autoShelfCount, isShelfStyle, minHeightForStyle, type ShelfStyle } from '@/lib/warped/shelfStyles';
 
 export type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
@@ -31,11 +30,27 @@ export interface Design {
   style: ShelfStyle | null;
 }
 
-/** The page opens on this: the Short Standard. */
-export const DEFAULT_DESIGN: Design = {
-  shape: 'standard', width: 45, height: 24, depth: 10, length: 36,
-  shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: null,
+/**
+ * Where each shape starts, with what it is for: a tall standard shelf of large books, a record
+ * console, a low corner shelf of small books. The shelf counts are the ones their styles give.
+ */
+const SHAPE_DEFAULTS: Record<ShelfVariant, Design> = {
+  standard: {
+    shape: 'standard', width: 74, height: 75, depth: 12, length: 36,
+    shelfCount: 6, columnCount: 6, roundLeft: false, roundRight: false, style: 'largeBooks',
+  },
+  console: {
+    shape: 'console', width: 48, height: 32, depth: 14, length: 36,
+    shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: 'vinyl',
+  },
+  corner: {
+    shape: 'corner', width: 45, height: 24, depth: 10, length: 36,
+    shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: 'smallBooks',
+  },
 };
+
+/** The page opens on this. */
+export const DEFAULT_DESIGN: Design = SHAPE_DEFAULTS.standard;
 
 /** What a style had to change to fit, for the customer to be told. Sizes in inches. */
 export interface StyleNote { height?: number; depth?: number }
@@ -60,9 +75,6 @@ function applyStyle(d: Design, picked: boolean): { design: Design; note: StyleNo
   const shelfCount = autoShelfCount(d.style, height, offsetAt(height));
   return { design: { ...d, height, depth, shelfCount }, note: note.height || note.depth ? note : null };
 }
-
-/** The console has its own proportions, so picking it swaps whole defaults (as in labs). */
-const CONSOLE_DESIGN: Design = { ...DEFAULT_DESIGN, shape: 'console', width: 48, height: 26, depth: 14 };
 
 export interface Range { min: number; max: number }
 
@@ -116,7 +128,8 @@ export const cameraFor = (shape: ShelfVariant) =>
     : { initialRotationDeg: 350, minAngleDeg: -85, maxAngleDeg: -10 };
 
 export function useDesign() {
-  const [design, setDesign] = useState<Design>(DEFAULT_DESIGN);
+  // Through the style, so the opening count is the style's even if its range is retuned in labs
+  const [design, setDesign] = useState<Design>(() => applyStyle(fitToRanges(DEFAULT_DESIGN), false).design);
   const [styleNote, setStyleNote] = useState<StyleNote | null>(null);
   const [finish, setFinish] = useState<WoodFinish>('Oak');
   const [unit, setUnit] = useState<DimUnit>('in');
@@ -141,12 +154,8 @@ export function useDesign() {
   }, [commit]);
 
   const setShape = useCallback((shape: ShelfVariant) => {
-    const prev = current.current;
-    if (shape === prev.shape) return;
-    // The console has its own proportions; the style carries across every switch
-    if (shape === 'console') commit({ ...CONSOLE_DESIGN, style: prev.style }, true);
-    else if (prev.shape === 'console') commit({ ...DEFAULT_DESIGN, shape, style: prev.style }, true);
-    else commit({ ...prev, shape });
+    // Each shape has its own proportions and its own use, so picking one loads its start
+    if (shape !== current.current.shape) commit(SHAPE_DEFAULTS[shape]);
   }, [commit]);
 
   const load = useCallback((next: Design) => commit(next), [commit]);
@@ -179,12 +188,11 @@ export function useDesign() {
   }, [design]);
 
   const inCm = unit === 'cm';
-  const fitLine = shelfFitLine(derived.opening, design.depth, inCm);
   /** A length as the customer reads it, in their unit. */
   const fmtLen = useCallback(
     (inches: number) => (inCm ? `${Math.round(inches * 2.54)} cm` : `${+inches.toFixed(1)}"`),
     [inCm],
   );
 
-  return { design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fitLine, fmtLen, ...derived };
+  return { design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen, ...derived };
 }
