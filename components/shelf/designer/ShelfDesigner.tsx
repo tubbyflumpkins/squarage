@@ -2,18 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import { useSavedDesigns, type SavedDesign, type ShelfVariant } from '@/stores/useSavedDesigns';
-import { PRESET_DESIGNS, type PresetDesign } from '@/data/presetDesigns';
+import { PRESET_DESIGNS } from '@/data/presetDesigns';
 import { preloadAllTextures } from '@/components/shelf/RenderedShelfView/useWoodMaterial';
 import { preloadAllEdgeTextures } from '@/components/shelf/RenderedShelfView/useEdgeMaterial';
+import type { ResizableDimension } from '@/components/shelf/RenderedShelfView/DimensionOverlay';
 import { useShelfWasm, computeDerivedParams } from '@/lib/shelfGeometryWasm';
 import { useBoomerangRotation } from '@/hooks/useBoomerangRotation';
-import { PRESET_PRODUCT_HANDLES, designKey } from '@/lib/warped/catalogDesigns';
-import { shopifyApi } from '@/lib/shopify';
-import { formatPrice } from '@/lib/formatPrice';
+import { designKey } from '@/lib/warped/catalogDesigns';
 import { cameraFor, designFromSaved, rangesFor, useDesign, type DimUnit, type WoodFinish } from './useDesign';
-import { CountField, DimensionField, GroupHeading, Segmented } from './controls';
+import { CountField, DimensionField, Panel, Segmented, TogglePill, focusRing } from './controls';
 import { designSvgPreview } from './svgPreview';
 
 const RenderedShelfView = dynamic(() => import('@/components/shelf/RenderedShelfView'), {
@@ -41,40 +39,42 @@ const UNITS: readonly { value: DimUnit; label: string }[] = [
   { value: 'cm', label: 'cm' },
 ];
 
-const DESIGN_TABS: readonly { value: 'preset' | 'saved'; label: string }[] = [
-  { value: 'preset', label: 'Our designs' },
-  { value: 'saved', label: 'Saved' },
-];
-
+// The wood pills of the Warped collection page: the finish's own grain as the button
 const WOOD_FINISHES: { name: WoodFinish; texture: string }[] = [
-  { name: 'Walnut', texture: '/textures/swatches/walnut.webp' },
-  { name: 'Oak', texture: '/textures/swatches/oak.webp' },
-  { name: 'Birch', texture: '/textures/swatches/birch.webp' },
+  { name: 'Walnut', texture: '/textures/walnut.webp' },
+  { name: 'Oak', texture: '/textures/oak.webp' },
+  { name: 'Birch', texture: '/textures/birch.webp' },
 ];
 
-const focusRing = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-squarage-black';
-const viewerButton = `border-2 px-3 py-1.5 font-neue-haas text-[13px] font-medium transition-colors duration-200 md:text-sm ${focusRing}`;
+type PanelId = 'shape' | 'size' | 'layout' | 'finish' | 'saved';
+
+const viewerPill = `rounded-full border px-4 py-1.5 font-neue-haas text-[13px] font-medium backdrop-blur-sm transition-colors duration-200 md:text-sm ${focusRing}`;
 
 export default function ShelfDesigner() {
   const {
-    design, set, setShape, load, finish, setFinish, unit, setUnit, fitLine, fmtLen,
+    design, set, setShape, load, finish, setFinish, unit, setUnit, inCm, fitLine, fmtLen,
     isCorner, isConsole, amplitude, shelfOffset, columnOffset, columnAngle,
     flatParams, cornerParams, opening, surfaceHeight,
   } = useDesign();
   const ranges = rangesFor(design.shape);
 
+  // The cards on the right open one at a time
+  const [openPanel, setOpenPanel] = useState<PanelId | null>('size');
+  const toggle = (id: PanelId) => setOpenPanel((current) => (current === id ? null : id));
+
   const [showDimensions, setShowDimensions] = useState(true);
   const [showQuoteFlow, setShowQuoteFlow] = useState(false);
   const [showSaveInput, setShowSaveInput] = useState(false);
   const [saveName, setSaveName] = useState('');
-  const [designTab, setDesignTab] = useState<'preset' | 'saved'>('preset');
-  const [moreOpen, setMoreOpen] = useState(false);
 
-  // The idle sweep, drag to turn. Each shape opens at its own angle.
-  const { rotation, handlers, reset } = useBoomerangRotation(cameraFor(design.shape));
+  // The idle sweep, drag to turn. Each shape opens at its own angle, and the sweep holds still
+  // while a measurement's dot is being dragged so the dot stays under the pointer.
+  const [resizing, setResizing] = useState(false);
+  const { rotation, handlers, reset } = useBoomerangRotation({ ...cameraFor(design.shape), paused: resizing });
   useEffect(() => { reset(cameraFor(design.shape).initialRotationDeg); }, [design.shape, reset]);
+  const resize = useCallback((dimension: ResizableDimension, inches: number) => set(dimension, inches), [set]);
 
-  const { designs, loadDesign, saveDesign, deleteDesign, loadDesigns, resetToNew } = useSavedDesigns();
+  const { designs, loadDesign, saveDesign, deleteDesign, loadDesigns } = useSavedDesigns();
   useEffect(() => { loadDesigns(); }, [loadDesigns]);
 
   // A product page's "Customize this design" arrives as ?design=<preset>: open on that design
@@ -95,20 +95,6 @@ export default function ShelfDesigner() {
     const t = setTimeout(warm, 2000);
     return () => clearTimeout(t);
   }, []);
-
-  // Presets that are catalog products carry that product's price
-  const [catalogPrices, setCatalogPrices] = useState<Record<string, { amount: string; currencyCode: string }>>({});
-  useEffect(() => {
-    let cancelled = false;
-    shopifyApi.getProductPrices(Object.values(PRESET_PRODUCT_HANDLES)).then((prices) => {
-      if (!cancelled) setCatalogPrices(prices);
-    });
-    return () => { cancelled = true; };
-  }, []);
-  const presetPrice = (preset: PresetDesign): string | null => {
-    const price = catalogPrices[PRESET_PRODUCT_HANDLES[preset.id]];
-    return price ? formatPrice(price.amount, price.currencyCode) : null;
-  };
 
   // The studio's rough estimate, sent with a quote request and never shown. WASM's formula.
   const wasmReady = useShelfWasm();
@@ -140,7 +126,7 @@ export default function ShelfDesigner() {
     saveDesign(name, isCorner ? 'corner' : 'flat', params, getSvgPreview(), design.shape);
     setSaveName('');
     setShowSaveInput(false);
-    setDesignTab('saved');
+    setOpenPanel('saved');
   };
 
   const handleLoadSaved = (saved: SavedDesign) => {
@@ -148,23 +134,22 @@ export default function ShelfDesigner() {
     if (loaded) load(designFromSaved(saved.shelfType, loaded.variant, loaded.params));
   };
 
-  const handleLoadPreset = (preset: PresetDesign) => {
-    load(designFromSaved(preset.shelfType, preset.variant, preset.params));
-    resetToNew();
-  };
-
-  const designCard = 'group relative h-28 w-28 shrink-0 border-2 border-gray-300 bg-white/40 transition-colors duration-200 hover:border-squarage-black';
-  const designCardButton = `absolute inset-0 text-left ${focusRing}`;
+  // What each closed card says about its contents
+  const shownSizes = (isCorner ? [design.width, design.length, design.height] : [design.width, design.height, design.depth])
+    .map((v) => (inCm ? Math.round(v * 2.54) : +v.toFixed(2)));
+  const sizeSummary = `${shownSizes.join(' × ')} ${unit}`;
+  const layoutSummary = `${design.shelfCount} shelves, ${design.columnCount} columns`;
 
   return (
     <div className="bg-cream md:pt-[90px] lg:pt-[98px]">
       {/* A phone has no header bar, only the floating logo and menu button. This strip holds
           their band so the page scrolls away beneath it and never shows above the pinned model. */}
       <div className="sticky top-0 z-20 h-[60px] bg-cream md:hidden" aria-hidden="true" />
-      <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_460px]">
 
-        {/* Viewer: pinned while the controls scroll */}
-        <div className="sticky top-[60px] z-20 h-[42dvh] border-y-2 border-squarage-black bg-cream md:top-[90px] lg:top-[98px] lg:h-[calc(100dvh-98px)] lg:border-b-0 lg:border-r-2">
+      <div className="lg:relative lg:h-[calc(100dvh-98px)] lg:min-h-[640px]">
+
+        {/* The model: pinned above the cards on a phone, filling the screen beside them on desktop */}
+        <div className="sticky top-[60px] z-20 h-[44dvh] bg-cream md:top-[90px] lg:absolute lg:inset-y-0 lg:left-0 lg:right-[420px] lg:h-auto">
           <div className="relative h-full w-full" style={{ viewTransitionName: 'shelf-viewer' } as React.CSSProperties}>
             <div className="absolute inset-x-0 bottom-0 top-12 cursor-grab touch-none active:cursor-grabbing md:top-20" {...handlers}>
               <RenderedShelfView
@@ -179,12 +164,14 @@ export default function ShelfDesigner() {
                 depth={design.depth}
                 length={design.length}
                 dimensionUnit={showDimensions ? unit : undefined}
-                cameraPadding={showDimensions ? (isCorner ? 0.56 : 0.5) : undefined}
+                onDimensionResize={resize}
+                onDimensionResizeActive={setResizing}
+                cameraPadding={showDimensions ? (isCorner ? 0.58 : 0.54) : undefined}
               />
             </div>
 
             {/* Title: sits on the render, as on the /custom page */}
-            <h1 className="pointer-events-none absolute left-3 top-3 z-10 flex select-none flex-wrap items-center gap-x-2 font-neue-haas text-xl font-bold leading-tight text-squarage-black md:left-6 md:top-5 md:gap-x-3 md:text-3xl lg:text-4xl">
+            <h1 className="pointer-events-none absolute left-4 top-3 z-10 flex select-none flex-wrap items-center gap-x-2 font-neue-haas text-xl font-bold leading-tight text-squarage-black md:left-6 md:top-5 md:gap-x-3 md:text-3xl lg:text-4xl">
               <span
                 className="inline-block text-white"
                 style={{ backgroundColor: '#4A9B4E', borderRadius: '45% 55% 70% 30% / 60% 40% 60% 40%', padding: '0.35em 0.5em 0.4em' }}
@@ -194,15 +181,15 @@ export default function ShelfDesigner() {
               <span>Shelf Designer</span>
             </h1>
 
-            <div className="absolute bottom-2 right-3 z-10 flex gap-2 md:bottom-auto md:right-5 md:top-5">
+            <div className="absolute bottom-3 right-4 z-10 flex gap-2 md:bottom-auto md:right-6 md:top-6">
               <button
                 type="button"
                 aria-pressed={showDimensions}
                 onClick={() => setShowDimensions((v) => !v)}
-                className={`${viewerButton} ${
+                className={`${viewerPill} ${
                   showDimensions
                     ? 'border-squarage-green bg-squarage-green text-white'
-                    : 'border-squarage-black bg-cream text-squarage-black hover:text-squarage-green'
+                    : 'border-gray-300 bg-white/80 text-squarage-black hover:border-gray-400'
                 }`}
               >
                 Dimensions
@@ -210,14 +197,14 @@ export default function ShelfDesigner() {
               <button
                 type="button"
                 onClick={() => setShowSaveInput((v) => !v)}
-                className={`${viewerButton} border-squarage-black bg-cream text-squarage-black hover:text-squarage-green`}
+                className={`${viewerPill} border-gray-300 bg-white/80 text-squarage-black hover:border-gray-400`}
               >
                 {showSaveInput ? 'Cancel' : 'Save'}
               </button>
               {showSaveInput && (
                 <form
                   onSubmit={(e) => { e.preventDefault(); handleSave(); }}
-                  className="absolute bottom-full right-0 mb-2 flex w-[calc(100vw-24px)] max-w-[340px] gap-3 border-2 border-squarage-black bg-cream p-3 md:bottom-auto md:top-full md:mb-0 md:mt-2"
+                  className="absolute bottom-full right-0 mb-2 flex w-[calc(100vw-32px)] max-w-[340px] gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-[0_10px_30px_rgba(51,51,51,0.12)] md:bottom-auto md:top-full md:mb-0 md:mt-2"
                 >
                   <input
                     type="text"
@@ -226,12 +213,12 @@ export default function ShelfDesigner() {
                     placeholder="Name this design"
                     aria-label="Design name"
                     autoFocus
-                    className="min-w-0 flex-1 border-0 border-b-2 border-squarage-black bg-transparent px-1 py-1.5 font-neue-haas text-base font-medium text-squarage-black outline-none placeholder:text-neutral-400 focus:border-squarage-green"
+                    className="min-w-0 flex-1 rounded-full border border-gray-300 bg-white px-4 py-2 font-neue-haas text-base text-squarage-black outline-none placeholder:text-neutral-400 focus:border-squarage-green focus:ring-2 focus:ring-squarage-green/20"
                   />
                   <button
                     type="submit"
                     disabled={!saveName.trim()}
-                    className={`shrink-0 bg-squarage-green px-4 py-1.5 font-neue-haas text-sm font-bold text-white transition-colors duration-200 hover:bg-squarage-yellow disabled:bg-gray-400 ${focusRing}`}
+                    className={`shrink-0 rounded-full bg-squarage-green px-4 py-2 font-neue-haas text-sm font-bold text-white transition-colors duration-200 hover:bg-squarage-yellow disabled:bg-gray-300 ${focusRing}`}
                   >
                     Save design
                   </button>
@@ -239,65 +226,36 @@ export default function ShelfDesigner() {
               )}
             </div>
 
-            <span className="pointer-events-none absolute bottom-3 left-3 select-none font-neue-haas text-[12px] font-medium text-squarage-black/50 md:bottom-5 md:left-6 md:text-sm">
-              <span className="hidden md:inline">Drag to rotate</span>
-              <span className="md:hidden">Swipe to rotate</span>
+            <span className="pointer-events-none absolute bottom-4 left-4 select-none font-neue-haas text-[12px] text-squarage-black/45 md:bottom-5 md:left-6 md:text-sm">
+              <span className="hidden md:inline">{showDimensions ? 'Drag to rotate. Drag a dot to resize.' : 'Drag to rotate.'}</span>
+              <span className="md:hidden">{showDimensions ? 'Swipe to rotate. Drag a dot to resize.' : 'Swipe to rotate.'}</span>
             </span>
           </div>
         </div>
 
-        {/* Controls */}
-        <div>
-          {/* The rule under the header stays put while the controls scroll beneath it */}
-          <div className="sticky top-[98px] z-10 hidden h-0 border-t-2 border-squarage-black lg:block" aria-hidden="true" />
-          <div className="space-y-9 px-6 pb-10 pt-6 lg:px-10 lg:pt-8">
+        {/* The cards: beneath the model on a phone, floating at the right on desktop */}
+        <div className="lg:absolute lg:bottom-5 lg:right-6 lg:top-5 lg:flex lg:w-[380px] lg:flex-col">
+          <div className="space-y-3 px-4 pb-4 pt-4 lg:-mx-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-3 lg:pb-6 lg:pt-1">
 
-            <section>
-              <GroupHeading aside={<Segmented compact label="Designs to start from" options={DESIGN_TABS} value={designTab} onChange={setDesignTab} />}>
-                Start from
-              </GroupHeading>
-              {designTab === 'saved' && designs.length === 0 ? (
-                <p className="font-neue-haas text-base text-gray-600">Nothing saved yet. Use Save on the model to keep a design in this browser.</p>
-              ) : (
-                <div className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 lg:-mx-10 lg:px-10">
-                  {designTab === 'preset'
-                    ? PRESET_DESIGNS.map((preset) => (
-                        <div key={preset.id} className={designCard}>
-                          <div className="h-full w-full p-2 pb-6" dangerouslySetInnerHTML={{ __html: preset.svgPreview }} />
-                          <span className="absolute inset-x-0 bottom-0 truncate px-2 pb-1 font-neue-haas text-[13px] font-medium text-squarage-black">{preset.name}</span>
-                          {presetPrice(preset) && (
-                            <span className="absolute right-1.5 top-1 font-neue-haas text-[13px] font-medium tabular-nums text-squarage-black/60">{presetPrice(preset)}</span>
-                          )}
-                          <button type="button" aria-label={`Start from ${preset.name}`} onClick={() => handleLoadPreset(preset)} className={designCardButton} />
-                        </div>
-                      ))
-                    : designs.map((saved) => (
-                        <div key={saved.id} className={designCard}>
-                          {saved.svgPreview && <div className="h-full w-full p-2 pb-6" dangerouslySetInnerHTML={{ __html: saved.svgPreview }} />}
-                          <span className="absolute inset-x-0 bottom-0 truncate px-2 pb-1 font-neue-haas text-[13px] font-medium text-squarage-black">{saved.name}</span>
-                          <button type="button" aria-label={`Open ${saved.name}`} onClick={() => handleLoadSaved(saved)} className={designCardButton} />
-                          <button
-                            type="button"
-                            aria-label={`Delete ${saved.name}`}
-                            onClick={() => deleteDesign(saved.id)}
-                            className={`absolute right-0 top-0 flex h-7 w-7 items-center justify-center font-neue-haas text-base text-squarage-black transition-colors duration-200 hover:bg-squarage-black hover:text-white ${focusRing}`}
-                          >
-                            &times;
-                          </button>
-                        </div>
-                      ))}
+            <Panel title="Shape" value={SHAPES.find((s) => s.value === design.shape)?.label ?? ''} open={openPanel === 'shape'} onToggle={() => toggle('shape')}>
+              <Segmented label="Shape" options={SHAPES} value={design.shape} onChange={setShape} />
+              {!isCorner && (
+                <div className="mt-5">
+                  <p className="font-neue-haas text-base font-medium text-squarage-black">Rounded ends</p>
+                  <p className="mb-3 font-neue-haas text-sm text-gray-500">A rounded end curves back to the wall.</p>
+                  <div className="flex gap-2">
+                    <TogglePill pressed={design.roundLeft} onChange={(v) => set('roundLeft', v)}>Left</TogglePill>
+                    <TogglePill pressed={design.roundRight} onChange={(v) => set('roundRight', v)}>Right</TogglePill>
+                  </div>
                 </div>
               )}
-            </section>
+            </Panel>
 
-            <section>
-              <GroupHeading>1. Shape</GroupHeading>
-              <Segmented label="Shape" options={SHAPES} value={design.shape} onChange={setShape} />
-            </section>
-
-            <section>
-              <GroupHeading aside={<Segmented compact label="Units" options={UNITS} value={unit} onChange={setUnit} />}>2. Size</GroupHeading>
-              <div className="space-y-4">
+            <Panel title="Size" value={sizeSummary} open={openPanel === 'size'} onToggle={() => toggle('size')}>
+              <div className="mb-3 flex justify-end">
+                <Segmented compact label="Units" options={UNITS} value={unit} onChange={setUnit} />
+              </div>
+              <div className="space-y-3">
                 <DimensionField label="Width" value={design.width} range={ranges.width} unit={unit} onChange={(v) => set('width', v)} />
                 {isCorner && (
                   <DimensionField label="Length" value={design.length} range={ranges.length} unit={unit} onChange={(v) => set('length', v)} />
@@ -305,102 +263,89 @@ export default function ShelfDesigner() {
                 <DimensionField label="Height" value={design.height} range={ranges.height} unit={unit} onChange={(v) => set('height', v)} />
                 <DimensionField label="Depth" value={design.depth} range={ranges.depth} unit={unit} onChange={(v) => set('depth', v)} />
               </div>
-            </section>
+            </Panel>
 
-            <section>
-              <GroupHeading>3. Layout</GroupHeading>
-              <div className="space-y-4">
+            <Panel title="Layout" value={layoutSummary} open={openPanel === 'layout'} onToggle={() => toggle('layout')}>
+              <div className="space-y-3">
                 <CountField label="Shelves" value={design.shelfCount} range={ranges.shelfCount} onChange={(v) => set('shelfCount', v)} />
                 <CountField label="Columns" value={design.columnCount} range={ranges.columnCount} onChange={(v) => set('columnCount', v)} />
               </div>
               {surfaceHeight !== null && (
-                <p className="mt-4 border-l-2 border-squarage-green pl-3 font-neue-haas text-base text-squarage-black">
-                  The top surface sits at <span className="font-medium tabular-nums">{fmtLen(surfaceHeight)}</span>.
+                <p className="mt-4 font-neue-haas text-sm text-gray-500">
+                  The top surface sits at <span className="font-medium tabular-nums text-squarage-black">{fmtLen(surfaceHeight)}</span>.
                 </p>
               )}
-            </section>
+            </Panel>
 
-            <section>
-              <GroupHeading aside={<span className="font-neue-haas text-base text-gray-600">{finish}</span>}>4. Finish</GroupHeading>
-              <div className="grid grid-cols-3 gap-2 md:gap-3">
-                {WOOD_FINISHES.map((f) => (
-                  <button
-                    key={f.name}
-                    type="button"
-                    aria-pressed={finish === f.name}
-                    onClick={() => setFinish(f.name)}
-                    className={`border-2 px-3 py-3 font-neue-haas text-sm font-medium transition-all md:px-4 md:text-base ${focusRing} ${
-                      finish === f.name ? 'border-squarage-green bg-green-50' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="h-5 w-5 shrink-0 border border-gray-300 bg-cover bg-center" style={{ backgroundImage: `url(${f.texture})` }} />
-                      <span>{f.name}</span>
-                    </span>
-                  </button>
-                ))}
+            <Panel title="Finish" value={finish} open={openPanel === 'finish'} onToggle={() => toggle('finish')}>
+              <div className="grid grid-cols-3 gap-2 py-1">
+                {WOOD_FINISHES.map((f) => {
+                  const selected = finish === f.name;
+                  return (
+                    <button
+                      key={f.name}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setFinish(f.name)}
+                      className={`relative overflow-hidden rounded-full border-2 bg-center py-2.5 font-neue-haas text-base font-medium transition-all duration-300 ${focusRing} ${
+                        selected ? 'scale-105 border-squarage-green shadow-md' : 'border-transparent shadow-sm hover:scale-105 hover:shadow-md'
+                      }`}
+                      style={{ backgroundImage: `url(${f.texture})`, backgroundSize: '400%' }}
+                    >
+                      <span className={`relative z-10 font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${selected ? 'text-[#a8d5a2]' : 'text-white'}`}>
+                        {f.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            </section>
+            </Panel>
 
-            {!isCorner && (
-              <section className="border-y border-squarage-black">
-                <button
-                  type="button"
-                  aria-expanded={moreOpen}
-                  onClick={() => setMoreOpen((v) => !v)}
-                  className={`flex w-full items-center justify-between py-4 text-left ${focusRing}`}
-                >
-                  <span className="font-neue-haas text-lg font-medium text-squarage-black">More options</span>
-                  {moreOpen ? <MinusIcon className="h-5 w-5 text-squarage-black" /> : <PlusIcon className="h-5 w-5 text-squarage-black" />}
-                </button>
-                {moreOpen && (
-                  <div className="pb-5">
-                    <p className="mb-3 font-neue-haas text-base text-squarage-black">
-                      Rounded ends. A rounded end curves back to the wall.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 md:gap-3">
-                      {([['roundLeft', 'Left end'], ['roundRight', 'Right end']] as const).map(([key, label]) => (
-                        <button
-                          key={key}
-                          type="button"
-                          aria-pressed={design[key]}
-                          onClick={() => set(key, !design[key])}
-                          className={`border-2 px-3 py-3 font-neue-haas text-sm font-medium transition-all md:text-base ${focusRing} ${
-                            design[key] ? 'border-squarage-green bg-green-50' : 'border-gray-300 hover:border-gray-400'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
+            {designs.length > 0 && (
+              <Panel title="Saved" value={designs.length === 1 ? '1 design' : `${designs.length} designs`} open={openPanel === 'saved'} onToggle={() => toggle('saved')}>
+                <div className="grid grid-cols-3 gap-2">
+                  {designs.map((saved) => (
+                    <div key={saved.id} className="relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors duration-200 hover:border-gray-400">
+                      {saved.svgPreview && <div className="h-full w-full p-2 pb-6" dangerouslySetInnerHTML={{ __html: saved.svgPreview }} />}
+                      <span className="absolute inset-x-0 bottom-0 truncate px-2 pb-1.5 font-neue-haas text-[12px] font-medium text-squarage-black">{saved.name}</span>
+                      <button type="button" aria-label={`Open ${saved.name}`} onClick={() => handleLoadSaved(saved)} className={`absolute inset-0 rounded-xl ${focusRing}`} />
+                      <button
+                        type="button"
+                        aria-label={`Delete ${saved.name}`}
+                        onClick={() => deleteDesign(saved.id)}
+                        className={`absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full font-neue-haas text-base leading-none text-gray-500 transition-colors duration-200 hover:bg-squarage-black hover:text-white ${focusRing}`}
+                      >
+                        &times;
+                      </button>
                     </div>
-                  </div>
-                )}
-              </section>
+                  ))}
+                </div>
+              </Panel>
             )}
           </div>
 
-          {/* The action. Fixed to the screen on a phone, pinned to the foot of the column on desktop. */}
+          {/* The action. A bar fixed to the screen on a phone, the foot of the cards on desktop. */}
           <div
-            className={`fixed inset-x-0 bottom-0 z-40 border-t-2 border-squarage-black bg-cream px-4 pt-3 transition-opacity duration-300 lg:sticky lg:inset-x-auto lg:px-10 lg:pt-5 ${
+            className={`fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-cream/95 px-4 pt-3 backdrop-blur-sm transition-opacity duration-300 lg:static lg:shrink-0 lg:border-0 lg:bg-transparent lg:px-0 lg:pt-3 lg:backdrop-blur-none ${
               showQuoteFlow ? 'pointer-events-none opacity-0' : 'opacity-100'
             }`}
             style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
           >
-            <p className="mb-2 text-center font-neue-haas text-[13px] font-medium text-squarage-black/70 lg:mb-3 lg:text-left lg:text-base">
+            <p className="mb-2 text-center font-neue-haas text-[13px] text-squarage-black/60 lg:mb-3 lg:text-sm">
               <span className="tabular-nums">{fmtLen(opening)}</span> openings. {fitLine}
             </p>
             <button
               type="button"
               onClick={() => setShowQuoteFlow(true)}
-              className={`w-full bg-squarage-orange py-3 font-neue-haas text-xl font-bold text-white transition-all duration-300 hover:scale-105 hover:bg-squarage-yellow lg:py-4 lg:text-2xl ${focusRing}`}
+              className={`w-full rounded-full bg-squarage-orange py-3 font-neue-haas text-xl font-bold text-white shadow-sm transition-all duration-300 hover:scale-[1.02] hover:bg-squarage-yellow hover:shadow-md lg:py-3.5 lg:text-2xl ${focusRing}`}
             >
               Get Quote
             </button>
-            <p className="mt-3 hidden text-center font-neue-haas text-xs text-gray-500 lg:block lg:pb-2">
+            <p className="mt-2 hidden text-center font-neue-haas text-xs text-gray-500 lg:block">
               Made to order in Los Angeles. Quotes are free.
             </p>
           </div>
-          {/* Room for the fixed bar on a phone, so the last control can scroll clear of it */}
+          {/* Room for the fixed bar on a phone, so the last card can scroll clear of it */}
           <div className="h-32 lg:hidden" aria-hidden="true" />
         </div>
       </div>
