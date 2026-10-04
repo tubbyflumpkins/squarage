@@ -393,7 +393,7 @@ interface DesignParams {
 }
 
 const DEFAULTS: DesignParams = {
-  isCorner: true,
+  isCorner: false,
   isConsole: false,
   width: 45,
   height: 24,
@@ -418,6 +418,9 @@ const rangesFor = (p: DesignParams) => ({
 
 const variantOf = (p: DesignParams): ShelfVariant => (p.isCorner ? 'corner' : p.isConsole ? 'console' : 'standard');
 
+/** Where the sweep starts: each shape opens at its own best angle. */
+const startRotation = (isCorner: boolean) => (isCorner ? 15 : 350) * Math.PI / 180;
+
 /** A saved design or preset → params. Designs saved before the console existed carry no variant. */
 function paramsFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVariant | undefined, lp: Record<string, number | boolean>): DesignParams {
   return {
@@ -438,7 +441,7 @@ export default function DesignerPage() {
   const [p, setP] = useState<DesignParams>(DEFAULTS);
   const [finish, setFinish] = useState<WoodFinish>('Oak');
   const [viewMode, setViewMode] = useState<'wireframe' | 'rendered'>('rendered');
-  const [rotation, setRotation] = useState(15 * Math.PI / 180);
+  const [rotation, setRotation] = useState(startRotation(DEFAULTS.isCorner));
   const velocityRef = useRef(0.0008);
   const targetSpeedRef = useRef(-0.0012);
   const [tilt] = useState(25);
@@ -985,7 +988,7 @@ export default function DesignerPage() {
                       if (type === 'console') setP(CONSOLE_DEFAULTS);
                       else if (p.isConsole) setP({ ...DEFAULTS, isCorner: type === 'corner' });
                       else set('isCorner', type === 'corner');
-                      setRotation(type === 'corner' ? 15 * Math.PI / 180 : 350 * Math.PI / 180);
+                      setRotation(startRotation(type === 'corner'));
                       targetSpeedRef.current = -0.0012;
                       velocityRef.current = 0.0008;
                     }}
