@@ -287,32 +287,3 @@ export function DimensionField({ label, value, range, unit, onChange }: Dimensio
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Count: a whole number with plus and minus
-// ---------------------------------------------------------------------------
-
-interface CountFieldProps {
-  label: string;
-  value: number;
-  range: Range;
-  onChange: (count: number) => void;
-}
-
-export function CountField({ label, value, range, onChange }: CountFieldProps) {
-  const valueRef = useRef(value);
-  valueRef.current = value;
-  const step = (delta: 1 | -1) => onChange(Math.max(range.min, Math.min(range.max, valueRef.current + delta)));
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="font-neue-haas text-base font-medium text-squarage-black">{label}</span>
-      <div className="flex items-center gap-2">
-        <StepButton direction="down" label={`Fewer ${label.toLowerCase()}`} disabled={value <= range.min} onStep={() => step(-1)} />
-        <span aria-live="polite" className="w-[5.75rem] text-center font-neue-haas text-lg font-medium tabular-nums text-squarage-black">
-          {value}
-        </span>
-        <StepButton direction="up" label={`More ${label.toLowerCase()}`} disabled={value >= range.max} onStep={() => step(1)} />
-      </div>
-    </div>
-  );
-}

@@ -6,7 +6,7 @@ import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer
 import type { ShelfVariant } from '@/stores/useSavedDesigns';
 import { computeAmplitude, computeColumnAngle, computeColumnOffset, computeShelfOffset } from '@/lib/warped/derivedParams';
 import { consoleSurfaceHeight, shelfSpacing, NOMINAL_PLY } from '@/lib/warped/shelfLayout';
-import { SHELF_STYLES, autoShelfCount, isShelfStyle, minHeightForStyle, type ShelfStyle } from '@/lib/warped/shelfStyles';
+import { SHELF_STYLES, SHELF_STYLE_IDS, autoShelfCount, evenOpening, isShelfStyle, minHeightForStyle, type ShelfStyle } from '@/lib/warped/shelfStyles';
 import { autoColumnCount } from '@/lib/warped/autoColumns';
 
 export type WoodFinish = 'Walnut' | 'Oak' | 'Birch';
@@ -25,13 +25,15 @@ export interface Design {
   roundLeft: boolean;
   roundRight: boolean;
   /**
-   * What the shelf is for. While one is set the shelf count is not the customer's to choose:
-   * it is worked out from the height (labs' shelfStyles), so the openings suit the contents.
+   * What the shelf is for. It sets the shelf count from the height (labs' shelfStyles), so the
+   * openings suit the contents: the designer has no shelf counter. Null only on a design saved
+   * before styles whose shelves suit none of them; it keeps its count until a style is picked.
    */
   style: ShelfStyle | null;
   /**
-   * The column count follows the shelf's size (labs' autoColumns). Off once the customer sets
-   * a count the size would not give; back on when they hand it back.
+   * The column count follows the shelf's size (labs' autoColumns): the designer has no column
+   * counter either. Off only on a saved design whose count its size would not give, until it
+   * is resized.
    */
   autoColumns: boolean;
 }
@@ -137,9 +139,21 @@ export function designFromSaved(shelfType: 'flat' | 'corner', variant: ShelfVari
     style: isShelfStyle(lp.shelfStyle) ? lp.shelfStyle : null,
     autoColumns: false,
   });
-  // Its columns are never moved by opening it. It is on automatic columns if they already
-  // are the count its size gives; any other count was chosen, and stays.
-  return { ...design, autoColumns: design.columnCount === columnsFor(design) };
+  // Opening a design never changes it. One saved before styles takes a style that would leave
+  // its height and shelves exactly as they are, so it then resizes like any other: the style
+  // its openings are in range for, or failing that the first that keeps them.
+  const keeps = SHELF_STYLE_IDS.filter((id) => {
+    const held = applyStyle({ ...design, style: id }, false).design;
+    return held.height === design.height && held.shelfCount === design.shelfCount;
+  });
+  const opening = evenOpening(design.height, computeShelfOffset(design.shape, design.height), design.shelfCount);
+  const style = design.style
+    ?? keeps.find((id) => opening >= SHELF_STYLES[id].min && opening <= SHELF_STYLES[id].max)
+    ?? keeps[0]
+    ?? null;
+  // Its columns follow its size if they already are the count the size gives. Any other count
+  // stays until the shelf is resized.
+  return { ...design, style, autoColumns: design.columnCount === columnsFor(design) };
 }
 
 /** Camera sweep per shape: where it opens and the two angles it turns between, so the back never shows. */
@@ -168,21 +182,14 @@ export function useDesign() {
   }, []);
 
   const set = useCallback(<K extends keyof Design>(key: K, value: Design[K]) => {
-    commit({ ...current.current, [key]: value });
+    // Resizing a shelf re-fits its columns, whatever count it was saved with
+    const resized = key === 'width' || key === 'length';
+    commit({ ...current.current, [key]: value, ...(resized ? { autoColumns: true } : {}) });
   }, [commit]);
 
-  const setStyle = useCallback((style: ShelfStyle | null) => {
+  const setStyle = useCallback((style: ShelfStyle) => {
     commit({ ...current.current, style }, true);
   }, [commit]);
-
-  // A count set by hand holds while the shelf is resized. Stepping back to the count the size
-  // gives is the same as handing it back.
-  const setColumnCount = useCallback((columnCount: number) => {
-    const next = fitToRanges({ ...current.current, columnCount, autoColumns: false });
-    commit({ ...next, autoColumns: next.columnCount === columnsFor(next) });
-  }, [commit]);
-
-  const resetColumns = useCallback(() => commit({ ...current.current, autoColumns: true }), [commit]);
 
   const setShape = useCallback((shape: ShelfVariant) => {
     // Each shape has its own proportions and its own use, so picking one loads its start
@@ -225,5 +232,5 @@ export function useDesign() {
     [inCm],
   );
 
-  return { design, set, setShape, setStyle, setColumnCount, resetColumns, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen, ...derived };
+  return { design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen, ...derived };
 }

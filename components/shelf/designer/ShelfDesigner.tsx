@@ -12,7 +12,7 @@ import { useBoomerangRotation } from '@/hooks/useBoomerangRotation';
 import { designKey } from '@/lib/warped/catalogDesigns';
 import { SHELF_STYLES, SHELF_STYLE_IDS } from '@/lib/warped/shelfStyles';
 import { cameraFor, designFromSaved, rangesFor, useDesign, type DimUnit, type WoodFinish } from './useDesign';
-import { CountField, DimensionField, Panel, Segmented, TogglePill, focusRing } from './controls';
+import { DimensionField, Panel, Segmented, TogglePill, focusRing } from './controls';
 import { designSvgPreview } from './svgPreview';
 
 const RenderedShelfView = dynamic(() => import('@/components/shelf/RenderedShelfView'), {
@@ -47,20 +47,20 @@ const WOOD_FINISHES: { name: WoodFinish; texture: string }[] = [
   { name: 'Birch', texture: '/textures/birch.webp' },
 ];
 
-type PanelId = 'shape' | 'style' | 'size' | 'layout' | 'finish' | 'saved';
+type PanelId = 'shape' | 'layout' | 'size' | 'finish' | 'saved';
 
 const viewerPill = `rounded-full border px-4 py-1.5 font-neue-haas text-[13px] font-medium backdrop-blur-sm transition-colors duration-200 md:text-sm ${focusRing}`;
 
 export default function ShelfDesigner() {
   const {
-    design, set, setShape, setStyle, setColumnCount, resetColumns, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen,
+    design, set, setShape, setStyle, styleNote, load, finish, setFinish, unit, setUnit, inCm, fmtLen,
     isCorner, isConsole, amplitude, shelfOffset, columnOffset, columnAngle,
     flatParams, cornerParams, opening, surfaceHeight,
   } = useDesign();
   const ranges = rangesFor(design.shape);
 
   // The cards on the right open one at a time
-  const [openPanel, setOpenPanel] = useState<PanelId | null>('style');
+  const [openPanel, setOpenPanel] = useState<PanelId | null>('layout');
   const toggle = (id: PanelId) => setOpenPanel((current) => (current === id ? null : id));
 
   const [showDimensions, setShowDimensions] = useState(true);
@@ -142,7 +142,6 @@ export default function ShelfDesigner() {
   const shownSizes = (isCorner ? [design.width, design.length, design.height] : [design.width, design.height, design.depth])
     .map((v) => (inCm ? Math.round(v * 2.54) : +v.toFixed(2)));
   const sizeSummary = `${shownSizes.join(' × ')} ${unit}`;
-  const layoutSummary = `${design.shelfCount} shelves, ${design.columnCount} columns`;
   const style = design.style ? SHELF_STYLES[design.style] : null;
   // A length range in the customer's unit: "13 to 14.5 in", "33 to 37 cm"
   const fmtRange = (min: number, max: number) =>
@@ -260,11 +259,12 @@ export default function ShelfDesigner() {
               )}
             </Panel>
 
-            <Panel title="Style" value={style ? style.label : 'None'} open={openPanel === 'style'} onToggle={() => toggle('style')}>
+            {/* What the shelf is for. It sets the shelf count from the height; the width sets the columns. Neither count has a control. */}
+            <Panel title="Layout" value={style ? style.label : 'Not set'} open={openPanel === 'layout'} onToggle={() => toggle('layout')}>
               <p className="mb-3 font-neue-haas text-sm text-gray-500">Pick what goes on it. The shelves space themselves to suit.</p>
               <div className="flex flex-wrap gap-2">
                 {SHELF_STYLE_IDS.map((id) => (
-                  <TogglePill key={id} pressed={design.style === id} onChange={(on) => setStyle(on ? id : null)}>
+                  <TogglePill key={id} pressed={design.style === id} onChange={() => setStyle(id)}>
                     {SHELF_STYLES[id].label}
                   </TogglePill>
                 ))}
@@ -295,36 +295,6 @@ export default function ShelfDesigner() {
                 )}
                 <DimensionField label="Height" value={design.height} range={ranges.height} unit={unit} onChange={(v) => set('height', v)} />
                 <DimensionField label="Depth" value={design.depth} range={ranges.depth} unit={unit} onChange={(v) => set('depth', v)} />
-              </div>
-            </Panel>
-
-            <Panel title="Layout" value={layoutSummary} open={openPanel === 'layout'} onToggle={() => toggle('layout')}>
-              <div className="space-y-3">
-                {style ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-neue-haas text-base font-medium text-squarage-black">Shelves</span>
-                    <span className="font-neue-haas text-base text-gray-500">
-                      <span className="font-medium tabular-nums text-squarage-black">{design.shelfCount}</span>, set by the style
-                    </span>
-                  </div>
-                ) : (
-                  <CountField label="Shelves" value={design.shelfCount} range={ranges.shelfCount} onChange={(v) => set('shelfCount', v)} />
-                )}
-                {/* The count follows the size until it is set here; then this is the way back */}
-                <div>
-                  <CountField label="Columns" value={design.columnCount} range={ranges.columnCount} onChange={setColumnCount} />
-                  {!design.autoColumns && (
-                    <div className="mt-1 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={resetColumns}
-                        className={`rounded-full px-2 py-1 font-neue-haas text-sm text-squarage-green underline-offset-2 hover:underline ${focusRing}`}
-                      >
-                        Set automatically
-                      </button>
-                    </div>
-                  )}
-                </div>
               </div>
               {surfaceHeight !== null && (
                 <p className="mt-4 font-neue-haas text-sm text-gray-500">
