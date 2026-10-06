@@ -63,6 +63,34 @@ export async function sendStudioMail({
   })
 }
 
+interface SendCustomerMailInput {
+  to: string
+  subject: string
+  text: string
+  html: string
+  fromName?: string
+}
+
+// Sends to someone else (a customer's confirmation) from the authenticated Zoho account,
+// with the studio's address as replyTo so an answer lands in the studio inbox.
+export async function sendCustomerMail({
+  to,
+  subject,
+  text,
+  html,
+  fromName = 'Squarage Studio',
+}: SendCustomerMailInput) {
+  const transporter = getTransporter()
+  return transporter.sendMail({
+    from: `"${fromName}" <${process.env.SMTP_USER}>`,
+    to,
+    replyTo: process.env.CONTACT_EMAIL || process.env.SMTP_USER,
+    subject,
+    text,
+    html,
+  })
+}
+
 // Escape user-supplied text before embedding it into an HTML email body.
 export function escapeHtml(input: string): string {
   return input
