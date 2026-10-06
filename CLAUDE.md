@@ -32,6 +32,7 @@
 - **Shelf geometry is synced from labs by file copy** (`~/code/labs`, which cuts the parts): `components/shelf/ShelfVisualizer/geometry.ts` + `types.ts` verbatim, `RenderedShelfView/slotGeometry.ts` with import paths rewritten, `lib/warped/shelfLayout.ts` minus labs' production helpers, and `lib/warped/shelfStyles.ts` + `lib/warped/autoColumns.ts` verbatim (the rules that set shelf and column counts, so both sites agree). Never edit those by hand; never overwrite the meshes, materials, `BoomerangCamera` or `buildExtrudedGeometry` from labs. Around a sync run `npx tsx scripts/verifyShelfGeometry.ts write|check <baseline>` and `npx tsx scripts/verifyConsoleGeometry.ts`
 - **`/custom/[token]` is private by obscurity**: noindex, its own canonical, and deliberately NOT in `app/sitemap.ts` (an exception to the rule above, with `/collections/warped/designer/classic`, the old designer kept to compare). Its data comes from labs; never recompute a shared design's amplitude or offsets here
 - **The shelf designer has no shelf or column counter**: the Layout (small books, large books, vinyl) sets the shelf count from the height and the width sets the columns, by labs' rules. Do not give customers count controls; labs has the overrides
+- **A quote request sends two emails** (`app/api/quote/route.ts`, built in `lib/quoteEmails.ts`, pure, checked by `npx tsx scripts/verifyQuoteEmails.ts`): the studio's receipt, whose **Load into Squarage Labs** button links to labs' `/design?import=<design>` (the saved-design object as url-safe base64 of compact JSON; labs' `src/lib/designImport.ts` decodes it, keep the two agreeing), and the customer's confirmation, sent best-effort after the studio's copy. The confirmation carries only the design's name, type, size and finish: never the labs link, the design data or the free-text message, because the form is public and echoing typed text to a typed-in address would make the site a relay for anyone
 - **Copy style** (per Dylan): short sentences, no em dashes in customer-facing copy
 
 ## Design System
@@ -49,11 +50,11 @@
 | `NEXT_PUBLIC_ADMIN_API_URL` | Admin API URL |
 | `NEXT_PUBLIC_EMAIL_API_KEY` | Email service API key |
 | `SMTP_USER` / `SMTP_PASS` | Zoho SMTP credentials |
-| `CONTACT_EMAIL` | Recipient for contact/quote forms |
+| `CONTACT_EMAIL` | Recipient for contact/quote forms; the reply-to on the customer's quote confirmation |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Meta Pixel / dataset ID |
 | `META_CONVERSIONS_API_ACCESS_TOKEN` | Meta CAPI token (server-side events) |
 | `META_TEST_EVENT_CODE` | Optional — routes CAPI to Test Events; unset in production |
-| `LABS_API_URL` | Server only. Origin of labs (e.g. `https://labs.squarage.com`): `/custom/[token]` reads shared designs from it. Set it for Preview too, pointing at labs production |
+| `LABS_API_URL` | Server only. Origin of labs (e.g. `https://labs.squarage.com`): `/custom/[token]` reads shared designs from it, and the quote email's "Load into Squarage Labs" button links into it. Set it for Preview too, pointing at labs production |
 
 ## Development Commands
 

@@ -5,6 +5,14 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-10-06 — Quote emails: a button into labs, and a confirmation for the customer
+
+Dylan on the quote email: "I get an email with a really long string. It's just kind of frustrating … I would love to receive an email that just has a button at the bottom that says load into Squarage Labs." He had also assumed the customer got a "thanks, we'll be in touch" email; nobody did. Both fixed in one pass.
+
+- **The studio's receipt** keeps the specs, the customer and their message, and swaps the JSON block for a green **Load into Squarage Labs** button. Its link is labs' `/design?import=<design>`: the designer's saved-design object (the shape labs' Import button already reads) as url-safe base64 of compact JSON, built on `LABS_API_URL`. Labs decodes it, loads the design into its editor unsaved and opens the save box under the design's name; its sign-in now carries the link through (`callbackUrl`). Without `LABS_API_URL` the raw design data is kept, so nothing is lost.
+- **The customer's confirmation**: same Zoho account, the studio as reply-to, sent best-effort after the studio's copy so the request succeeds on that alone. It greets by first name and gives the design's name, type, size and finish, and that the studio will be in touch. It never carries the labs link, the design data or the free-text message: the form is public, and echoing typed text to a typed-in address would make the site a relay for anyone.
+- Both emails are built in `lib/quoteEmails.ts`, pure, checked by `scripts/verifyQuoteEmails.ts` (50 checks). The quote sheet and the classic designer's quote flow both post through the same route.
+
 ## 2026-10-04 — Shelf designer redesigned
 
 The larger redesign from the review, built with Dylan giving notes live over one day. The old page is kept at `/collections/warped/designer/classic` (noindex, unlinked; tag `designer-v1`).

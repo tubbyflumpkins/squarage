@@ -29,7 +29,7 @@ description: Full project structure for the Squarage site — routes, components
 | Route | Method | Description |
 |-------|--------|-------------|
 | `/api/contact` | POST | Contact form via Zoho SMTP |
-| `/api/quote` | POST | Quote request via Zoho SMTP |
+| `/api/quote` | POST | Quote request via Zoho SMTP: the studio's receipt (with the Load into Squarage Labs button) and, best effort, the customer's confirmation |
 | `/api/meta-events` | POST | Relay for browser-initiated Meta CAPI events |
 
 ## Project Structure
@@ -92,7 +92,8 @@ components/
 
 lib/
   shopify.ts                  # Buy SDK client + raw GraphQL; SHOPIFY_API_VERSION constant
-  email.ts                    # Zoho SMTP transport (pooled, timeouts), escaping, rate limiting
+  email.ts                    # Zoho SMTP transport (pooled, timeouts), escaping, rate limiting; sendStudioMail / sendCustomerMail
+  quoteEmails.ts              # Pure: the studio's quote receipt (specs, customer, Load into Squarage Labs button) and the customer's confirmation; labsImportUrl encodes the design for labs' /design?import=
   productTypes.ts             # SerializedProduct shape shared by serializer + templates
   formatPrice.ts              # Whole-dollar price formatter
   useStickyCartVisibility.ts  # Sticky add-to-cart scroll hook
