@@ -2,13 +2,12 @@
 
 import { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
-import { trackMetaEvent } from '@/lib/metaPixel'
 import { useBoomerangRotation } from '@/hooks/useBoomerangRotation'
-import { formatMoney, SHARED_PRODUCT_NAMES, SHARED_VARIANT_LABELS, type SharedDesign, type SharedOption } from '@/lib/sharedDesign'
+import { formatMoney, SHARED_PRODUCT_NAMES, SHARED_VARIANT_LABELS, type SharedShelfLink, type SharedShelfOption } from '@/lib/sharedDesign'
 import { shelfSpacings } from '@/lib/warped/shelfLayout'
 import type { ShelfParams } from '@/components/shelf/ShelfVisualizer/types'
 import type { CornerShelfParams } from '@/components/shelf/CornerShelfVisualizer/types'
+import { Divider, MobilePayBar, PayAction, SectionLabel, SpecRow, usePayNow, ViewerCaption } from './sharedViewParts'
 
 const RenderedShelfView = dynamic(
   () => import('@/components/shelf/RenderedShelfView'),
@@ -24,31 +23,12 @@ const RenderedShelfView = dynamic(
   },
 )
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="text-[24px] font-semibold tracking-[0.01em] text-squarage-black select-none">
-      {children}
-    </h3>
-  )
-}
-
-function SpecRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-4 text-[16px] font-medium tracking-[0.01em] text-squarage-black">
-      <span>{label}</span>
-      <span className="tabular-nums text-right">{value}</span>
-    </div>
-  )
-}
-
-const Divider = () => <div className="h-[1.5px] bg-squarage-black shrink-0" />
-
 /**
  * The shelf itself, drag to rotate. Keyed by option where it is used, so picking another
  * option starts that design from its own opening angle (a corner and a flat shelf face
  * different ways) instead of inheriting the last one's rotation.
  */
-function ShelfViewer({ option, unit }: { option: SharedOption; unit: 'in' | 'cm' }) {
+function ShelfViewer({ option, unit }: { option: SharedShelfOption; unit: 'in' | 'cm' }) {
   const { design, camera } = option
   const { rotation, handlers } = useBoomerangRotation(camera)
 
@@ -93,6 +73,7 @@ function ShelfViewer({ option, unit }: { option: SharedOption; unit: 'in' | 'cm'
         // The measurements, drawn on the shelf in the unit the Dimensions box is set to
         dimensionUnit={unit}
         cameraPadding={0.5}
+        floor
       />
     </div>
   )
@@ -106,15 +87,14 @@ function ShelfViewer({ option, unit }: { option: SharedOption; unit: 'in' | 'cm'
  * viewer (labs' wireframe on each), the shelf, the numbers, the title and the price follow the
  * one picked, the notes are shared, and the pay box says which option it is for. The design,
  * prices and notes come from labs (lib/sharedDesign.ts); Place Order opens the Shopify checkout
- * labs created for that option.
+ * labs created for that option. An invoice link renders SharedInvoiceView instead.
  */
-export default function SharedDesignView({ share, initialOption }: { share: SharedDesign; initialOption?: number }) {
+export default function SharedDesignView({ share, initialOption }: { share: SharedShelfLink; initialOption?: number }) {
   const { options } = share
   const [selectedNumber, setSelectedNumber] = useState(
     options.some((o) => o.optionNumber === initialOption) ? (initialOption as number) : options[0].optionNumber,
   )
   const [dimUnit, setDimUnit] = useState<'in' | 'cm'>('in')
-  const [leaving, setLeaving] = useState(false)
 
   const option = options.find((o) => o.optionNumber === selectedNumber) ?? options[0]
   const hasOptions = options.length > 1
@@ -122,6 +102,7 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
   const { design, price, shipping } = option
   const isCorner = design.variant === 'corner'
   const p = design.params
+  const { leaving, payNow } = usePayNow(option.checkoutUrl, price)
 
   // Keep the pick in the URL, so a refresh (or the link forwarded to a partner) opens on it
   const selectOption = (n: number) => {
@@ -140,18 +121,6 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
   const evenGaps = gaps.every((g) => Math.abs(g - gaps[0]) < 1e-9)
   const shelfHeight = gaps.length > 0 ? gaps[0] : null
   const shelfWidth = !isCorner && p.columnCount > 1 ? (p.width - 2 * p.columnOffset) / (p.columnCount - 1) : null
-
-  const payNow = () => {
-    if (!option.checkoutUrl || leaving) return
-    setLeaving(true)
-    trackMetaEvent('InitiateCheckout', {
-      value: price.amountCents / 100,
-      currency: price.currency,
-      num_items: 1,
-      content_type: 'product',
-    })
-    window.location.href = option.checkoutUrl
-  }
 
   // One <h1> per page: the desktop bar's. The mobile copy is a <p> styled the same.
   const titleBlock = (Heading: 'h1' | 'p') => (
@@ -182,30 +151,18 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
     </div>
   )
 
-  const payButtonClass = 'w-full bg-squarage-orange text-white font-bold font-neue-haas hover:bg-squarage-yellow hover:scale-105 transition-all duration-300 disabled:opacity-70 disabled:hover:scale-100'
-  const action = (size: 'desktop' | 'mobile') => {
-    if (share.status === 'paid') {
-      return (
-        <div className={size === 'desktop' ? 'mt-5' : ''}>
-          <p className="text-[20px] md:text-2xl font-bold text-squarage-green">Paid. Thank you.</p>
-          <p className="hidden md:block mt-1 text-[15px] text-squarage-black/70">We have your order. We will be in touch about delivery.</p>
-        </div>
-      )
-    }
-    if (!option.checkoutUrl) {
-      return (
-        <p className={`text-[15px] leading-snug text-squarage-black/80 ${size === 'desktop' ? 'mt-5' : ''}`}>
-          Checkout is not ready yet. <Link href="/contact" className="underline text-squarage-green">Get in touch</Link> and we will sort it out.
-        </p>
-      )
-    }
-    const mobileLabel = hasOptions ? `Place Order · ${optionLabel} · ${formatMoney(price.amountCents)}` : `Place Order · ${formatMoney(price.amountCents)}`
-    return (
-      <button onClick={payNow} disabled={leaving} className={`${payButtonClass} ${size === 'desktop' ? 'mt-5 py-4 text-2xl' : 'py-3 text-xl'}`}>
-        {leaving ? 'Opening checkout...' : size === 'desktop' ? 'Place Order' : mobileLabel}
-      </button>
-    )
-  }
+  const action = (size: 'desktop' | 'mobile') => (
+    <PayAction
+      paid={share.status === 'paid'}
+      checkoutUrl={option.checkoutUrl}
+      leaving={leaving}
+      onPay={payNow}
+      label="Place Order"
+      mobileLabel={hasOptions ? `Place Order · ${optionLabel} · ${formatMoney(price.amountCents)}` : `Place Order · ${formatMoney(price.amountCents)}`}
+      size={size}
+      paidNote="We have your order. We will be in touch about delivery."
+    />
+  )
 
   return (
     <div className="h-[100dvh] flex flex-col bg-cream overflow-hidden pt-[60px] md:pt-[90px] lg:pt-[98px]">
@@ -251,10 +208,7 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
 
             <ShelfViewer key={option.optionNumber} option={option} unit={dimUnit} />
 
-            <span className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 text-[12px] md:text-[14px] font-medium tracking-[0.01em] text-squarage-black/50 select-none pointer-events-none">
-              <span className="hidden md:inline">Drag to rotate</span>
-              <span className="md:hidden">Swipe to rotate</span>
-            </span>
+            <ViewerCaption />
           </div>
         </div>
 
@@ -382,13 +336,7 @@ export default function SharedDesignView({ share, initialOption }: { share: Shar
         </div>
       </div>
 
-      {/* MOBILE: sticky bottom bar */}
-      <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-squarage-black bg-cream px-4 pt-3 flex items-center justify-center"
-        style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
-      >
-        {action('mobile')}
-      </div>
+      <MobilePayBar>{action('mobile')}</MobilePayBar>
     </div>
   )
 }

@@ -2,11 +2,13 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import SharedDesignView from '@/components/shelf/SharedDesignView'
+import SharedInvoiceView from '@/components/shelf/SharedInvoiceView'
+import { classifyShare } from '@/lib/sharedDesign'
 import { fetchSharedDesign } from '@/lib/sharedDesignServer'
 
-// A custom design prepared for one customer, reached only by the link Dylan sends them.
-// Deliberately NOT in app/sitemap.ts, and noindex: the token in the URL is the only thing
-// keeping the page private. Always rendered per request, since the price, notes and paid
+// A custom design, or an invoice, prepared for one customer and reached only by the link Dylan
+// sends them. Deliberately NOT in app/sitemap.ts, and noindex: the token in the URL is the only
+// thing keeping the page private. Always rendered per request, since the price, notes and paid
 // status change under the same link.
 export const dynamic = 'force-dynamic'
 
@@ -21,9 +23,13 @@ interface SharedDesignPageProps {
 
 export async function generateMetadata({ params }: SharedDesignPageProps): Promise<Metadata> {
   const { token } = await params
-  // No customer name and no design details: link previews in chat apps show this
-  const title = 'Your Custom Design'
-  const description = 'A custom Warped shelf, designed for you by Squarage Studio.'
+  const result = await getShare(token)
+  const invoice = result.status === 'ok' && classifyShare(result.share).kind === 'invoice'
+  // No customer name and no details: link previews in chat apps show this
+  const title = invoice ? 'Your Order' : 'Your Custom Design'
+  const description = invoice
+    ? 'An order prepared for you by Squarage Studio.'
+    : 'A custom Warped shelf, designed for you by Squarage Studio.'
   return {
     title,
     description,
@@ -57,5 +63,7 @@ export default async function SharedDesignPage({ params, searchParams }: SharedD
     )
   }
 
-  return <SharedDesignView share={result.share} initialOption={initialOption} />
+  const share = classifyShare(result.share)
+  if (share.kind === 'invoice') return <SharedInvoiceView share={share.share} option={share.option} />
+  return <SharedDesignView share={share.share} initialOption={initialOption} />
 }

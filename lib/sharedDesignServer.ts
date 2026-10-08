@@ -3,7 +3,7 @@
 // secret: 128 random bits, checked here before any request is made.
 
 import { z } from 'zod'
-import type { SharedDesign } from '@/lib/sharedDesign'
+import { shareKindIsConsistent, type SharedDesign } from '@/lib/sharedDesign'
 
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{22}$/
 const TIMEOUT_MS = 8000
@@ -36,13 +36,26 @@ const cornerParams = z.object({
   columnAngle: z.number().min(0).max(90), wallAlign: z.number().min(0).max(1),
 })
 
+const cents = z.number().int().min(0).max(100_000_000)
+
+// An invoice: a short list of lines, and the sheet the viewer draws
+const lineItem = z.object({
+  description: z.string().min(1).max(255),
+  quantity: z.number().int().min(1).max(999),
+  unitCents: cents,
+})
+const sheet = z.object({
+  widthIn: inches, lengthIn: inches,
+  thicknessIn: z.number().min(0.1).max(4),
+  count: z.number().int().min(1).max(100),
+}).nullable()
+
 const design = z.discriminatedUnion('variant', [
   z.object({ collection: z.literal('warped'), finish, variant: z.literal('standard'), params: flatParams }),
   z.object({ collection: z.literal('warped'), finish, variant: z.literal('console'), params: flatParams, surfaceHeight: z.number().min(0).max(200).nullable() }),
   z.object({ collection: z.literal('warped'), finish, variant: z.literal('corner'), params: cornerParams }),
+  z.object({ collection: z.literal('materials'), variant: z.literal('materials'), title: z.string().min(1).max(120), items: z.array(lineItem).min(1).max(20), sheet }),
 ])
-
-const cents = z.number().int().min(0).max(100_000_000)
 
 const optionFields = {
   status: z.enum(['open', 'paid']),
@@ -50,6 +63,7 @@ const optionFields = {
   shipping: z.discriminatedUnion('mode', [
     z.object({ mode: z.literal('calculated') }),
     z.object({ mode: z.literal('fixed'), amountCents: cents }),
+    z.object({ mode: z.literal('none') }),
   ]),
   // Only ever a Shopify checkout: never follow a link to anywhere else
   checkoutUrl: z.url({ protocol: /^https$/ }).nullable(),
@@ -105,6 +119,19 @@ export type SharedDesignResult =
   /** Labs is unreachable or answered with something unexpected: the page asks the customer to try again. */
   | { status: 'unavailable' }
 
+/**
+ * Labs' JSON to a share, or the reason it is unusable. Pure, so scripts/verifySharedContract.ts
+ * can exercise the contract without a network.
+ */
+export function parseSharedPayload(json: unknown): { status: 'ok'; share: SharedDesign } | { status: 'unavailable'; reason: string } {
+  const parsed = sharedDesignSchema.safeParse(json)
+  if (!parsed.success) return { status: 'unavailable', reason: parsed.error.issues.slice(0, 3).map((i) => `${i.path.join('.')}: ${i.message}`).join('; ') }
+  const share = normalise(parsed.data)
+  // An invoice is a single materials option; a shelf link's options all ship or are delivered for a price
+  if (!shareKindIsConsistent(share)) return { status: 'unavailable', reason: 'a link mixes an invoice with shelf options' }
+  return { status: 'ok', share }
+}
+
 export async function fetchSharedDesign(token: string): Promise<SharedDesignResult> {
   if (!TOKEN_PATTERN.test(token)) return { status: 'not_found' }
   const base = process.env.LABS_API_URL?.replace(/\/+$/, '')
@@ -122,12 +149,12 @@ export async function fetchSharedDesign(token: string): Promise<SharedDesignResu
       console.error(`Shared design fetch failed: ${res.status}`)
       return { status: 'unavailable' }
     }
-    const parsed = sharedDesignSchema.safeParse(await res.json())
-    if (!parsed.success) {
-      console.error('Shared design payload did not match the contract:', parsed.error.issues.slice(0, 3))
+    const parsed = parseSharedPayload(await res.json())
+    if (parsed.status !== 'ok') {
+      console.error('Shared design payload did not match the contract:', parsed.reason)
       return { status: 'unavailable' }
     }
-    return { status: 'ok', share: normalise(parsed.data) }
+    return parsed
   } catch (error) {
     console.error('Shared design fetch threw:', error)
     return { status: 'unavailable' }
