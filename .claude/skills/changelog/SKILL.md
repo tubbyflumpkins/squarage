@@ -5,6 +5,17 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-10-07 — Invoice links: a customer share for materials, with Pay Now
+
+Dylan bought ten sheets of 12mm 4×8 Baltic Birch from Royal Plywood for the International School of Los Angeles (Sales Order 3283665: 10 × $63.36, a $45 handling charge, the supplier's 2% card fee of $13.56, $692.16 with no tax to Squarage) and needed to invoice the school with a pay link, at cost, with sales tax added. Rather than a new system, an **invoice** became the second kind of customer link on `/custom/[token]`, built with labs in the same pass (its changelog has that half).
+
+- **The contract** (`lib/sharedDesign.ts`, still version 2): a link is a shelf link (one or more shelf options) or an invoice (one option whose design is `collection: 'materials'`: a title, the lines as description / quantity / unitCents, and the sheet to draw), with a `none` shipping mode when nothing ships. `parseSharedPayload` (`lib/sharedDesignServer.ts`, pure) refuses a link mixing the two, so `classifyShare` narrows once in the page. New `scripts/verifySharedContract.ts` (27 checks: the three link forms and what is refused).
+- **`SharedInvoiceView`**: the Shelf Builder's grid again. Order lines (quantity × unit price and the line's total, cents always) and the Sheet's size on the left; the sheets in the middle; "Baltic Birch Plywood prepared for …" and the notes on the right; Subtotal, Tax "At checkout" and **Pay Now** (the phone's bar reads `Pay Now · $692.16`). Paid and no-checkout states as on a shelf link. Metadata reads "Your Order".
+- **A stack of sheets** (`RenderedSheetView`, `SheetStackMeshes`): the shelf scene (canvas, environment, lights, floor, camera) around `count` slabs built with `buildFlatShelfGeo` and a straight edge, so they get the shelves' Birch faces, ply edges and grain scale; each sheet sits a little off the one below. No measurements. Geometries are disposed on change.
+- **Shared parts** (`sharedViewParts.tsx`): the headings, rows, pay box and mobile bar the two pages share; the shelf page is otherwise as it was, typed on `SharedShelfLink`, and now stands its shelf on the slight floor (the 2026-10-04 floor commit had reached `/custom` and the collection card, not this page). The viewer's offscreen frameloop pause became `useCanvasPause` so both views use it.
+- **Tax is Shopify's**: labs marks every draft line taxable and nothing requires shipping, so the checkout asks for a billing address and applies the rate for it. Nothing here hard-codes a rate.
+- Checked: `tsc`, lint, build, the contract script; in a browser against local labs and the site's dev server, with the real database and Shopify: the invoice created in labs' new dialog, its public JSON, the customer page at 1440 and 390 wide (the stack, the lines, the bar), a shelf link unchanged.
+
 ## 2026-10-06 — Quote emails: a button into labs, and a confirmation for the customer
 
 Dylan on the quote email: "I get an email with a really long string. It's just kind of frustrating … I would love to receive an email that just has a button at the bottom that says load into Squarage Labs." He had also assumed the customer got a "thanks, we'll be in touch" email; nobody did. Both fixed in one pass.

@@ -19,7 +19,7 @@ description: Full project structure for the Squarage site — routes, components
 | `/collections/warped/designer/classic` | The designer as it was before the redesign, kept to compare. noindex, NOT in the sitemap, not linked from anywhere |
 | `/collections/pose` | Posé collection (static poolside hero + blob title, 3 auto-rotating variant chairs) |
 | `/custom` | Custom project request flow |
-| `/custom/[token]` | A custom design Dylan shared with one customer: the designer's grid, read-only, with Place Order (Shopify draft-order checkout). Data from labs. noindex, NOT in the sitemap |
+| `/custom/[token]` | A custom design Dylan shared with one customer: the designer's grid, read-only, with Place Order (Shopify draft-order checkout); or an invoice for materials (the lines, a stack of sheets, Pay Now). Data from labs. noindex, NOT in the sitemap |
 | `/contact` | Contact page |
 | `/customer-service` | Customer service (shipping, returns, FAQ) |
 | `/coming-soon` | Coming soon placeholder |
@@ -83,7 +83,12 @@ components/
                               #   (state + the rules), controls.tsx (Panel, Segmented, DimensionField,
                               #   Dialog), QuoteSheet.tsx (one-page Get Quote), svgPreview.ts
     QuoteFlow.tsx             #   The four-step Get Quote overlay: the classic designer only
-    SharedDesignView.tsx      #   /custom/[token]: the designer's grid with nothing to edit
+    SharedDesignView.tsx      #   /custom/[token], a shelf link: the designer's grid with nothing to edit
+    SharedInvoiceView.tsx     #   /custom/[token], an invoice: the order lines, the sheet stack, Pay Now
+    sharedViewParts.tsx       #   What the two share: headings, rows, the pay box, the mobile bar
+    RenderedShelfView/RenderedSheetView.tsx + SheetStackMeshes.tsx  # the shelf scene around a stack of
+                              #   sheets (buildFlatShelfGeo with straight edges); useCanvasPause.ts is the
+                              #   offscreen frameloop pause both views use
   chair/                      # Posé chair geometry + rendering (parallel to shelf/)
     ChairVisualizer/          # Pure TS: types + generateChairGeometry()
     RenderedChairView/        # R3F Canvas wrapper, ChairMeshes, ChairFloor,
@@ -116,9 +121,11 @@ lib/
   warped/autoColumns.ts       # labs' file verbatim: autoColumnCount(isCorner, width, length)
   warped/shelfFit.ts          # The fit sentence ("Fits books up to 9 in tall."): classic designer only now
   warped/catalogDesigns.ts    # Preset ↔ Shopify product mapping, designerLinkForProduct
-  sharedDesign.ts             # Shared-design contract v1 (mirrors labs' src/lib/shares/types.ts)
-                              #   + formatMoney (keeps cents). Client-safe
-  sharedDesignServer.ts       # Server only: zod schema + fetchSharedDesign(token) from LABS_API_URL
+  sharedDesign.ts             # Shared-design contract v2 (mirrors labs' src/lib/shares/types.ts): shelf
+                              #   options and the invoice (materials) kind; classifyShare; formatMoney
+                              #   (keeps cents). Client-safe
+  sharedDesignServer.ts       # Server only: zod schema, parseSharedPayload (pure, checked by
+                              #   scripts/verifySharedContract.ts) + fetchSharedDesign(token) from LABS_API_URL
   wasm-pkg/                   # Committed WASM build output (no Rust needed on Vercel)
   metaPixel.ts / metaCapi.ts  # Meta Pixel client half / Conversions API server half
   cookieCategories.ts         # Consent categories + CONSENT_STORAGE_KEY/CONSENT_VERSION
@@ -197,6 +204,7 @@ Rebuilt 2026-10-04 (`components/shelf/designer/`). The page before it is frozen 
 - **Moved middle shelf**: `ShelfParams.middleShelfShift` (three shelves only, held `MIN_SHELF_GAP` from either neighbour by `lib/warped/shelfLayout.ts`) moves the middle shelf off centre. Only shared designs set it, from labs; the designer has no control for it and never passes it. `/custom/[token]` reads the two openings with `shelfSpacings` and shows Top / Bottom Shelf Height when they differ.
 - **Geometry sync rule**: labs cuts the parts, so labs' flat geometry is the truth. To re-sync: write a baseline with `scripts/verifyShelfGeometry.ts`, copy the three geometry files listed under `components/shelf/` and `lib/warped/` above (and `lib/warped/shelfStyles.ts` / `autoColumns.ts` verbatim when labs changed them), `check` the baseline (it prints what moved), then run `scripts/verifyConsoleGeometry.ts`. The 2026-09-20 sync moved front edges by up to 0.12" (0.39" near a rounded end: labs' quadratic end ghost points) and nothing else. The WASM thumbnails still use the old ghost points (sub-pixel at tile size).
 - **`/custom/[token]`**: labs (labs.squarage.com) owns the data — Dylan shares a design from its /design page with a customer name, price, optional shipping and notes, and labs creates a Shopify **draft order** (custom line item, discounts off). This site has no database and no Admin token: the server page calls `fetchSharedDesign` (labs' `GET /api/public/shares/[token]`, `cache: 'no-store'`, 8 s timeout, zod-bounded) and renders `SharedDesignView`; `not_found` → `notFound()` (outside any try/catch), `unavailable` → a try-again message. The payload carries **resolved** render params (never recompute amplitude or offsets here: the WASM ranges differ from labs'). A link carries one or more **options** (contract v2: `SharedDesign.options[]`, each with its own design, price, shipping, `checkoutUrl` and labs' `svgPreview`; name, email and notes belong to the link; `fetchSharedDesign` also accepts the old single-design v1 and normalises it). With more than one: option buttons over the viewer's top left (wireframes through `<img>` data URIs, never injected as markup), `ShelfViewer` keyed by option so each opens at its own angle, the numbers / title / price follow the pick, the pay box is headed "Option N selected", and `?option=N` (server `searchParams` → `initialOption`, then `history.replaceState`) keeps the pick. Option numbers are permanent; a paid link arrives with only the bought option. Layout: the viewer alone in the centre; the right column is a title bar (`SHARED_PRODUCT_NAMES[variant]` + "prepared for" + the name, the page's one `<h1>`, the customer's email under it; a `<p>` copy leads the mobile column) over the notes; the left column's Dimensions box runs Width, (Length,) Depth, then Height — or Surface Height + Column Height on a console — then, after a gap, Shelf Height / Shelf Width, labs' centre-to-centre Measurements (no width on a corner). Place Order fires `InitiateCheckout` then goes to the draft order's `invoiceUrl`; a paid share shows "Paid. Thank you." and one without a checkout points to /contact. The page sets its own canonical (the `/custom` layout's would be wrong), is noindex, is deliberately absent from `app/sitemap.ts`, and the email popup is suppressed on it (`EmailCaptureContext`: the welcome code is a discount against a quote).
+- **Invoice links** (2026-10-07): the same route carries a second kind of share, an **invoice** for materials Dylan bought for a customer (the first: ten sheets of Baltic Birch for a school). Labs sends it on the same v2 contract as a link with one option whose design is `{ collection: 'materials', variant: 'materials', title, items[{ description, quantity, unitCents }], sheet | null }` and whose shipping mode is `none` when nothing ships (`fixed` otherwise). `parseSharedPayload` refuses a link mixing an invoice with shelf options, so `classifyShare` narrows once in `page.tsx`: `SharedInvoiceView` for an invoice, `SharedDesignView` (typed on `SharedShelfLink`) for the rest. The invoice page keeps the grid: the Order lines (quantity × unit, line total, cents always) and the Sheet's size on the left, `RenderedSheetView` in the middle (a stack of `sheet.count` sheets built with `buildFlatShelfGeo`'s straight edges, Birch faces and ply edges, on the floor, no measurements), the title bar ("Baltic Birch Plywood prepared for …", the one `<h1>`) and notes on the right, Subtotal / Delivery / Tax "At checkout" and **Pay Now** (the mobile bar `Pay Now · $692.16`). Tax is Shopify's: every draft line is taxable and, with nothing to ship, the checkout asks for a billing address and taxes from it. Metadata reads "Your Order" for an invoice.
 
 ### Meta Pixel + Conversions API
 - `marketing` consent is opt-out (2026-07-27): pixel + CAPI fire by default, client and server; only an explicit banner/preferences rejection blocks them
