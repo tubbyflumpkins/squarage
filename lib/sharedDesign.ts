@@ -151,12 +151,15 @@ export function shareKindIsConsistent(share: SharedDesign): boolean {
 export const lineTotalCents = (item: SharedLineItem): number => item.quantity * item.unitCents
 export const invoiceSubtotalCents = (items: SharedLineItem[]): number => items.reduce((sum, item) => sum + lineTotalCents(item), 0)
 
-/** Cents to "$2,400" or "$2,400.50". lib/formatPrice.ts rounds to whole dollars, and a quote must not. */
-export function formatMoney(amountCents: number): string {
+/**
+ * Cents to "$2,400" or "$2,400.50". lib/formatPrice.ts rounds to whole dollars, and a quote must
+ * not. With `cents` the dollars always carry them ("$45.00"), as a receipt's column does.
+ */
+export function formatMoney(amountCents: number, { cents = false }: { cents?: boolean } = {}): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: amountCents % 100 === 0 ? 0 : 2,
+    minimumFractionDigits: cents || amountCents % 100 !== 0 ? 2 : 0,
     maximumFractionDigits: 2,
   }).format(amountCents / 100)
 }

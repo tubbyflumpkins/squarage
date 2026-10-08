@@ -72,15 +72,16 @@ export default function SharedInvoiceView({ share, option }: { share: SharedDesi
     </p>
   )
 
-  // The lines as on a receipt: what it is, then quantity × unit price and the line's total
+  // The lines as on a receipt: what it is, then quantity × unit price and the line's total, cents always
+  const money = (amountCents: number) => formatMoney(amountCents, { cents: true })
   const orderLines = (
     <div className="flex flex-col gap-4">
       {items.map((item, i) => (
         <div key={i} className="flex flex-col gap-1">
           <p className="text-[16px] font-medium tracking-[0.01em] text-squarage-black break-words">{item.description}</p>
           <div className="flex items-center justify-between gap-4 text-[15px] tracking-[0.01em] text-squarage-black/60 tabular-nums">
-            <span>{item.quantity} × {formatMoney(item.unitCents)}</span>
-            <span className="text-squarage-black">{formatMoney(lineTotalCents(item))}</span>
+            <span>{item.quantity} × {money(item.unitCents)}</span>
+            <span className="text-squarage-black">{money(lineTotalCents(item))}</span>
           </div>
         </div>
       ))}
@@ -89,11 +90,11 @@ export default function SharedInvoiceView({ share, option }: { share: SharedDesi
 
   const priceRows = (
     <div className="flex flex-col gap-2">
-      <SpecRow label="Subtotal" value={formatMoney(subtotal)} />
+      <SpecRow label="Subtotal" value={money(subtotal)} />
       {shipping.mode !== 'none' && (
         <SpecRow
           label="Delivery"
-          value={shipping.mode === 'calculated' ? 'At checkout' : shipping.amountCents === 0 ? 'Free' : formatMoney(shipping.amountCents)}
+          value={shipping.mode === 'calculated' ? 'At checkout' : shipping.amountCents === 0 ? 'Free' : money(shipping.amountCents)}
         />
       )}
       <SpecRow label="Tax" value="At checkout" />
@@ -107,7 +108,7 @@ export default function SharedInvoiceView({ share, option }: { share: SharedDesi
       leaving={leaving}
       onPay={payNow}
       label="Pay Now"
-      mobileLabel={`Pay Now · ${formatMoney(price.amountCents)}`}
+      mobileLabel={`Pay Now · ${money(price.amountCents)}`}
       size={size}
       paidNote="We have your payment. Thank you for your order."
     />
