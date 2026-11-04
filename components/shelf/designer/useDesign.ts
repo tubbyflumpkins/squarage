@@ -53,7 +53,7 @@ const SHAPE_DEFAULTS: Record<ShelfVariant, Design> = {
     shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: 'vinyl', autoColumns: true,
   },
   corner: {
-    shape: 'corner', width: 45, height: 24, depth: 10, length: 36,
+    shape: 'corner', width: 48, height: 24, depth: 10, length: 32,
     shelfCount: 3, columnCount: 4, roundLeft: false, roundRight: false, style: 'smallBooks', autoColumns: true,
   },
 };
