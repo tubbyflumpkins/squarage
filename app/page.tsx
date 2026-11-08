@@ -3,12 +3,6 @@ import HeroStatic from '@/components/HeroStatic'
 import CollectionsSection from '@/components/CollectionsSection'
 import CustomProjectSection from '@/components/CustomProjectSection'
 import AboutSection from '@/components/AboutSection'
-import type { ComponentType } from 'react'
-import HomeA from '@/components/home-variants/a/HomeA'
-import HomeB from '@/components/home-variants/b/HomeB'
-import HomeC from '@/components/home-variants/c/HomeC'
-import HomeD from '@/components/home-variants/d/HomeD'
-import VariantSwitcher from '@/components/home-variants/VariantSwitcher'
 
 export const metadata: Metadata = {
   title: { absolute: 'Squarage Studio — Custom Furniture Made in Los Angeles' },
@@ -19,38 +13,16 @@ export const metadata: Metadata = {
   },
 }
 
-// Temporary: the homepage versions under review, at /?v=a, /?v=b, /?v=c, /?v=d.
-// Plain / is today's page; the switcher shows on every version. Goes when one is picked.
-const VARIANTS: Record<string, ComponentType> = { a: HomeA, b: HomeB, c: HomeC, d: HomeD }
-
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ v?: string | string[] }>
-}) {
-  const { v } = await searchParams
-  const version = typeof v === 'string' ? v.toLowerCase() : undefined
-  const Variant = version ? VARIANTS[version] : undefined
-
-  if (Variant) {
-    return (
-      <main className="min-h-screen bg-cream">
-        <Variant />
-        <VariantSwitcher current={version!} />
-      </main>
-    )
-  }
-
+export default function Home() {
   return (
     <main className="min-h-screen bg-cream">
-      <VariantSwitcher current="current" />
       {/* Hero Static Section */}
       <HeroStatic />
       
       {/* Collections Section */}
       <CollectionsSection />
       
-      {/* Custom Project Section */}
+      {/* Custom Project Section: the shelf designer, then Get in Touch */}
       <CustomProjectSection />
       
       {/* About Section */}
