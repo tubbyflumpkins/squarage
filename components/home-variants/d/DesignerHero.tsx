@@ -4,14 +4,15 @@ import Link from 'next/link'
 import BreathingShelf from '@/components/shelf/BreathingShelf'
 
 /** The top of /custom: "Try Our Warped Shelf Designer", the shelf, Start Designing.
-    The button hovers blue like the rest of the homepage's buttons. */
+    On a phone it shares the yellow of the Want a Custom Piece band above it;
+    on desktop it sits on cream. The button hovers blue like the rest of the page. */
 export default function DesignerHero() {
   return (
     // The bottom padding holds the part of the button that hangs below the viewer
-    <section className="bg-cream px-6 pt-10 md:pt-12 pb-20 md:pb-24">
+    <section className="bg-squarage-yellow md:bg-cream px-6 pt-4 md:pt-12 pb-20 md:pb-24">
       {/* The whole hero is one link: the button below is a styled span */}
       <Link href="/collections/warped/designer" className="group block max-w-7xl mx-auto">
-        <h2 className="relative z-10 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black font-neue-haas text-squarage-black text-center mb-[-0.1em] md:mb-[-0.25em] flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
+        <h2 className="relative z-10 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black font-neue-haas text-white md:text-squarage-black text-center mb-[-0.1em] md:mb-[-0.25em] flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
           <span>Try Our</span>
           <span
             className="inline-block text-white"
