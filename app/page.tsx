@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 }
 
 // Temporary: the homepage versions under review, at /?v=a, /?v=b, /?v=c.
-// /?v=current is today's page with the switcher. Goes when one is picked.
+// Plain / is today's page; the switcher shows on every version. Goes when one is picked.
 const VARIANTS: Record<string, ComponentType> = { a: HomeA, b: HomeB, c: HomeC }
 
 export default async function Home({
@@ -42,7 +42,7 @@ export default async function Home({
 
   return (
     <main className="min-h-screen bg-cream">
-      {version && <VariantSwitcher current="current" />}
+      <VariantSwitcher current="current" />
       {/* Hero Static Section */}
       <HeroStatic />
       
