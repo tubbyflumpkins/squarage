@@ -3,12 +3,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-/** The bottom of /custom ("Need Something More Specific?"): green with a yellow
-    button on a phone, yellow with a green button on desktop,
+/** The bottom of /custom ("Need Something More Specific?") on a yellow band,
     with the homepage's green button. */
 export default function MoreSpecificSection() {
   return (
-    <section className="bg-squarage-green md:bg-squarage-yellow py-10 md:py-20 px-6">
+    <section className="bg-squarage-yellow py-10 md:py-20 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Image */}
@@ -32,7 +31,7 @@ export default function MoreSpecificSection() {
             </p>
             <Link
               href="/contact"
-              className="inline-block bg-squarage-yellow md:bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-yellow md:border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 text-white"
+              className="inline-block bg-squarage-green font-bold font-neue-haas text-lg sm:text-2xl md:text-3xl py-3 px-8 md:py-4 md:px-12 border-2 border-squarage-green hover:bg-squarage-blue hover:border-squarage-blue hover:scale-105 transition-all duration-300 text-white"
             >
               Get in Touch
             </Link>
