@@ -5,6 +5,7 @@ const OPTIONS = [
   { key: 'a', label: 'A' },
   { key: 'b', label: 'B' },
   { key: 'c', label: 'C' },
+  { key: 'd', label: 'D' },
 ]
 
 /** Temporary: flips between the homepage versions under review. Goes when one is picked. */

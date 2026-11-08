@@ -7,6 +7,7 @@ import type { ComponentType } from 'react'
 import HomeA from '@/components/home-variants/a/HomeA'
 import HomeB from '@/components/home-variants/b/HomeB'
 import HomeC from '@/components/home-variants/c/HomeC'
+import HomeD from '@/components/home-variants/d/HomeD'
 import VariantSwitcher from '@/components/home-variants/VariantSwitcher'
 
 export const metadata: Metadata = {
@@ -18,9 +19,9 @@ export const metadata: Metadata = {
   },
 }
 
-// Temporary: the homepage versions under review, at /?v=a, /?v=b, /?v=c.
+// Temporary: the homepage versions under review, at /?v=a, /?v=b, /?v=c, /?v=d.
 // Plain / is today's page; the switcher shows on every version. Goes when one is picked.
-const VARIANTS: Record<string, ComponentType> = { a: HomeA, b: HomeB, c: HomeC }
+const VARIANTS: Record<string, ComponentType> = { a: HomeA, b: HomeB, c: HomeC, d: HomeD }
 
 export default async function Home({
   searchParams,
