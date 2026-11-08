@@ -10,7 +10,7 @@ description: Full project structure for the Squarage site — routes, components
 ### Pages
 | Route | Description |
 |-------|-------------|
-| `/` | Homepage (static hero, marquee banner, collections, about, custom CTA) |
+| `/` | Homepage (static hero, marquee banner, collections, the shelf designer hero + Get in Touch, about) |
 | `/products` | All products grid (server-rendered catalog, ISR 10 min — Shopify edits can take ~10 min to appear). Featured order: Posé → Warped → Tiled; the 3 Mateo chair cards auto-cycle their color images (random start/order, 1.2s, pauses offscreen; touch swaps the single base image instead of mounting the crossfade stack) |
 | `/products/[handle]` | Product page (ProductPage default, WarpedProductPage by `warped` collection, MateoProductPage for the virtual `mateo-chair` handle — backed by 3 Shopify products; the real handles `mateo-pose`/`mateo-tabouret`/`mateo-diner` 308-redirect to `/products/mateo-chair?style=…`) |
 | `/collections/tiled` | Tiled collection (CarroHeroSection hero) |
@@ -47,6 +47,16 @@ components/
   HeroStatic.tsx              # Homepage hero (static image + sr-only h1)
   CollectionsSection.tsx      # Marquee banner ("made in los angeles • …", 60s loop,
                               #   keyframes in globals.css) + collections grid
+  CustomProjectSection.tsx    # Bottom of the homepage (2026-11-07): /custom folded in.
+                              #   Desktop: green "Want a Custom Piece?" band (hidden on
+                              #   phones) → custom/DesignerHero (Try Our Warped Shelf
+                              #   Designer, shelf/BreathingShelf, Start Designing; the
+                              #   whole block links to the designer) →
+                              #   custom/MoreSpecificSection (yellow, green Get in Touch)
+  shelf/BreathingShelf.tsx    # The custom card's turn-and-grow shelf loop as a standalone
+                              #   view: loads the 3D a screen early, animates only while on
+                              #   screen, holds still for reduced motion. CustomDesignCard
+                              #   still has its own copy of the loop
   ProductPage.tsx             # Tiled product detail page
   WarpedProductPage.tsx       # Warped product detail; pulls the "dimensions" image out of
                               #   the Shopify image list (filename/alt contains "dimensions")

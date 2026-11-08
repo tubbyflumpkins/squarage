@@ -5,6 +5,15 @@ description: Running log of significant changes to the Squarage site, newest fir
 
 # Changelog
 
+## 2026-11-07 — The shelf designer lives on the homepage
+
+Dylan reopened the parked homepage project ("Tonight is that point in the future"). The three October versions (A swap, B feature band, C split row, on branch `homepage-redesign`) came back behind a Current · A · B · C pill at `/?v=`; he liked none of them and described a fourth, built live: today's layout kept, and `/custom`'s two sections folded in under "Want a Custom Piece?" in place of its Start Designing button. Three rounds of phone colours followed (yellow hero, then green lower band, then cream under the collections' yellow bar) before he dropped the title on phones altogether: "That's the one."
+
+- **`CustomProjectSection`** is now: on desktop the green "Want a Custom Piece?" band (hidden on phones, where the hero stands alone under the collections' thin yellow bar) → `components/custom/DesignerHero` (Try Our Warped Shelf Designer, `BreathingShelf`, a green Start Designing that hovers blue; the whole block is one link to the designer) → `components/custom/MoreSpecificSection` (the workshop photo and "Need Something More Specific?" in white on yellow, green Get in Touch) → About Us.
+- **`BreathingShelf`** (`components/shelf/`), from the October branch: the custom card's turn-and-grow loop as a standalone view that loads a screen early, animates only on screen and holds still for reduced motion. `CustomDesignCard` keeps its own copy for now.
+- `/custom` and the nav's Custom link are unchanged. Versions A, B, C, the switcher and the `?v=` switch were deleted before shipping, so `/` is prerendered static again.
+- Checked: `tsc`, lint, build (`/` static); in a browser at desktop and phone widths by Dylan. Not yet seen on a real phone.
+
 ## 2026-10-07 — Invoice links: a customer share for materials, with Pay Now
 
 Dylan bought ten sheets of 12mm 4×8 Baltic Birch from Royal Plywood for the International School of Los Angeles (Sales Order 3283665: 10 × $63.36, a $45 handling charge, the supplier's 2% card fee of $13.56, $692.16 with no tax to Squarage) and needed to invoice the school with a pay link, at cost, with sales tax added. Rather than a new system, an **invoice** became the second kind of customer link on `/custom/[token]`, built with labs in the same pass (its changelog has that half).
