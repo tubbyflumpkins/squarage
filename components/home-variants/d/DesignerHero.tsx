@@ -8,7 +8,7 @@ import BreathingShelf from '@/components/shelf/BreathingShelf'
 export default function DesignerHero() {
   return (
     // The bottom padding holds the part of the button that hangs below the viewer
-    <section className="bg-cream px-6 pt-4 md:pt-12 pb-20 md:pb-24">
+    <section className="bg-cream px-6 pt-8 md:pt-12 pb-20 md:pb-24">
       {/* The whole hero is one link: the button below is a styled span */}
       <Link href="/collections/warped/designer" className="group block max-w-7xl mx-auto">
         <h2 className="relative z-10 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black font-neue-haas text-squarage-black text-center mb-[-0.1em] md:mb-[-0.25em] flex flex-wrap items-center justify-center gap-x-3 md:gap-x-4">
